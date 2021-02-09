@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "start": "snowpack dev",
+    "build": "snowpack build",
+    "test": "echo \"This template does not include a test runner by default.\" && exit 1"
+  },
+  "dependencies": {
+    "vue": "3.0.0"
+  },
+  "devDependencies": {
+    "@snowpack/plugin-dotenv": "^2.0.5",
+    "@snowpack/plugin-vue": "^2.3.0",
+    "snowpack": "^3.0.1"
+  }
+}

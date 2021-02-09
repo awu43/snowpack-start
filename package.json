@@ -1,0 +1,26 @@
+{
+  "name": "snowpack-start",
+  "version": "1.0.0",
+  "description": "Start a new custom Snowpack application.",
+  "main": "index.js",
+  "scripts": {
+    "test": "wtr index.test.js"
+  },
+  "author": "andrew-1135",
+  "license": "MIT",
+  "devDependencies": {
+    "@esm-bundle/chai": "^4.1.5",
+    "@web/test-runner": "^0.12.7",
+    "eslint": "^7.19.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1"
+  },
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "commander": "^7.0.0",
+    "execa": "^5.0.0",
+    "fs-extra": "^9.1.0",
+    "prompts": "^2.4.0",
+    "tmp": "^0.2.1"
+  }
+}
