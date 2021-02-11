@@ -1,12 +1,13 @@
 module.exports = {
+  projectDir: "test-app",
   jsFramework: "none",
   typescript: false,
-  codeFormatters: ["eslint"],
+  codeFormatters: [],
   sass: false,
   cssFramework: "none",
-  bundler: "webpack",
+  bundler: "snowpack",
   plugins: [
-    "wtr",
+    // "wtr",
   ],
   license: "mit",
   // author: "",
