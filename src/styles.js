@@ -7,4 +7,5 @@ module.exports = {
   warningMsg: chalk.yellow,
   fatalError: chalk.white.bold.bgRed,
   errorMsg: chalk.red,
+  boldUl: chalk.bold.underline,
 };

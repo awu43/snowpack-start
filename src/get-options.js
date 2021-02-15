@@ -4,6 +4,7 @@
 const os = require("os");
 const path = require("path");
 const commander = require("commander"); // Command line util
+const execa = require("execa");
 const fse = require("fs-extra"); // Extra file manipulation utils
 const prompts = require("prompts"); // User prompts
 
@@ -125,6 +126,23 @@ const PROMPTS = new Map(Object.entries({
     name: "author",
     message: "Author",
   },
+  // CLI only below
+  useYarn: {
+    type: null,
+    message: "Use Yarn",
+  },
+  usePnpm: {
+    type: null,
+    message: "Use pnpm",
+  },
+  skipGitInit: {
+    type: null,
+    message: "Skip git init",
+  },
+  skipEslintInit: {
+    type: null,
+    message: "Skip ESLint init",
+  },
 }));
 
 const OPTION_TYPES = new Map(Object.entries({
@@ -138,6 +156,11 @@ const OPTION_TYPES = new Map(Object.entries({
   plugins: "array",
   license: "string",
   author: "string",
+
+  useYarn: "boolean",
+  usePnpm: "boolean",
+  skipGitInit: "boolean",
+  skipEslintInit: "boolean",
 }));
 
 const OPTION_TYPE_CHECKS = new Map(Object.entries({
@@ -151,19 +174,41 @@ const OPTION_TYPE_CHECKS = new Map(Object.entries({
   plugins: opt => Array.isArray(opt),
   license: opt => typeof opt === "string",
   author: opt => typeof opt === "string",
+
+  useYarn: opt => typeof opt === "boolean",
+  usePnpm: opt => typeof opt === "boolean",
+  skipGitInit: opt => typeof opt === "boolean",
+  skipEslintInit: opt => typeof opt === "boolean",
 }));
 
 class OptionNameError extends Error {
   constructor(optName) {
-    super(styles.errorMsg(`Unknown option: ${optName}`));
+    super(styles.errorMsg(`Unknown option ${styles.cyanBright(optName)}`));
     this.name = "OptionNameError";
   }
 }
 
-class OptionValueTypeError extends Error {
+class OptionTypeError extends Error {
   constructor(optName, optValue) {
-    super(styles.errorMsg(`Expected value of type ${OPTION_TYPES.get(optName)} for ${optName}, received ${typeof optValue}`));
-    this.name = "OptionValueTypeError";
+    super(styles.errorMsg(`Expected value of type ${styles.cyanBright(OPTION_TYPES.get(optName))} for ${styles.cyanBright(optName)}, received ${styles.cyanBright(typeof optValue)}`));
+    this.name = "OptionTypeError";
+  }
+}
+
+class OptionValueError extends Error {
+  constructor(optName, optValue, promptChoices) {
+    super(styles.errorMsg(`Invalid value ${styles.cyanBright(optValue)} for ${styles.cyanBright(optName)}\nValid values: ${promptChoices.map(c => styles.cyanBright(c)).join("/")}`));
+    this.name = "OptionValueError";
+  }
+}
+
+// From create-snowpack-app
+function packageManagerInstalled(packageManager) {
+  try {
+    execa.commandSync(`${packageManager} --version`);
+    return true;
+  } catch (err) {
+    return false;
   }
 }
 
@@ -173,11 +218,37 @@ function validateOptions(options) {
       throw new OptionNameError(optName);
     }
     if (!OPTION_TYPE_CHECKS.get(optName)(optValue)) {
-      throw new OptionValueTypeError(optName, optValue);
+      throw new OptionTypeError(optName, optValue);
+    }
+    const promptType = PROMPTS.get(optName).type;
+    if (["select", "multiselect"].includes(promptType)) {
+      const promptChoices = PROMPTS.get(optName).choices.map(c => c.value);
+      const invalidSingleSelect = (
+        promptType === "select" && !promptChoices.includes(optValue)
+      );
+      const invalidMultiselect = (
+        promptType === "multiselect"
+        && !optValue.every(v => promptChoices.includes(v))
+      );
+      if (invalidSingleSelect || invalidMultiselect) {
+        throw new OptionValueError(optName, optValue, promptChoices);
+      }
+    }
+    if (options.useYarn && options.usePnpm) {
+      throw new Error(
+        styles.errorMsg("You can't use Yarn and pnpm at the same time")
+      );
+    } else if (options.useYarn && !packageManagerInstalled("yarn")) {
+      throw new Error(
+        styles.errorMsg("Yarn doesn't seem to be installed")
+      );
+    } else if (options.usePnpm && !packageManagerInstalled("pnpm")) {
+      throw new Error(
+        styles.errorMsg("pnpm doesn't seem to be installed")
+      );
     }
   }
 }
-// TODO: Add value validation
 
 function displayDefaults() {
   console.log(styles.cyanBright("\n  Default settings"));
@@ -210,8 +281,10 @@ function applyDefaultsToPrompts() {
         }
       }
     } else {
-      console.error(styles.fatalError("Error while processing default settings"));
-      throw new OptionValueTypeError(optName, optValue);
+      console.error(
+        styles.fatalError("Error while processing default options")
+      );
+      throw new OptionTypeError(optName, optValue);
     }
   }
 }
@@ -229,7 +302,7 @@ module.exports = async function getOptions() {
     .usage(`${styles.cyanBright("[project-directory]")} [other options]`)
     .action(pd => { projectDir = pd; })
     .description("Start a new custom Snowpack app.")
-    .option("-d, --defaults", "Use default settings")
+    .option("-d, --defaults", "Use default options")
     .option(
       "-jsf, --js-framework <framework>",
       [
@@ -279,6 +352,11 @@ module.exports = async function getOptions() {
         .map(license => license.value).join("/")}>`,
     )
     .option("-a, --author <author>", "Author")
+    .option("--use-yarn", "Use Yarn")
+    .option("--use-pnpm", "Use Pnpm")
+    .option("--skip-install", "Skip package installation")
+    .option("--skip-git-init", "Skip git init")
+    .option("--skip-eslint-init", "Skip ESLint init")
     .on("-h", displayDefaults)
     .on("--help", displayDefaults)
     .parse(process.argv)
@@ -287,8 +365,7 @@ module.exports = async function getOptions() {
   if (projectDir) {
     cliOptions = { projectDir, ...cliOptions };
   }
-  // TODO: Other installers
-  //  TODO: skip procecesses
+
   // console.log(cliOptions);
 
   const options = {};
@@ -296,7 +373,9 @@ module.exports = async function getOptions() {
     try {
       validateOptions(DEFAULT_OPTIONS);
     } catch (error) {
-      console.error(styles.fatalError("Error while processing default settings"));
+      console.error(
+        styles.fatalError("Error while processing default options")
+      );
       console.error(error.message);
       process.exit(1);
     }
@@ -319,6 +398,15 @@ module.exports = async function getOptions() {
 
   if (Object.keys(cliOptions).length) {
     console.log(styles.cyanBright("\n-- CLI options --"));
+    try {
+      validateOptions(cliOptions);
+    } catch (error) {
+      console.error(
+        styles.fatalError("Error while processing CLI options")
+      );
+      console.error(error.message);
+      process.exit(1);
+    }
     for (const [optName, optValue] of Object.entries(cliOptions)) {
       const optMessage = styles.whiteBold(`${PROMPTS.get(optName).message}: `);
       console.log(`${styles.successMsg("√")} ${optMessage}${optValue}`);
@@ -328,6 +416,7 @@ module.exports = async function getOptions() {
 
   const remainingPrompts = (
     [...PROMPTS.keys()]
+      .filter(k => k.type !== null)
       .filter(k => !options.hasOwnProperty(k))
       .map(k => PROMPTS.get(k))
   );
@@ -342,14 +431,14 @@ module.exports = async function getOptions() {
   }
 
   if (options.license === "mit" && !options.hasOwnProperty("author")) {
-    options.author = await prompts(
-      { type: "text", name: "author", message: "Author" }, { onCancel }
-    ).author;
+    Object.assign(
+      options,
+      await prompts(
+        { type: "text", name: "author", message: "Author" }, { onCancel }
+      )
+    );
   }
 
-  if (options.jsFramework === "none") {
-    options.jsFramework = "blank";
-  }
   for (const optKey of ["cssFramework", "bundler", "license"]) {
     if (options[optKey] === "none") {
       options[optKey] = null;

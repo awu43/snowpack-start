@@ -1,14 +1,20 @@
 module.exports = {
-  projectDir: "test-app",
+  // projectDir: "new-snowpack-app",
   jsFramework: "none",
   typescript: false,
-  codeFormatters: [],
-  sass: false,
+  codeFormatters: ["eslint"],
+  sass: true,
   cssFramework: "none",
-  bundler: "snowpack",
+  bundler: "webpack",
   plugins: [
-    // "wtr",
+    "wtr",
+    "postcss",
   ],
   license: "mit",
   // author: "",
+
+  // useYarn: true,
+  // usePnpm: true,
+  // skipGitInit: true,
+  // skipEslintInit: true,
 };

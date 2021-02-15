@@ -1,11 +1,12 @@
 module.exports = new Map(Object.entries({
-  blank: {
+  none: {
     prodPackages: [],
     devPackages: [],
     tsPackages: [],
     wtrPackages: [],
     plugins: [],
   },
+  // None is modified from blank to remove the confetti dependency
   react: {
     prodPackages: ["react", "react-dom"],
     devPackages: [
@@ -57,8 +58,8 @@ module.exports = new Map(Object.entries({
     tsPackages: [],
     wtrPackages: ["@testing-library/preact"],
     plugins: [
+      "'@snowpack/plugin-dotenv'",
       "'@prefresh/snowpack'",
-      "'@snowpack/plugin-dotenv'"
     ],
   },
   "lit-element": {

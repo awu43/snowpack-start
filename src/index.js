@@ -1,3 +1,8 @@
+// #!/usr/bin/env node
+// IMPORTANT: Shebang breaks rewire for testing
+//            Comment it out before running tests
+
+/* eslint-disable no-useless-escape */
 /* eslint-disable no-console */
 
 // Node
@@ -16,7 +21,7 @@ const styles = require("./styles.js");
 const getOptions = require("./get-options.js");
 const JS_FRAMEWORKS = require("./js-frameworks.js");
 const BASE_FILES = require("../base-files");
-const BASE_TEMPLATE_DIR = require("../base-templates");
+const BASE_TEMPLATES = require("../base-templates");
 
 function fileReadAndReplace(file, targetStr, replStr) {
   fse.writeFileSync(
@@ -25,7 +30,7 @@ function fileReadAndReplace(file, targetStr, replStr) {
 }
 
 async function createBase(options) {
-  console.log(`\n- Creating a new Snowpack app in ${styles.cyanBright(options.projectDir)}`);
+  console.log(`\n- Creating a new Snowpack app in ${styles.cyanBright(path.resolve(options.projectDir))}`);
   try {
     if (fse.pathExistsSync(options.projectDir)) {
       throw Error("Project directory already exists.");
@@ -41,21 +46,29 @@ async function createBase(options) {
   process.chdir(options.projectDir);
 
   fse.copyFileSync(BASE_FILES.get("gitignore"), ".gitignore");
-  fse.writeFileSync(
-    "README.md", `# ${path.basename(options.projectDir)}\n`, "utf8"
-  );
 
-  const targetTemplateDir = path.join(
-    BASE_TEMPLATE_DIR,
-    `snowpack-${options.jsFramework}${options.typescript ? "-typescript" : ""}`,
+  const targetTemplateDir = BASE_TEMPLATES.get(
+    `${options.jsFramework}${options.typescript ? "-typescript" : ""}`,
   );
   fse.copySync(path.join(targetTemplateDir, "public"), "public");
   fse.copySync(path.join(targetTemplateDir, "src"), "src");
-  fse.copyFileSync(BASE_FILES.get("robots.txt"), "public/robots.txt");
+  let readme = fse.readFileSync(
+    path.join(targetTemplateDir, "README.md"), "utf8"
+  );
+  readme = readme.replace("New Project", path.basename(options.projectDir));
+  if (options.useYarn) {
+    readme = readme.replace(/npm run/g, "npm").replace(/npm/g, "yarn");
+  } else if (options.usePnpm) {
+    readme = readme.replace(/npm/g, "pnpm");
+  }
+  fse.writeFileSync("README.md", readme);
 
   if (options.jsFramework === "react" && !options.typescript) {
     fse.copySync(path.join(targetTemplateDir, ".types"), ".types");
     // What does this folder do??
+  }
+  if (options.jsFramework === "svelte" && options.typescript) {
+    fse.copyFileSync(BASE_FILES.get("svelteTsConfig"), "svelte.config.js");
   }
   if (options.jsFramework === "lit-element") {
     fse.copySync(
@@ -77,7 +90,7 @@ async function createBase(options) {
 
   if (options.sass) {
     switch (options.jsFramework) {
-      case "blank":
+      case "none":
         fse.moveSync("public/index.css", "src/index.scss");
         fileReadAndReplace("public/index.html", "index.css", "dist/index.css");
         break;
@@ -99,6 +112,7 @@ async function createBase(options) {
       case "svelte":
         break;
       case "lit-element":
+        fileReadAndReplace("public/index.html", "index.css", "dist/index.css");
         fse.moveSync("public/index.css", "src/index.scss");
         break;
       default:
@@ -132,10 +146,60 @@ function generatePackageJson(options) {
     scripts: {
       start: "snowpack dev",
       build: "snowpack build",
-      // eslint-disable-next-line quotes, no-useless-escape
+      // eslint-disable-next-line quotes
       test: 'echo \"This template does not include a test runner by default.\" && exit 1',
     },
   };
+
+  const jsExts = ["js"];
+  if (["react", "preact"].includes(options.jsFramework)) {
+    jsExts.push("jsx");
+  } else if (options.jsFramework === "vue") {
+    jsExts.shift("vue");
+  } else if (options.jsFramework === "svelte") {
+    jsExts.shift("svelte");
+  }
+  if (options.typescript) {
+    if (options.jsFramework === "none") {
+      jsExts.unshift("ts");
+    } else {
+      jsExts.push("ts");
+    }
+    if (["react", "preact"].includes(options.jsFramework)) {
+      jsExts.push("tsx");
+    } else if (options.jsFramework === "lit-element") {
+      jsExts.shift();
+    }
+  }
+  const fmtExts = (
+    jsExts.length > 1 ? `{${jsExts.join(",")}}` : jsExts.toString()
+  );
+
+  // eslint-disable-next-line quotes
+  const eslintFormat = 'eslint --fix \"src/**/*\"';
+  // eslint-disable-next-line quotes
+  const eslintLint = 'eslint \"src/**/*\"';
+  const prettierFormat = `prettier --write \"src/**/*.${fmtExts}\"`;
+  const prettierLint = `prettier --check \"src/**/*.${fmtExts}\"`;
+
+  const useEslint = (options.codeFormatters || []).includes("eslint");
+  const usePrettier = (options.codeFormatters || []).includes("prettier");
+  if (useEslint && !usePrettier) {
+    appPackageJson.scripts.format = eslintFormat;
+    appPackageJson.scripts.lint = eslintLint;
+  } else if (!useEslint && usePrettier) {
+    appPackageJson.scripts.format = prettierFormat;
+    appPackageJson.scripts.lint = prettierLint;
+  } else if (useEslint && usePrettier) {
+    appPackageJson.scripts.esfix = eslintFormat;
+    appPackageJson.scripts.eslint = eslintLint;
+    appPackageJson.scripts.pwrite = prettierFormat;
+    appPackageJson.scripts.pcheck = prettierLint;
+  }
+
+  if (options.jsFramework === "vue" && options.typescript) {
+    appPackageJson.scripts["type-check"] = "tsc";
+  }
 
   if (options.bundler === "webpack") {
     appPackageJson.browserslist = ["defaults"];
@@ -144,12 +208,11 @@ function generatePackageJson(options) {
   // No example tests for Vue/LitElement
   if ((options.plugins || []).includes("wtr")
       && !["vue", "lit-element"].includes(options.jsFramework)) {
-    let jsExt = options.typescript ? "ts" : "js";
+    let jsTestExt = options.typescript ? "ts" : "js";
     if (["react", "preact"].includes(options.jsFramework)) {
-      jsExt = `${jsExt}x`;
+      jsTestExt = `${jsTestExt}x`;
     }
-    // eslint-disable-next-line no-useless-escape
-    appPackageJson.scripts.test = `wtr \"src/**/*.test.${jsExt}\"`;
+    appPackageJson.scripts.test = `web-test-runner \"src/**/*.test.${jsTestExt}\"`;
   }
 
   fse.writeFileSync(
@@ -177,9 +240,7 @@ const PLUGIN_PACKAGES = new Map(Object.entries({
 
 function installPackages(options) {
   const prodPackages = [];
-  const devPackages = [
-    "snowpack",
-  ];
+  const devPackages = ["snowpack"];
 
   const jsFramework = JS_FRAMEWORKS.get(options.jsFramework);
   prodPackages.push(...jsFramework.prodPackages);
@@ -191,10 +252,10 @@ function installPackages(options) {
     devPackages.push(...jsFramework.wtrPackages);
   }
 
-  if (options.jsFramework === "react"
+  if (["react", "svelte"].includes(options.jsFramework)
       && options.typescript
       && (options.plugins || []).includes("wtr")) {
-    devPackages.push("@types/mocha"); // Doesn't appear to do anything??
+    devPackages.push("@types/mocha");
   }
 
   if (options.typescript) {
@@ -203,6 +264,12 @@ function installPackages(options) {
       "@snowpack/plugin-typescript",
       "@types/snowpack-env",
     ]);
+    if (options.jsFramework === "vue") {
+      devPackages.pop(); // Remove @types/snowpack-env
+      devPackages.pop(); // Remove @snowpack/plugin-typescript
+    } else if (options.jsFramework === "preact") {
+      devPackages.pop(); // Remove @types/snowpack-env
+    }
     if ((options.plugins || []).includes("wtr")) {
       devPackages.push("@types/chai");
     }
@@ -225,11 +292,20 @@ function installPackages(options) {
   for (const plugin of options.plugins || []) {
     devPackages.push(...PLUGIN_PACKAGES.get(plugin));
   }
-  console.log(styles.cyanBright("\n- Installing package dependencies. This might take a couple of minutes.\n"));
-  if (prodPackages.length) {
-    execa.sync("npm i", prodPackages, { stdio: "inherit" });
+
+  console.log(styles.cyanBright("\n- Installing package dependencies. This might take a couple of minutes."));
+  let cmd;
+  if (options.useYarn) {
+    cmd = "yarn add";
+  } else if (options.usePnpm) {
+    cmd = "pnpm add";
+  } else {
+    cmd = "npm install";
   }
-  execa.sync("npm i -D", devPackages, { stdio: "inherit" });
+  if (prodPackages.length) {
+    execa.sync(cmd, prodPackages, { stdio: "inherit" });
+  }
+  execa.sync(`${cmd} -D`, devPackages, { stdio: "inherit" });
 }
 
 // For spacing in template literals
@@ -262,6 +338,13 @@ const DEFAULT_BUILTIN_BUNDLER_SETTINGS = [
   "target: 'es2017'",
 ];
 
+// For Preact template
+const ALIAS = `
+${s(2)}alias: {
+${s(4)}/* ... */
+${s(2)}},
+`;
+
 function generateSnowpackConfig(options) {
   let snowpackConfig = fse.readFileSync(
     BASE_FILES.get("snowpackConfig"), "utf8"
@@ -269,8 +352,24 @@ function generateSnowpackConfig(options) {
 
   const configPluginsList = [...JS_FRAMEWORKS.get(options.jsFramework).plugins];
 
-  if (options.typescript === true) {
-    configPluginsList.push("'@snowpack/plugin-typescript'");
+  if (options.jsFramework === "preact" && !options.typescript) {
+    snowpackConfig = snowpackConfig.replace(
+      /(buildOptions.+},\n)/s, `$1${ALIAS}`
+    );
+  }
+
+  if (options.typescript) {
+    if (options.jsFramework === "vue") {
+      configPluginsList.splice(
+        1, 0, "'@snowpack/plugin-vue/plugin-tsx-jsx.js'"
+      );
+    } else if (options.jsFramework === "preact") {
+      configPluginsList.splice(
+        1, 0, "'@snowpack/plugin-typescript'"
+      );
+    } else {
+      configPluginsList.push("'@snowpack/plugin-typescript'");
+    }
   }
 
   if (options.sass) {
@@ -310,6 +409,40 @@ function generateSnowpackConfig(options) {
   fse.writeFileSync("snowpack.config.js", snowpackConfig, "utf8");
 }
 
+function initializeEslint(options) {
+  if ((options.codeFormatters || []).includes("eslint")
+      && !options.skipEslintInit) {
+    try {
+      console.log(styles.cyanBright("\n- Initializing ESLint.\n"));
+      const cmd = options.useYarn ? "yarn dlx" : "npx";
+      execa.sync(`${cmd} eslint --init`, { stdio: "inherit" });
+    } catch (error) {
+      console.error(error);
+      console.error(`\n  - ${styles.warningMsg("Something went wrong.\n")}`);
+    }
+  }
+}
+
+function initializeGit(options) {
+  if (!options.skipGitInit) {
+    console.log(styles.cyanBright("\n- Initializing git repo.\n"));
+    try {
+      execa.sync("git init", { stdio: "inherit" });
+      execa.sync("git add -A", { stdio: "inherit" });
+      execa.sync("git commit -m \"Intial commit\"", { stdio: "inherit" });
+      console.log(`\n  - ${styles.successMsg("Success!\n")}`);
+    } catch (error) {
+      console.error(error);
+      console.error(`\n  - ${styles.warningMsg("Something went wrong.\n")}`);
+    }
+  }
+}
+
+// From create-snowpack-app
+function formatCommand(command, description) {
+  return `${s(2)}${command.padEnd(17)}${description}`;
+}
+
 async function main() {
   const options = await getOptions();
   await createBase(options);
@@ -317,24 +450,39 @@ async function main() {
   installPackages(options);
   generateSnowpackConfig(options);
 
-  console.log(styles.cyanBright("\n- Initializing git repo.\n"));
-  try {
-    execa.sync("git init", { stdio: "inherit" });
-    console.log(`\n  - ${styles.successMsg("Success!\n")}`);
-  } catch (error) {
-    console.error(error);
-    console.error(`\n  - ${styles.warningMsg("Something went wrong.\n")}`);
-  }
+  initializeEslint(options);
+  initializeGit(options);
 
-  if ((options.codeFormatters || []).includes("eslint")) {
-    try {
-      console.log(styles.cyanBright("\n- Initializing ESLint.\n"));
-      execa.sync("npx eslint --init", { stdio: "inherit" });
-    } catch (error) {
-      console.error(error);
-      console.error(`\n  - ${styles.warningMsg("Something went wrong.\n")}`);
-    }
+  let installer;
+  if (options.useYarn) {
+    installer = "yarn";
+  } else if (options.usePnpm) {
+    installer = "pnpm";
+  } else {
+    installer = "npm";
   }
+  // Also from create-snowpack-app
+  console.log("");
+  console.log(styles.boldUl("Quickstart:"));
+  console.log("");
+  console.log(`  cd ${options.projectDir}`);
+  console.log(`  ${installer} start`);
+  console.log("");
+  console.log(styles.boldUl("All Commands:"));
+  console.log("");
+  console.log(
+    formatCommand(`${installer} start`, "Start your development server.")
+  );
+  console.log(
+    formatCommand(
+      `${installer}${!options.useYarn ? " run" : ""} build`,
+      "Build your website for production."
+    )
+  );
+  console.log(
+    formatCommand(`${installer} test`, "Run your tests.")
+  );
+  console.log("");
 }
 
 if (require.main === module) {

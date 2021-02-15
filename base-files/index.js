@@ -8,6 +8,7 @@ const BASE_FILES = new Map(Object.entries({
   mit: "license/MIT",
   apache: "license/Apache",
 
+  svelteTsConfig: "config/svelte.config.js",
   postcssConfig: "config/postcss.config.js",
   wtrConfig: "config/web-test-runner.config.js",
   snowpackConfig: "config/snowpack.config.js",

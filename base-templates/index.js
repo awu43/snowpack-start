@@ -1,7 +1,7 @@
 const path = require("path");
 
 const TEMPLATE_NAMES = [
-  "blank",
+  "none",
   "react",
   "vue",
   "svelte",
