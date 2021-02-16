@@ -251,7 +251,7 @@ function validateOptions(options) {
 }
 
 function displayDefaults() {
-  console.log(styles.cyanBright("\n  Default settings"));
+  console.log(styles.cyanBright("\n  Default options"));
 
   for (const [optName, optValue] of Object.entries(DEFAULT_OPTIONS)) {
     console.log(`    ${styles.whiteBold(optName)} ${optValue}`);

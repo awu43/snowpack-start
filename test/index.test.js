@@ -48,8 +48,8 @@ const {
   nodeVersionCheck,
 } = require("../src/index.js")._testing;
 
-const BASE_FILES = require("../base-files");
-const BASE_TEMPLATES = require("../base-templates");
+const BASE_FILES = require("../dist-files");
+const BASE_TEMPLATES = require("../dist-templates");
 
 const BLANK_CONFIG = { jsFramework: "none" };
 

@@ -17,8 +17,8 @@ const fse = require("fs-extra"); // Extra file manipulation utils
 const styles = require("./styles.js");
 const { getOptions } = require("./get-options.js");
 const JS_FRAMEWORKS = require("./js-frameworks.js");
-const BASE_FILES = require("../base-files");
-const BASE_TEMPLATES = require("../base-templates");
+const BASE_FILES = require("../dist-files");
+const BASE_TEMPLATES = require("../dist-templates");
 
 function fileReadAndReplace(file, targetStr, replStr) {
   fse.writeFileSync(
@@ -65,10 +65,12 @@ async function createBase(options) {
     // What does this folder do??
   }
   if (options.jsFramework === "svelte" && options.typescript) {
-    fse.copyFileSync(BASE_FILES.get("svelteTsConfig"), "svelte.config.js");
+    fse.copyFileSync(
+      path.join(targetTemplateDir, "svelte.config.js"), "svelte.config.js"
+    );
   }
   if (options.jsFramework === "lit-element") {
-    fse.copySync(
+    fse.copyFileSync(
       path.join(targetTemplateDir, "babel.config.json"), "babel.config.json"
     );
   }

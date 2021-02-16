@@ -20,8 +20,8 @@
   },
   "files": [
     "/src",
-    "/base-files",
-    "/base-templates"
+    "/dist-files",
+    "/dist-templates"
   ],
   "bin": {
     "snowpack-start": "./src/index.js"

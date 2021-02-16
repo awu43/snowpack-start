@@ -18,7 +18,7 @@ chai.use(chaiFiles);
 const { expect } = chai;
 const { file } = chaiFiles;
 
-const BASE_TEMPLATES = require("../base-templates");
+const SOURCE_TEMPLATES = require("../src-templates");
 
 const { installPackages } = require("../src/index.js")._testing;
 
@@ -165,27 +165,27 @@ describe("createBase", () => {
   it("Copies the .types folder for react template", () => {
     newTempBase(TEMPLATE_CONFIGS.get("react"));
     testDirectoryContentsEqual(
-      ".types", path.join(BASE_TEMPLATES.get("react"), ".types")
+      ".types", path.join(SOURCE_TEMPLATES.get("react"), ".types")
     );
   });
-  it("Copies svelte.config.js when for svelte-typescript template", () => {
+  it("Copies svelte.config.js for svelte-typescript template", () => {
     newTempBase(TEMPLATE_CONFIGS.get("svelte-typescript"));
     const baseSvelteConfig = path.join(
-      BASE_TEMPLATES.get("svelte-typescript"), "svelte.config.js"
+      SOURCE_TEMPLATES.get("svelte-typescript"), "svelte.config.js"
     );
     expect(file("svelte.config.js")).to.equal(file(baseSvelteConfig));
   });
   it("Copies babel.config.json for lit-element template", () => {
     newTempBase(TEMPLATE_CONFIGS.get("lit-element"));
     const baseBabelConfig = path.join(
-      BASE_TEMPLATES.get("lit-element"), "babel.config.json"
+      SOURCE_TEMPLATES.get("lit-element"), "babel.config.json"
     );
     expect(file("babel.config.json")).to.equal(file(baseBabelConfig));
   });
   it("Copies babel.config.json for lit-element-typescript template", () => {
     newTempBase(TEMPLATE_CONFIGS.get("lit-element-typescript"));
     const baseBabelConfig = path.join(
-      BASE_TEMPLATES.get("lit-element-typescript"), "babel.config.json"
+      SOURCE_TEMPLATES.get("lit-element-typescript"), "babel.config.json"
     );
     expect(file("babel.config.json")).to.equal(file(baseBabelConfig));
   });
@@ -194,7 +194,7 @@ describe("createBase", () => {
 function testPackageJsonScriptsEqual(template) {
   const tempPackageJson = newTempPackageJson(TEMPLATE_CONFIGS.get(template));
   const basePackageJson = require(
-    path.join(BASE_TEMPLATES.get(template), "package.json")
+    path.join(SOURCE_TEMPLATES.get(template), "package.json")
   );
   expect(tempPackageJson.scripts).to.eql(basePackageJson.scripts);
 }
@@ -245,7 +245,7 @@ function testPackagesInstalled(template) {
   const installedProdPackages = execa.sync.args[0][1];
   const installedDevPackages = execa.sync.args[1][1];
   const basePackageJson = require(
-    path.join(BASE_TEMPLATES.get(template), "package.json")
+    path.join(SOURCE_TEMPLATES.get(template), "package.json")
   );
   const baseProdPackages = Object.keys(basePackageJson.dependencies);
   const baseDevPackages = Object.keys(basePackageJson.devDependencies);
@@ -275,7 +275,7 @@ describe("installPackages", () => {
     expect(execa.sync).to.have.been.calledOnce;
     const installedDevPackages = execa.sync.args[0][1];
     const basePackageJson = require(
-      path.join(BASE_TEMPLATES.get("none"), "package.json")
+      path.join(SOURCE_TEMPLATES.get("none"), "package.json")
     );
     const baseDevPackages = Object.keys(basePackageJson.devDependencies);
     installedDevPackages.sort();
@@ -287,8 +287,9 @@ describe("installPackages", () => {
     expect(execa.sync).to.have.been.calledOnce;
     const installedDevPackages = execa.sync.args[0][1];
     const basePackageJson = require(
-      path.join(BASE_TEMPLATES.get("none-typescript"), "package.json")
+      path.join(SOURCE_TEMPLATES.get("none-typescript"), "package.json")
     );
+    delete basePackageJson.devDependencies["@types/canvas-confetti"];
     const baseDevPackages = Object.keys(basePackageJson.devDependencies);
     installedDevPackages.sort();
     baseDevPackages.sort();
@@ -331,7 +332,7 @@ function testSnowpackConfigsEqual(template) {
     TEMPLATE_CONFIGS.get(template)
   );
   const baseSnowpackConfig = require(
-    path.join(BASE_TEMPLATES.get(template), "snowpack.config.js")
+    path.join(SOURCE_TEMPLATES.get(template), "snowpack.config.js")
   );
   expect(tempSnowpackConfig).to.eql(baseSnowpackConfig);
 }
