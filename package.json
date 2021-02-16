@@ -1,9 +1,23 @@
 {
   "name": "snowpack-start",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.0",
   "description": "Start a new custom Snowpack application.",
+  "keywords": [
+    "snowpack",
+    "custom",
+    "start",
+    "init",
+    "create"
+  ],
   "author": "andrew-1135",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andrew-1135/snowpack-start.git"
+  },
+  "engines": {
+    "node": ">=10"
+  },
   "files": [
     "/src",
     "/base-files",
@@ -24,7 +38,6 @@
     "eslint-plugin-import": "^2.22.1",
     "mocha": "^8.2.1",
     "nyc": "^15.1.0",
-    "rewire": "^5.0.0",
     "sinon": "^9.2.4",
     "sinon-chai": "^3.5.0",
     "tmp": "^0.2.1"

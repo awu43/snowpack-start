@@ -3,15 +3,15 @@
 const path = require("path");
 
 const fse = require("fs-extra");
-const rewire = require("rewire");
 const tmp = require("tmp");
 
 const { expect } = require("chai");
 
-const index = rewire("../src/index.js");
-const createBase = index.__get__("createBase");
-const generatePackageJson = index.__get__("generatePackageJson");
-const generateSnowpackConfig = index.__get__("generateSnowpackConfig");
+const {
+  createBase,
+  generatePackageJson,
+  generateSnowpackConfig,
+} = require("../src/index.js")._testing;
 
 function newTempBase(options) {
   const tempDir = tmp.dirSync();

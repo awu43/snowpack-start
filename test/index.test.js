@@ -8,7 +8,6 @@ const path = require("path");
 
 const execa = require("execa");
 const fse = require("fs-extra");
-const rewire = require("rewire");
 const tmp = require("tmp");
 
 const chai = require("chai");
@@ -29,22 +28,25 @@ const {
   newTempSnowpackConfig,
 } = require("./test-utils.js");
 
-const getOptions = rewire("../src/get-options");
-const projectDirValidator = getOptions.__get__("projectDirValidator");
-const OptionNameError = getOptions.__get__("OptionNameError");
-const OptionTypeError = getOptions.__get__("OptionTypeError");
-const OptionValueError = getOptions.__get__("OptionValueError");
-const validateOptions = getOptions.__get__("validateOptions");
+const {
+  projectDirValidator,
+  OptionNameError,
+  OptionTypeError,
+  OptionValueError,
+  validateOptions,
+} = require("../src/get-options.js")._testing;
 
-const index = rewire("../src/index.js");
-const fileReadAndReplace = index.__get__("fileReadAndReplace");
-const createBase = index.__get__("createBase");
-const generatePackageJson = index.__get__("generatePackageJson");
-const installPackages = index.__get__("installPackages");
-const s = index.__get__("s");
-const generateSnowpackConfig = index.__get__("generateSnowpackConfig");
-const initializeGit = index.__get__("initializeGit");
-const initializeEslint = index.__get__("initializeEslint");
+const {
+  fileReadAndReplace,
+  createBase,
+  generatePackageJson,
+  installPackages,
+  s,
+  generateSnowpackConfig,
+  initializeEslint,
+  initializeGit,
+  nodeVersionCheck,
+} = require("../src/index.js")._testing;
 
 const BASE_FILES = require("../base-files");
 const BASE_TEMPLATES = require("../base-templates");
@@ -622,5 +624,29 @@ describe("initializeGit", () => {
     expect(console.error.secondCall).to.have.been.calledWithExactly(
       `\n  - ${styles.warningMsg("Something went wrong.\n")}`
     );
+  });
+});
+
+describe("nodeVersionCheck", () => {
+  before(() => {
+    sinon.stub(console, "error");
+    sinon.stub(process, "exit");
+  });
+  after(() => {
+    process.exit.restore();
+    console.error.restore();
+  });
+
+  it("Exits with code 1 if Node version < 10", () => {
+    const stub = sinon.stub(process, "versions").get(() => ({ node: "9.0.0" }));
+    nodeVersionCheck();
+    expect(console.error.firstCall).to.have.been.calledWithExactly(
+      styles.fatalError("Node v9 is unsupported.")
+    );
+    expect(console.error.secondCall).to.have.been.calledWithExactly(
+      styles.errorMsg("Please use Node v10 or higher.")
+    );
+    expect(process.exit).to.have.been.calledWith(1);
+    stub.restore();
   });
 });

@@ -7,7 +7,6 @@
 const path = require("path");
 
 const execa = require("execa");
-const rewire = require("rewire");
 
 const chai = require("chai");
 const chaiFiles = require("chai-files");
@@ -21,8 +20,7 @@ const { file } = chaiFiles;
 
 const BASE_TEMPLATES = require("../base-templates");
 
-const index = rewire("../src/index.js");
-const installPackages = index.__get__("installPackages");
+const { installPackages } = require("../src/index.js")._testing;
 
 const {
   newTempBase,

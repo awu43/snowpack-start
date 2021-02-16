@@ -1,7 +1,4 @@
-// #!/usr/bin/env node
-// IMPORTANT: Shebang breaks rewire for testing
-//            Comment it out before running tests
-
+#!/usr/bin/env node
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-console */
 
@@ -18,7 +15,7 @@ const fse = require("fs-extra"); // Extra file manipulation utils
 
 // Package
 const styles = require("./styles.js");
-const getOptions = require("./get-options.js");
+const { getOptions } = require("./get-options.js");
 const JS_FRAMEWORKS = require("./js-frameworks.js");
 const BASE_FILES = require("../base-files");
 const BASE_TEMPLATES = require("../base-templates");
@@ -39,7 +36,7 @@ async function createBase(options) {
   } catch (error) {
     console.error(error);
     console.error(
-      styles.fatalError("Error while creating project directory, exiting.")
+      styles.fatalError("Error while creating project directory")
     );
     process.exit(1);
   }
@@ -438,12 +435,29 @@ function initializeGit(options) {
   }
 }
 
+function nodeVersionCheck() {
+  const currentMajorVersion = parseInt(process.versions.node.split(".")[0], 10);
+  const minimumMajorVersion = 10;
+  if (currentMajorVersion < minimumMajorVersion) {
+    console.error(
+      styles.fatalError(`Node v${currentMajorVersion} is unsupported.`)
+    );
+    console.error(
+      styles.errorMsg(`Please use Node v${minimumMajorVersion} or higher.`)
+    );
+    process.exit(1);
+  }
+}
+
 // From create-snowpack-app
 function formatCommand(command, description) {
   return `${s(2)}${command.padEnd(17)}${description}`;
 }
 
 async function main() {
+  nodeVersionCheck();
+
+  const startDir = process.cwd();
   const options = await getOptions();
   await createBase(options);
   generatePackageJson(options);
@@ -465,7 +479,7 @@ async function main() {
   console.log("");
   console.log(styles.boldUl("Quickstart:"));
   console.log("");
-  console.log(`  cd ${options.projectDir}`);
+  console.log(`  cd ${path.relative(startDir, process.cwd())}`);
   console.log(`  ${installer} start`);
   console.log("");
   console.log(styles.boldUl("All Commands:"));
@@ -488,3 +502,17 @@ async function main() {
 if (require.main === module) {
   main();
 }
+
+module.exports = {
+  _testing: {
+    fileReadAndReplace,
+    createBase,
+    generatePackageJson,
+    installPackages,
+    s,
+    generateSnowpackConfig,
+    initializeEslint,
+    initializeGit,
+    nodeVersionCheck,
+  },
+};

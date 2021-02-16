@@ -254,7 +254,7 @@ function displayDefaults() {
   console.log(styles.cyanBright("\n  Default settings"));
 
   for (const [optName, optValue] of Object.entries(DEFAULT_OPTIONS)) {
-    console.log(`    ${`${styles.whiteBold(optName)}`} ${optValue}`);
+    console.log(`    ${styles.whiteBold(optName)} ${optValue}`);
   }
   console.log("");
 }
@@ -294,7 +294,20 @@ function onCancel() {
   process.exit(1);
 }
 
-module.exports = async function getOptions() {
+function choicesLine(optName) {
+  return PROMPTS.get(optName).choices
+    .map(c => styles.cyanBright(c.value))
+    .join("/");
+}
+
+function choicesList(optName) {
+  const optMessage = PROMPTS.get(optName).message;
+  const values = PROMPTS.get(optName).choices
+    .map(c => `<${styles.cyanBright(c.value)}> (${c.title})`).join("\n");
+  return [optMessage, "-".repeat(10), values, "-".repeat(10)].join("\n");
+}
+
+async function getOptions() {
   let projectDir;
   let cliOptions = new commander.Command(PACKAGE_JSON.name)
     .version(PACKAGE_JSON.version)
@@ -305,22 +318,10 @@ module.exports = async function getOptions() {
     .option("-d, --defaults", "Use default options")
     .option(
       "-jsf, --js-framework <framework>",
-      [
-        "JavaScript framework <",
-        PROMPTS.get("jsFramework").choices
-          .map(framework => framework.value).join("/"),
-        ">",
-      ].join("")
+      `JavaScript Framework <${choicesLine("jsFramework")}>`,
     )
     .option(
-      "-cdf, --code-formatters <formatters...>",
-      [
-        "Code formatters",
-        "-".repeat(10),
-        PROMPTS.get("codeFormatters").choices
-          .map(cf => `<${cf.value}> (${cf.title})`).join("\n"),
-        "-".repeat(10),
-      ].join("\n")
+      "-cdf, --code-formatters <formatters...>", choicesList("codeFormatters")
     )
     .option("-ts, --typescript", "Use TypeScript")
     .option("-nts, --no-typescript", "Don't use TypeScript")
@@ -328,35 +329,16 @@ module.exports = async function getOptions() {
     .option("-ns, --no-sass", "Don't use Sass")
     .option(
       "-cssf, --css-framework <framework>",
-      `CSS Framework <${PROMPTS.get("cssFramework").choices
-        .map(cf => cf.value).join("/")}>`,
+      `CSS Framework\n<${choicesLine("cssFramework")}>`,
     )
-    .option(
-      "-b, --bundler <bundler>",
-      `Bundler <${PROMPTS.get("bundler").choices
-        .map(bundler => bundler.value).join("/")}>`,
-    )
-    .option(
-      "-p, --plugins <plugins...>",
-      [
-        "Other plugins",
-        "-".repeat(10),
-        PROMPTS.get("plugins").choices
-          .map(p => `<${p.value}> (${p.title})`).join("\n"),
-        "-".repeat(10),
-      ].join("\n")
-    )
-    .option(
-      "-l, -license <license>",
-      `License <${PROMPTS.get("license").choices
-        .map(license => license.value).join("/")}>`,
-    )
+    .option("-b, --bundler <bundler>", `Bundler <${choicesLine("bundler")}>`)
+    .option("-p, --plugins <plugins...>", choicesList("plugins"))
+    .option("-l, -license <license>", `License <${choicesLine("license")}>`)
     .option("-a, --author <author>", "Author")
     .option("--use-yarn", "Use Yarn")
     .option("--use-pnpm", "Use Pnpm")
-    .option("--skip-install", "Skip package installation")
-    .option("--skip-git-init", "Skip git init")
     .option("--skip-eslint-init", "Skip ESLint init")
+    .option("--skip-git-init", "Skip git init")
     .on("-h", displayDefaults)
     .on("--help", displayDefaults)
     .parse(process.argv)
@@ -448,4 +430,15 @@ module.exports = async function getOptions() {
   // console.log(options);
 
   return options;
+}
+
+module.exports = {
+  getOptions,
+  _testing: {
+    projectDirValidator,
+    OptionNameError,
+    OptionTypeError,
+    OptionValueError,
+    validateOptions,
+  },
 };
