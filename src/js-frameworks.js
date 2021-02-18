@@ -1,12 +1,12 @@
 module.exports = new Map(Object.entries({
-  none: {
+  blank: {
     prodPackages: [],
     devPackages: [],
     tsPackages: [],
     wtrPackages: [],
     plugins: [],
   },
-  // None is modified from blank to remove the confetti dependency
+  // Modified from blank to remove the confetti dependency
   react: {
     prodPackages: ["react", "react-dom"],
     devPackages: [
@@ -24,7 +24,7 @@ module.exports = new Map(Object.entries({
     ],
   },
   vue: {
-    prodPackages: ["vue"],
+    prodPackages: ["vue@3.0.0"],
     devPackages: [
       "@snowpack/plugin-vue",
       "@snowpack/plugin-dotenv",

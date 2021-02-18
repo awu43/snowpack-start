@@ -17,5 +17,6 @@ module.exports = {
     "arrow-parens": ["error", "as-needed"],
     "no-else-return": [0],
     "max-classes-per-file": [0],
+    "no-underscore-dangle": [0],
   },
 };

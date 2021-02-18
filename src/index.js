@@ -2,18 +2,11 @@
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-console */
 
-// Node
-// const execSync = require('child_process').execSync;
-// const childProcess = require("child_process");
 const path = require("path");
-// const url = require('url');
 
-// Third-party
-// const spawn = require('cross-spawn'); // Extra spawn
 const execa = require("execa"); // Better child_process
 const fse = require("fs-extra"); // Extra file manipulation utils
 
-// Package
 const styles = require("./styles.js");
 const { getOptions } = require("./get-options.js");
 const JS_FRAMEWORKS = require("./js-frameworks.js");
@@ -47,8 +40,6 @@ async function createBase(options) {
   const targetTemplateDir = BASE_TEMPLATES.get(
     `${options.jsFramework}${options.typescript ? "-typescript" : ""}`,
   );
-  fse.copySync(path.join(targetTemplateDir, "public"), "public");
-  fse.copySync(path.join(targetTemplateDir, "src"), "src");
   let readme = fse.readFileSync(
     path.join(targetTemplateDir, "README.md"), "utf8"
   );
@@ -60,10 +51,13 @@ async function createBase(options) {
   }
   fse.writeFileSync("README.md", readme);
 
-  if (options.jsFramework === "react" && !options.typescript) {
-    fse.copySync(path.join(targetTemplateDir, ".types"), ".types");
-    // What does this folder do??
-  }
+  fse.copySync(path.join(targetTemplateDir, "public"), "public");
+  fse.copySync(path.join(targetTemplateDir, "src"), "src");
+
+  // if (options.jsFramework === "react" && !options.typescript) {
+  //   fse.copySync(path.join(targetTemplateDir, ".types"), ".types");
+  // }
+  // What does this folder do??
   if (options.jsFramework === "svelte" && options.typescript) {
     fse.copyFileSync(
       path.join(targetTemplateDir, "svelte.config.js"), "svelte.config.js"
@@ -84,12 +78,12 @@ async function createBase(options) {
 
   // Optional .? chaining requires Node 14+
   if ((options.codeFormatters || []).includes("prettier")) {
-    fse.writeFileSync(".prettierrc", "{\n  \n}\n", "utf8");
+    fse.copyFileSync(BASE_FILES.get("prettierConfig"), ".prettierrc");
   }
 
   if (options.sass) {
     switch (options.jsFramework) {
-      case "none":
+      case "blank":
         fse.moveSync("public/index.css", "src/index.scss");
         fileReadAndReplace("public/index.html", "index.css", "dist/index.css");
         break;
@@ -159,7 +153,7 @@ function generatePackageJson(options) {
     jsExts.shift("svelte");
   }
   if (options.typescript) {
-    if (options.jsFramework === "none") {
+    if (options.jsFramework === "blank") {
       jsExts.unshift("ts");
     } else {
       jsExts.push("ts");
@@ -234,7 +228,6 @@ const PLUGIN_PACKAGES = new Map(Object.entries({
   ],
   prs: ["@snowpack/plugin-run-script"],
   pbs: ["@snowpack/plugin-build-script"],
-  pgo: ["@snowpack/plugin-optimize"],
 }));
 
 function installPackages(options) {
@@ -252,8 +245,7 @@ function installPackages(options) {
   }
 
   if (["react", "svelte"].includes(options.jsFramework)
-      && options.typescript
-      && (options.plugins || []).includes("wtr")) {
+      && options.typescript && (options.plugins || []).includes("wtr")) {
     devPackages.push("@types/mocha");
   }
 
@@ -313,21 +305,37 @@ function s(numSpaces) {
 }
 
 // ['plugin', {}]
-function blankPluginConfig(plugin) {
-  return `[
-${s(6)}'${plugin}',
+// function blankPluginConfig(plugin) {
+//   return `[
+// ${s(6)}'${plugin}',
+// ${s(6)}{
+// ${s(8)}
+// ${s(6)}}
+// ${s(4)}]`;
+// }
+
+const prsConfig = `[
+${s(6)}'@snowpack/plugin-run-script',
 ${s(6)}{
-${s(8)}
+${s(8)}cmd: 'echo \"production build command.\"',
+${s(8)}watch: 'echo \"dev server command.\"', // (optional)
 ${s(6)}}
 ${s(4)}]`;
-}
+
+const pbsConfig = `[
+${s(6)}'@snowpack/plugin-build-script',
+${s(6)}{
+${s(8)}input: [], // files to watch
+${s(8)}output: [], // files to export
+${s(8)}cmd: 'echo \"build command.\"', // cmd to run
+${s(6)}}
+${s(4)}]`;
 
 const CONFIG_PLUGIN_NAMES = new Map(Object.entries({
   webpack: "'@snowpack/plugin-webpack'",
   postcss: "'@snowpack/plugin-postcss'",
-  prs: "'@snowpack/plugin-run-script'",
-  pbs: blankPluginConfig("@snowpack/plugin-build-script"),
-  pgo: blankPluginConfig("@snowpack/plugin-optimize"),
+  prs: prsConfig,
+  pbs: pbsConfig,
 }));
 
 const DEFAULT_BUILTIN_BUNDLER_SETTINGS = [
@@ -409,15 +417,18 @@ function generateSnowpackConfig(options) {
 }
 
 function initializeEslint(options) {
-  if ((options.codeFormatters || []).includes("eslint")
-      && !options.skipEslintInit) {
-    try {
-      console.log(styles.cyanBright("\n- Initializing ESLint.\n"));
-      const cmd = options.useYarn ? "yarn dlx" : "npx";
-      execa.sync(`${cmd} eslint --init`, { stdio: "inherit" });
-    } catch (error) {
-      console.error(error);
-      console.error(`\n  - ${styles.warningMsg("Something went wrong.\n")}`);
+  if ((options.codeFormatters || []).includes("eslint")) {
+    if (!options.skipEslintInit) {
+      try {
+        console.log(styles.cyanBright("\n- Initializing ESLint.\n"));
+        const cmd = options.useYarn ? "yarn dlx" : "npx";
+        execa.sync(`${cmd} eslint --init`, { stdio: "inherit" });
+      } catch (error) {
+        console.error(error);
+        console.error(`\n  - ${styles.warningMsg("Something went wrong.\n")}`);
+      }
+    } else {
+      console.log(styles.warningMsg("\n- Skipping ESLint init.\n"));
     }
   }
 }
@@ -434,6 +445,8 @@ function initializeGit(options) {
       console.error(error);
       console.error(`\n  - ${styles.warningMsg("Something went wrong.\n")}`);
     }
+  } else {
+    console.log(styles.warningMsg("\n- Skipping git init.\n"));
   }
 }
 

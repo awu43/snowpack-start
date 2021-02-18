@@ -101,7 +101,6 @@ const PROMPTS = new Map(Object.entries({
       { title: "PostCSS", value: "postcss" },
       { title: "Plugin Run Script", value: "prs" },
       { title: "Plugin Build Script", value: "pbs" },
-      { title: "Plugin Optimize", value: "pgo" },
     ],
   },
   license: {
@@ -190,7 +189,7 @@ class OptionNameError extends Error {
 
 class OptionTypeError extends Error {
   constructor(optName, optValue) {
-    super(styles.errorMsg(`Expected value of type ${styles.cyanBright(OPTION_TYPES.get(optName))} for ${styles.cyanBright(optName)}, received ${styles.cyanBright(typeof optValue)}`));
+    super(styles.errorMsg(`Expected value of type ${styles.cyanBright(OPTION_TYPES.get(optName))} for ${styles.cyanBright(optName)}, received type ${styles.cyanBright(typeof optValue)} (${styles.cyanBright(optValue)})`));
     this.name = "OptionTypeError";
   }
 }
@@ -301,7 +300,7 @@ function choicesLine(optName) {
 }
 
 function choicesList(optName) {
-  const optMessage = PROMPTS.get(optName).message;
+  const optMessage = `${PROMPTS.get(optName).message} (<${styles.cyanBright("none")}> for none)`;
   const values = PROMPTS.get(optName).choices
     .map(c => `<${styles.cyanBright(c.value)}> (${c.title})`).join("\n");
   return [optMessage, "-".repeat(10), values, "-".repeat(10)].join("\n");
@@ -333,7 +332,7 @@ async function getOptions() {
     )
     .option("-b, --bundler <bundler>", `Bundler <${choicesLine("bundler")}>`)
     .option("-p, --plugins <plugins...>", choicesList("plugins"))
-    .option("-l, -license <license>", `License <${choicesLine("license")}>`)
+    .option("-l, --license <license>", `License <${choicesLine("license")}>`)
     .option("-a, --author <author>", "Author")
     .option("--use-yarn", "Use Yarn")
     .option("--use-pnpm", "Use Pnpm")
@@ -348,7 +347,11 @@ async function getOptions() {
     cliOptions = { projectDir, ...cliOptions };
   }
 
-  // console.log(cliOptions);
+  for (const optKey of ["codeFormatters", "plugins"]) {
+    if (cliOptions[optKey] && cliOptions[optKey].includes("none")) {
+      cliOptions[optKey] = [];
+    }
+  }
 
   const options = {};
   if (cliOptions.defaults) {
@@ -398,11 +401,20 @@ async function getOptions() {
 
   const remainingPrompts = (
     [...PROMPTS.keys()]
-      .filter(k => k.type !== null)
+      .filter(k => PROMPTS.get(k).type !== null) // Doesn't catch author
       .filter(k => !options.hasOwnProperty(k))
       .map(k => PROMPTS.get(k))
   );
-  if (remainingPrompts.length) {
+  const uselessAuthorPrompt = (
+    remainingPrompts.length === 1
+    && remainingPrompts[0] === PROMPTS.get("author")
+    && options.license !== "mit"
+  );
+  // The author prompt only shows if the previous prompt was for a license
+  // and the choice selected was MIT
+  // If a license has already been selected and MIT was not the choice,
+  // author is not required
+  if (remainingPrompts.length && !uselessAuthorPrompt) {
     applyDefaultsToPrompts();
     if (Object.keys(options).length) {
       console.log(styles.cyanBright("\n-- Remaining options --"));
@@ -421,6 +433,9 @@ async function getOptions() {
     );
   }
 
+  if (options.jsFramework === "none") {
+    options.jsFramework = "blank";
+  }
   for (const optKey of ["cssFramework", "bundler", "license"]) {
     if (options[optKey] === "none") {
       options[optKey] = null;

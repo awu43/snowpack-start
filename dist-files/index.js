@@ -2,13 +2,13 @@ const path = require("path");
 
 const BASE_FILES = new Map(Object.entries({
   gitignore: ".gitignore",
-  "robots.txt": "robots.txt",
 
   gpl: "license/GPL",
   mit: "license/MIT",
   apache: "license/Apache",
 
   svelteTsConfig: "config/svelte.config.js",
+  prettierConfig: "config/.prettierrc",
   postcssConfig: "config/postcss.config.js",
   wtrConfig: "config/web-test-runner.config.js",
   snowpackConfig: "config/snowpack.config.js",

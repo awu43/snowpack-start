@@ -1,8 +1,7 @@
-/* eslint-disable no-underscore-dangle */
-/* eslint-disable import/no-extraneous-dependencies */
 const path = require("path");
 
 const fse = require("fs-extra");
+const JSON5 = require("json5");
 const tmp = require("tmp");
 
 const { expect } = require("chai");
@@ -26,7 +25,19 @@ function walkDirContents(targetDir) {
     const fullPath = path.join(targetDir, item);
     const stat = fse.lstatSync(fullPath);
     if (stat.isFile()) {
-      contents.push(fse.readFileSync(fullPath));
+      let fileContents;
+      switch (path.extname(fullPath)) {
+        case ".ico":
+          fileContents = fse.readFileSync(fullPath);
+          break;
+        case ".json":
+          fileContents = JSON5.parse(fse.readFileSync(fullPath));
+          break;
+        default:
+          fileContents = fse.readFileSync(fullPath, "utf8");
+          break;
+      }
+      contents.push(fileContents);
     } else if (stat.isDirectory()) {
       contents.push(walkDirContents(fullPath));
     }

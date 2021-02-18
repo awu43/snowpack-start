@@ -2,7 +2,6 @@
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-console */
 /* eslint-disable no-unused-expressions */
-/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-undef */
 const path = require("path");
 
@@ -51,7 +50,7 @@ const {
 const BASE_FILES = require("../dist-files");
 const BASE_TEMPLATES = require("../dist-templates");
 
-const BLANK_CONFIG = { jsFramework: "none" };
+const BLANK_CONFIG = { jsFramework: "blank" };
 
 describe("validateOptions", () => {
   before(() => {
@@ -76,7 +75,7 @@ describe("validateOptions", () => {
     expect(() => validateOptions({ author: ["should not be an array"] }))
       .to.throw(OptionTypeError);
     expect(() => validateOptions({ author: ["should not be an array"] }))
-      .to.throw(styles.errorMsg(`Expected value of type ${styles.cyanBright("string")} for ${styles.cyanBright("author")}, received ${styles.cyanBright("object")}`));
+      .to.throw(styles.errorMsg(`Expected value of type ${styles.cyanBright("string")} for ${styles.cyanBright("author")}, received type ${styles.cyanBright("object")} (${styles.cyanBright(["should not be an array"])})`));
   });
   it("Throws OptionValueError if option value choice is invalid", () => {
     expect(() => validateOptions({ bundler: "unsupportedbundler" }))
@@ -167,7 +166,7 @@ describe("createBase", () => {
     newTempBase(BLANK_CONFIG);
     expect(file(".gitignore")).to.equal(file(BASE_FILES.get("gitignore")));
   });
-  it("Copies README.md", () => {
+  it("Generates README.md", () => {
     newTempBase(BLANK_CONFIG);
     expect(file("README.md")).to.exist;
   });
@@ -179,27 +178,28 @@ describe("createBase", () => {
     testDirectoryContentsEqual(
       "src", path.join(BASE_TEMPLATES.get("vue-typescript"), "src")
     );
+    // vue-ts template tests multiple levels
   });
   it("Copies types folder and tsconfig.json", () => {
     newTempBase({ ...BLANK_CONFIG, typescript: true });
     testDirectoryContentsEqual(
-      "types", path.join(BASE_TEMPLATES.get("none-typescript"), "types")
+      "types", path.join(BASE_TEMPLATES.get("blank-typescript"), "types")
     );
     expect(file("tsconfig.json")).to.equal(
-      file(path.join(BASE_TEMPLATES.get("none-typescript"), "tsconfig.json"))
+      file(path.join(BASE_TEMPLATES.get("blank-typescript"), "tsconfig.json"))
     );
   });
-  it("Generates .prettierrc", () => {
+  it("Copies .prettierrc", () => {
     newTempBase({ ...BLANK_CONFIG, codeFormatters: ["prettier"] });
-    expect(JSON.parse(fse.readFileSync(".prettierrc"))).to.eql({});
+    expect(file(".prettierrc")).to.equal(file(BASE_FILES.get("prettierConfig")));
   });
-  it("Moves public/index.css to src/index.scss for none template", () => {
+  it("Moves public/index.css to src/index.scss for blank template", () => {
     newTempBase({ ...BLANK_CONFIG, sass: true });
     expect(file("public/index.html")).to.contain("dist/index.css");
     expect(file("public/index.css")).to.not.exist;
     expect(file("src/index.scss")).to.exist;
   });
-  it("Moves public/index.css to src/index.scss for none-typescript template", () => {
+  it("Moves public/index.css to src/index.scss for blank-typescript template", () => {
     newTempBase({ ...BLANK_CONFIG, typescript: true, sass: true });
     expect(file("public/index.html")).to.contain("dist/index.css");
     expect(file("public/index.css")).to.not.exist;
@@ -253,12 +253,12 @@ describe("createBase", () => {
     expect(file("src/index.scss")).to.exist;
   });
   it("Copies postcss.config.js", () => {
-    newTempBase({ jsFramework: "none", plugins: ["postcss"] });
+    newTempBase({ jsFramework: "blank", plugins: ["postcss"] });
     expect(file("postcss.config.js"))
       .to.equal(file(BASE_FILES.get("postcssConfig")));
   });
   it("Copies web-test-runner.config.js", () => {
-    newTempBase({ jsFramework: "none", plugins: ["wtr"] });
+    newTempBase({ jsFramework: "blank", plugins: ["wtr"] });
     expect(file("web-test-runner.config.js"))
       .to.equal(file(BASE_FILES.get("wtrConfig")));
   });
@@ -539,8 +539,21 @@ describe("generateSnowpackConfig", () => {
       { ...BLANK_CONFIG, plugins: ["prs", "pbs"] }
     );
     expect(snowpackConfig.plugins).to.eql([
-      "@snowpack/plugin-run-script",
-      ["@snowpack/plugin-build-script", {}]
+      [
+        "@snowpack/plugin-run-script",
+        {
+          cmd: 'echo \"production build command.\"',
+          watch: 'echo \"dev server command.\"',
+        }
+      ],
+      [
+        "@snowpack/plugin-build-script",
+        {
+          input: [],
+          output: [],
+          cmd: 'echo \"build command.\"',
+        }
+      ]
     ]);
   });
 });
@@ -553,6 +566,8 @@ describe("initializeEslint", () => {
   });
   beforeEach(() => {
     execa.sync.reset();
+    console.log.reset();
+    console.error.reset();
   });
   after(() => {
     console.error.restore();
@@ -561,8 +576,11 @@ describe("initializeEslint", () => {
   });
 
   it("Skips initialization", () => {
-    initializeEslint({ skipEslintInit: true });
+    initializeEslint({ codeFormatters: ["eslint"], skipEslintInit: true });
     expect(execa.sync).to.not.have.been.called;
+    expect(console.log).to.have.been.calledOnceWithExactly(
+      styles.warningMsg("\n- Skipping ESLint init.\n")
+    );
   });
   it("Initializes ESLint with npx", () => {
     initializeEslint({ codeFormatters: ["eslint"] });
@@ -594,6 +612,8 @@ describe("initializeGit", () => {
   });
   beforeEach(() => {
     execa.sync.reset();
+    console.log.reset();
+    console.error.reset();
   });
   after(() => {
     console.error.restore();
@@ -604,6 +624,9 @@ describe("initializeGit", () => {
   it("Skips initialization", () => {
     initializeGit({ skipGitInit: true });
     expect(execa.sync).to.not.have.been.called;
+    expect(console.log).to.have.been.calledOnceWithExactly(
+      styles.warningMsg("\n- Skipping git init.\n")
+    );
   });
   it("Initializes a git repository", () => {
     initializeGit({});

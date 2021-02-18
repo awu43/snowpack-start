@@ -27,8 +27,10 @@
     "snowpack-start": "./src/index.js"
   },
   "scripts": {
-    "test": "mocha",
-    "coverage": "nyc --reporter=html --reporter=text mocha"
+    "generate": "node test/generate.js",
+    "gen-test": "mocha \"test/src-templates-test.js\" && mocha \"test/package-versions-test.js\"",
+    "test": "mocha \"test/*.test.js\"",
+    "coverage": "nyc --reporter=html --reporter=text mocha \"test/*.test.js\""
   },
   "devDependencies": {
     "chai": "^4.3.0",
@@ -36,6 +38,7 @@
     "eslint": "^7.19.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
+    "json5": "^2.2.0",
     "mocha": "^8.2.1",
     "nyc": "^15.1.0",
     "sinon": "^9.2.4",

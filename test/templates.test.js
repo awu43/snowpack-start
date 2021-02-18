@@ -2,7 +2,6 @@
 /* eslint-disable import/no-dynamic-require */
 /* eslint-disable no-console */
 /* eslint-disable no-unused-expressions */
-/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-undef */
 const path = require("path");
 
@@ -18,139 +17,16 @@ chai.use(chaiFiles);
 const { expect } = chai;
 const { file } = chaiFiles;
 
-const SOURCE_TEMPLATES = require("../src-templates");
+const { SOURCE_PATHS, SOURCE_CONFIGS } = require("../src-templates");
 
 const { installPackages } = require("../src/index.js")._testing;
 
 const {
   newTempBase,
-  testDirectoryContentsEqual,
+  // testDirectoryContentsEqual,
   newTempPackageJson,
   newTempSnowpackConfig,
 } = require("./test-utils.js");
-
-const TEMPLATE_CONFIGS = new Map(Object.entries({
-  none: {
-    jsFramework: "none",
-    typescript: false,
-    codeFormatters: ["prettier"],
-    sass: false,
-    cssFramework: null,
-    bundler: null,
-    plugins: [],
-    license: "mit",
-  },
-  "none-typescript": {
-    jsFramework: "none",
-    typescript: true,
-    codeFormatters: ["prettier"],
-    sass: false,
-    cssFramework: null,
-    bundler: null,
-    plugins: [],
-    license: "mit",
-  },
-  react: {
-    jsFramework: "react",
-    typescript: false,
-    codeFormatters: ["prettier"],
-    sass: false,
-    cssFramework: null,
-    bundler: null,
-    plugins: ["wtr"],
-    license: "mit",
-  },
-  "react-typescript": {
-    jsFramework: "react",
-    typescript: true,
-    codeFormatters: ["prettier"],
-    sass: false,
-    cssFramework: null,
-    bundler: null,
-    plugins: ["wtr"],
-    license: "mit",
-  },
-  vue: {
-    jsFramework: "vue",
-    typescript: false,
-    codeFormatters: [],
-    sass: false,
-    cssFramework: null,
-    bundler: null,
-    plugins: [],
-    license: "mit",
-  },
-  "vue-typescript": {
-    jsFramework: "vue",
-    typescript: true,
-    codeFormatters: [],
-    sass: false,
-    cssFramework: null,
-    bundler: null,
-    plugins: [],
-    license: "mit",
-  },
-  svelte: {
-    jsFramework: "svelte",
-    typescript: false,
-    codeFormatters: [],
-    sass: false,
-    cssFramework: null,
-    bundler: null,
-    plugins: ["wtr"],
-    license: "mit",
-  },
-  "svelte-typescript": {
-    jsFramework: "svelte",
-    typescript: true,
-    codeFormatters: [],
-    sass: false,
-    cssFramework: null,
-    bundler: null,
-    plugins: ["wtr"],
-    license: "mit",
-  },
-  preact: {
-    jsFramework: "preact",
-    typescript: false,
-    codeFormatters: ["prettier"],
-    sass: false,
-    cssFramework: null,
-    bundler: null,
-    plugins: ["wtr"],
-    license: "mit",
-  },
-  "preact-typescript": {
-    jsFramework: "preact",
-    typescript: true,
-    codeFormatters: ["prettier"],
-    sass: false,
-    cssFramework: null,
-    bundler: null,
-    plugins: ["wtr"],
-    license: "mit",
-  },
-  "lit-element": {
-    jsFramework: "lit-element",
-    typescript: false,
-    codeFormatters: ["prettier"],
-    sass: false,
-    cssFramework: null,
-    bundler: null,
-    plugins: [],
-    license: "mit",
-  },
-  "lit-element-typescript": {
-    jsFramework: "lit-element",
-    typescript: true,
-    codeFormatters: ["prettier"],
-    sass: false,
-    cssFramework: null,
-    bundler: null,
-    plugins: [],
-    license: "mit",
-  },
-}));
 
 describe("createBase", () => {
   before(() => {
@@ -162,49 +38,49 @@ describe("createBase", () => {
     console.error.restore();
   });
 
-  it("Copies the .types folder for react template", () => {
-    newTempBase(TEMPLATE_CONFIGS.get("react"));
-    testDirectoryContentsEqual(
-      ".types", path.join(SOURCE_TEMPLATES.get("react"), ".types")
-    );
-  });
+  // it("Copies the .types folder for react template", () => {
+  //   newTempBase(SOURCE_CONFIGS.get("react"));
+  //   testDirectoryContentsEqual(
+  //     ".types", path.join(SOURCE_PATHS.get("react"), ".types")
+  //   );
+  // });
   it("Copies svelte.config.js for svelte-typescript template", () => {
-    newTempBase(TEMPLATE_CONFIGS.get("svelte-typescript"));
+    newTempBase(SOURCE_CONFIGS.get("svelte-typescript"));
     const baseSvelteConfig = path.join(
-      SOURCE_TEMPLATES.get("svelte-typescript"), "svelte.config.js"
+      SOURCE_PATHS.get("svelte-typescript"), "svelte.config.js"
     );
     expect(file("svelte.config.js")).to.equal(file(baseSvelteConfig));
   });
   it("Copies babel.config.json for lit-element template", () => {
-    newTempBase(TEMPLATE_CONFIGS.get("lit-element"));
+    newTempBase(SOURCE_CONFIGS.get("lit-element"));
     const baseBabelConfig = path.join(
-      SOURCE_TEMPLATES.get("lit-element"), "babel.config.json"
+      SOURCE_PATHS.get("lit-element"), "babel.config.json"
     );
     expect(file("babel.config.json")).to.equal(file(baseBabelConfig));
   });
   it("Copies babel.config.json for lit-element-typescript template", () => {
-    newTempBase(TEMPLATE_CONFIGS.get("lit-element-typescript"));
+    newTempBase(SOURCE_CONFIGS.get("lit-element-typescript"));
     const baseBabelConfig = path.join(
-      SOURCE_TEMPLATES.get("lit-element-typescript"), "babel.config.json"
+      SOURCE_PATHS.get("lit-element-typescript"), "babel.config.json"
     );
     expect(file("babel.config.json")).to.equal(file(baseBabelConfig));
   });
 });
 
 function testPackageJsonScriptsEqual(template) {
-  const tempPackageJson = newTempPackageJson(TEMPLATE_CONFIGS.get(template));
+  const tempPackageJson = newTempPackageJson(SOURCE_CONFIGS.get(template));
   const basePackageJson = require(
-    path.join(SOURCE_TEMPLATES.get(template), "package.json")
+    path.join(SOURCE_PATHS.get(template), "package.json")
   );
   expect(tempPackageJson.scripts).to.eql(basePackageJson.scripts);
 }
 
 describe("generatePackageJson", () => {
-  it("Generates scripts property for none template", () => {
-    testPackageJsonScriptsEqual("none");
+  it("Generates scripts property for blank template", () => {
+    testPackageJsonScriptsEqual("blank");
   });
-  it("Generates scripts property for none-typescript template", () => {
-    testPackageJsonScriptsEqual("none-typescript");
+  it("Generates scripts property for blank-typescript template", () => {
+    testPackageJsonScriptsEqual("blank-typescript");
   });
   it("Generates scripts property for react template", () => {
     testPackageJsonScriptsEqual("react");
@@ -240,12 +116,17 @@ describe("generatePackageJson", () => {
 });
 
 function testPackagesInstalled(template) {
-  installPackages(TEMPLATE_CONFIGS.get(template));
+  installPackages(SOURCE_CONFIGS.get(template));
   expect(execa.sync).to.have.been.calledTwice;
-  const installedProdPackages = execa.sync.args[0][1];
-  const installedDevPackages = execa.sync.args[1][1];
+  const installedProdPackages = (
+    execa.sync.args[0][1].map(p => p.replace(/@.?\d+\.\d+\.\d+/, ""))
+    // Strip versions
+  );
+  const installedDevPackages = (
+    execa.sync.args[1][1].map(p => p.replace(/@.?\d+\.\d+\.\d+/, ""))
+  );
   const basePackageJson = require(
-    path.join(SOURCE_TEMPLATES.get(template), "package.json")
+    path.join(SOURCE_PATHS.get(template), "package.json")
   );
   const baseProdPackages = Object.keys(basePackageJson.dependencies);
   const baseDevPackages = Object.keys(basePackageJson.devDependencies);
@@ -270,24 +151,28 @@ describe("installPackages", () => {
     execa.sync.restore();
   });
 
-  it("Installs packages for none template", () => {
-    installPackages(TEMPLATE_CONFIGS.get("none"));
+  it("Installs packages for blank template", () => {
+    installPackages(SOURCE_CONFIGS.get("blank"));
     expect(execa.sync).to.have.been.calledOnce;
-    const installedDevPackages = execa.sync.args[0][1];
+    const installedDevPackages = (
+      execa.sync.args[0][1].map(p => p.replace(/@.?\d+\.\d+\.\d+/, ""))
+    );
     const basePackageJson = require(
-      path.join(SOURCE_TEMPLATES.get("none"), "package.json")
+      path.join(SOURCE_PATHS.get("blank"), "package.json")
     );
     const baseDevPackages = Object.keys(basePackageJson.devDependencies);
     installedDevPackages.sort();
     baseDevPackages.sort();
     expect(installedDevPackages).to.eql(baseDevPackages);
   });
-  it("Installs packages for none-typescript template", () => {
-    installPackages(TEMPLATE_CONFIGS.get("none-typescript"));
+  it("Installs packages for blank-typescript template", () => {
+    installPackages(SOURCE_CONFIGS.get("blank-typescript"));
     expect(execa.sync).to.have.been.calledOnce;
-    const installedDevPackages = execa.sync.args[0][1];
+    const installedDevPackages = (
+      execa.sync.args[0][1].map(p => p.replace(/@.?\d+\.\d+\.\d+/, ""))
+    );
     const basePackageJson = require(
-      path.join(SOURCE_TEMPLATES.get("none-typescript"), "package.json")
+      path.join(SOURCE_PATHS.get("blank-typescript"), "package.json")
     );
     delete basePackageJson.devDependencies["@types/canvas-confetti"];
     const baseDevPackages = Object.keys(basePackageJson.devDependencies);
@@ -329,20 +214,20 @@ describe("installPackages", () => {
 
 function testSnowpackConfigsEqual(template) {
   const tempSnowpackConfig = newTempSnowpackConfig(
-    TEMPLATE_CONFIGS.get(template)
+    SOURCE_CONFIGS.get(template)
   );
   const baseSnowpackConfig = require(
-    path.join(SOURCE_TEMPLATES.get(template), "snowpack.config.js")
+    path.join(SOURCE_PATHS.get(template), "snowpack.config.js")
   );
   expect(tempSnowpackConfig).to.eql(baseSnowpackConfig);
 }
 
 describe("generateSnowpackConfig", () => {
-  it("Generates snowpack.config.js for none template", () => {
-    testSnowpackConfigsEqual("none");
+  it("Generates snowpack.config.js for blank template", () => {
+    testSnowpackConfigsEqual("blank");
   });
-  it("Generates snowpack.config.js for none-typescript template", () => {
-    testSnowpackConfigsEqual("none-typescript");
+  it("Generates snowpack.config.js for blank-typescript template", () => {
+    testSnowpackConfigsEqual("blank-typescript");
   });
   it("Generates snowpack.config.js for react template", () => {
     testSnowpackConfigsEqual("react");
