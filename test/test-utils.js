@@ -1,3 +1,5 @@
+/* eslint-disable global-require, import/no-dynamic-require */
+
 const path = require("path");
 
 const fse = require("fs-extra");
@@ -57,7 +59,7 @@ function newTempConfigGenerator(generateFunc, fileName) {
     process.chdir(tempDir.name);
     generateFunc(options);
     const configPath = path.join(tempDir.name, fileName);
-    // eslint-disable-next-line global-require, import/no-dynamic-require
+    //
     return require(configPath);
   };
 }

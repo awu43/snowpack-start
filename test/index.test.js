@@ -534,9 +534,9 @@ describe("generateSnowpackConfig", () => {
       target: "es2017",
     });
   });
-  it("Adds other plugins (prs + pbs)", () => {
+  it("Adds other plugins (srs + sbs)", () => {
     const snowpackConfig = newTempSnowpackConfig(
-      { ...BLANK_CONFIG, plugins: ["prs", "pbs"] }
+      { ...BLANK_CONFIG, plugins: ["srs", "sbs"] }
     );
     expect(snowpackConfig.plugins).to.eql([
       [
@@ -582,16 +582,10 @@ describe("initializeEslint", () => {
       styles.warningMsg("\n- Skipping ESLint init.\n")
     );
   });
-  it("Initializes ESLint with npx", () => {
+  it("Initializes ESLint", () => {
     initializeEslint({ codeFormatters: ["eslint"] });
     expect(execa.sync).to.have.been.calledOnceWithExactly(
       "npx eslint --init", { stdio: "inherit" }
-    );
-  });
-  it("Initializes ESLint with yarn dlx", () => {
-    initializeEslint({ codeFormatters: ["eslint"], useYarn: true });
-    expect(execa.sync).to.have.been.calledOnceWithExactly(
-      "yarn dlx eslint --init", { stdio: "inherit" }
     );
   });
   it("Displays an error message", () => {

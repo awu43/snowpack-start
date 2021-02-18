@@ -4,7 +4,7 @@
 const os = require("os");
 const path = require("path");
 const commander = require("commander"); // Command line util
-const execa = require("execa");
+const execa = require("execa"); // Better child_process
 const fse = require("fs-extra"); // Extra file manipulation utils
 const prompts = require("prompts"); // User prompts
 
@@ -99,8 +99,8 @@ const PROMPTS = new Map(Object.entries({
     choices: [
       { title: "Web Test Runner", value: "wtr" },
       { title: "PostCSS", value: "postcss" },
-      { title: "Plugin Run Script", value: "prs" },
-      { title: "Plugin Build Script", value: "pbs" },
+      { title: "Snowpack Run Script", value: "srs" },
+      { title: "Snowpack Build Script", value: "sbs" },
     ],
   },
   license: {
@@ -317,7 +317,7 @@ async function getOptions() {
     .option("-d, --defaults", "Use default options")
     .option(
       "-jsf, --js-framework <framework>",
-      `JavaScript Framework <${choicesLine("jsFramework")}>`,
+      `JavaScript framework <${choicesLine("jsFramework")}>`,
     )
     .option(
       "-cdf, --code-formatters <formatters...>", choicesList("codeFormatters")
@@ -328,14 +328,14 @@ async function getOptions() {
     .option("-ns, --no-sass", "Don't use Sass")
     .option(
       "-cssf, --css-framework <framework>",
-      `CSS Framework\n<${choicesLine("cssFramework")}>`,
+      `CSS framework\n<${choicesLine("cssFramework")}>`,
     )
     .option("-b, --bundler <bundler>", `Bundler <${choicesLine("bundler")}>`)
     .option("-p, --plugins <plugins...>", choicesList("plugins"))
     .option("-l, --license <license>", `License <${choicesLine("license")}>`)
     .option("-a, --author <author>", "Author")
     .option("--use-yarn", "Use Yarn")
-    .option("--use-pnpm", "Use Pnpm")
+    .option("--use-pnpm", "Use pnpm")
     .option("--skip-eslint-init", "Skip ESLint init")
     .option("--skip-git-init", "Skip git init")
     .on("-h", displayDefaults)

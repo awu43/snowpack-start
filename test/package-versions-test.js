@@ -1,32 +1,10 @@
 /* eslint-disable no-undef */
-const path = require("path");
 const { expect } = require("chai");
+
+const { getPackageMajorVersions } = require("../src/index.js")._testing;
 
 const { SOURCE_PATHS } = require("../src-templates");
 const SNOWPACK_STARTERS = require("../snowpack-starters");
-
-function getPackageMajorVersions(targetDir) {
-  // eslint-disable-next-line import/no-dynamic-require, global-require
-  const packageJson = require(path.join(targetDir, "package.json"));
-  const packageVersions = { dependencies: {}, devDependencies: {} };
-  for (const [name, version] of Object.entries(packageJson.dependencies || {})) {
-    const majorVersion = version.match(/(\d+)\.\d+\.\d+/)[1];
-    packageVersions.dependencies[name] = majorVersion;
-  }
-  for (const [name, version] of Object.entries(packageJson.devDependencies || {})) {
-    const majorVersion = version.match(/(\d+)\.\d+\.\d+/)[1];
-    packageVersions.devDependencies[name] = majorVersion;
-  }
-
-  if (!Object.keys(packageVersions.dependencies).length) {
-    delete packageVersions.dependencies;
-  }
-  if (!Object.keys(packageVersions.devDependencies).length) {
-    delete packageVersions.devDependencies;
-  }
-
-  return packageVersions;
-}
 
 function testPackageVersionMatch(template) {
   const starterVersions = getPackageMajorVersions(

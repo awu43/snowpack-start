@@ -11,9 +11,9 @@ module.exports = {
   bundler: "webpack",
   plugins: [
     "wtr",
-    "postcss",
-    // "prs",
-    // "pbs",
+    // "postcss",
+    // "srs",
+    // "sbs",
   ],
   license: "mit",
   // author: "",

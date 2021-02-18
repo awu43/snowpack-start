@@ -4,8 +4,8 @@
 
 const path = require("path");
 
-const execa = require("execa"); // Better child_process
-const fse = require("fs-extra"); // Extra file manipulation utils
+const execa = require("execa");
+const fse = require("fs-extra");
 
 const styles = require("./styles.js");
 const { getOptions } = require("./get-options.js");
@@ -226,8 +226,8 @@ const PLUGIN_PACKAGES = new Map(Object.entries({
     "chai",
     "@snowpack/web-test-runner-plugin",
   ],
-  prs: ["@snowpack/plugin-run-script"],
-  pbs: ["@snowpack/plugin-build-script"],
+  srs: ["@snowpack/plugin-run-script"],
+  sbs: ["@snowpack/plugin-build-script"],
 }));
 
 function installPackages(options) {
@@ -314,7 +314,7 @@ function s(numSpaces) {
 // ${s(4)}]`;
 // }
 
-const prsConfig = `[
+const srsConfig = `[
 ${s(6)}'@snowpack/plugin-run-script',
 ${s(6)}{
 ${s(8)}cmd: 'echo \"production build command.\"',
@@ -322,7 +322,7 @@ ${s(8)}watch: 'echo \"dev server command.\"', // (optional)
 ${s(6)}}
 ${s(4)}]`;
 
-const pbsConfig = `[
+const sbsConfig = `[
 ${s(6)}'@snowpack/plugin-build-script',
 ${s(6)}{
 ${s(8)}input: [], // files to watch
@@ -334,8 +334,8 @@ ${s(4)}]`;
 const CONFIG_PLUGIN_NAMES = new Map(Object.entries({
   webpack: "'@snowpack/plugin-webpack'",
   postcss: "'@snowpack/plugin-postcss'",
-  prs: prsConfig,
-  pbs: pbsConfig,
+  srs: srsConfig,
+  sbs: sbsConfig,
 }));
 
 const DEFAULT_BUILTIN_BUNDLER_SETTINGS = [
@@ -421,8 +421,7 @@ function initializeEslint(options) {
     if (!options.skipEslintInit) {
       try {
         console.log(styles.cyanBright("\n- Initializing ESLint.\n"));
-        const cmd = options.useYarn ? "yarn dlx" : "npx";
-        execa.sync(`${cmd} eslint --init`, { stdio: "inherit" });
+        execa.sync("npx eslint --init", { stdio: "inherit" });
       } catch (error) {
         console.error(error);
         console.error(`\n  - ${styles.warningMsg("Something went wrong.\n")}`);
@@ -450,38 +449,12 @@ function initializeGit(options) {
   }
 }
 
-function nodeVersionCheck() {
-  const currentMajorVersion = parseInt(process.versions.node.split(".")[0], 10);
-  const minimumMajorVersion = 10;
-  if (currentMajorVersion < minimumMajorVersion) {
-    console.error(
-      styles.fatalError(`Node v${currentMajorVersion} is unsupported.`)
-    );
-    console.error(
-      styles.errorMsg(`Please use Node v${minimumMajorVersion} or higher.`)
-    );
-    process.exit(1);
-  }
-}
-
 // From create-snowpack-app
 function formatCommand(command, description) {
   return `${s(2)}${command.padEnd(17)}${description}`;
 }
 
-async function main() {
-  nodeVersionCheck();
-
-  const startDir = process.cwd();
-  const options = await getOptions();
-  await createBase(options);
-  generatePackageJson(options);
-  installPackages(options);
-  generateSnowpackConfig(options);
-
-  initializeEslint(options);
-  initializeGit(options);
-
+function displayQuickstart(options, startDir) {
   let installer;
   if (options.useYarn) {
     installer = "yarn";
@@ -514,6 +487,93 @@ async function main() {
   console.log("");
 }
 
+function getPackageMajorVersions(targetDir, deleteEmpty = true) {
+  // eslint-disable-next-line import/no-dynamic-require, global-require
+  const packageJson = require(path.join(targetDir, "package.json"));
+  const packageVersions = { dependencies: {}, devDependencies: {} };
+  for (const [name, version] of Object.entries(packageJson.dependencies || {})) {
+    const majorVersion = version.match(/(\d+)\.\d+\.\d+/)[1];
+    packageVersions.dependencies[name] = majorVersion;
+  }
+  for (const [name, version] of Object.entries(packageJson.devDependencies || {})) {
+    const majorVersion = version.match(/(\d+)\.\d+\.\d+/)[1];
+    packageVersions.devDependencies[name] = majorVersion;
+  }
+
+  if (deleteEmpty) {
+    if (!Object.keys(packageVersions.dependencies).length) {
+      delete packageVersions.dependencies;
+    }
+    if (!Object.keys(packageVersions.devDependencies).length) {
+      delete packageVersions.devDependencies;
+    }
+  }
+
+  return packageVersions;
+}
+
+function checkPackageMajorVersions(template) {
+  let versionMismatch = false;
+  const baseVersions = getPackageMajorVersions(
+    BASE_TEMPLATES.get(template), false
+  );
+  const starterVersions = getPackageMajorVersions(process.cwd(), false);
+  for (const [name, startVer] of Object.entries(starterVersions.dependencies)) {
+    if (name in baseVersions.dependencies) {
+      const baseVer = baseVersions.dependencies[name];
+      if (startVer !== baseVer) {
+        console.log(styles.warningMsg(`WARNING: Expected package ${name} to have major version ${baseVer}, found ${startVer}.`));
+        versionMismatch = true;
+      }
+    }
+  }
+  for (const [name, startVer] of Object.entries(starterVersions.devDependencies)) {
+    if (name in baseVersions.devDependencies) {
+      const baseVer = baseVersions.devDependencies[name];
+      if (startVer !== baseVer) {
+        console.log(styles.warningMsg(`WARNING: Expected package ${name} to have major version ${baseVer}, found ${startVer}.`));
+        versionMismatch = true;
+      }
+    }
+  }
+  if (versionMismatch) {
+    console.log(styles.warningMsg(`\nPlease install the correct version(s) from\nhttps://github.com/snowpackjs/snowpack/blob/main/create-snowpack-app/app-template-${template}/package.json\n\nand report this issue at\nhttps://github.com/andrew-1135/snowpack-start/issues\n`));
+  }
+}
+
+function nodeVersionCheck() {
+  const currentMajorVersion = parseInt(process.versions.node.split(".")[0], 10);
+  const minimumMajorVersion = 10;
+  if (currentMajorVersion < minimumMajorVersion) {
+    console.error(
+      styles.fatalError(`Node v${currentMajorVersion} is unsupported.`)
+    );
+    console.error(
+      styles.errorMsg(`Please use Node v${minimumMajorVersion} or higher.`)
+    );
+    process.exit(1);
+  }
+}
+
+async function main() {
+  nodeVersionCheck();
+
+  const startDir = process.cwd();
+  const options = await getOptions();
+  await createBase(options);
+  generatePackageJson(options);
+  installPackages(options);
+  generateSnowpackConfig(options);
+
+  initializeEslint(options);
+  initializeGit(options);
+
+  displayQuickstart(options, startDir);
+  checkPackageMajorVersions(
+    `${options.jsFramework}${options.typescript ? "-typescript" : ""}`
+  );
+}
+
 if (require.main === module) {
   main();
 }
@@ -529,5 +589,6 @@ module.exports = {
     initializeEslint,
     initializeGit,
     nodeVersionCheck,
+    getPackageMajorVersions,
   },
 };
