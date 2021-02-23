@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-console */
-
+/* eslint-disable import/no-dynamic-require */
+/* eslint-disable global-require */
 const path = require("path");
 
 const execa = require("execa");
@@ -13,10 +14,41 @@ const JS_FRAMEWORKS = require("./js-frameworks.js");
 const BASE_FILES = require("../dist-files");
 const BASE_TEMPLATES = require("../dist-templates");
 
+// For spacing in template literals
+function s(numSpaces) {
+  return " ".repeat(numSpaces);
+}
+
+function templateName(options) {
+  return `${options.jsFramework}${options.typescript ? "-typescript" : ""}`;
+}
+
 function fileReadAndReplace(file, targetStr, replStr) {
   fse.writeFileSync(
     file, fse.readFileSync(file, "utf8").replace(targetStr, replStr), "utf8"
   );
+}
+
+function generateSvelteConfig(options) {
+  let svelteConfig = fse.readFileSync(
+    BASE_FILES.get("svelteConfig"), "utf8"
+  );
+  if (!options.typescript) {
+    svelteConfig = svelteConfig.replace(/defaults.+?},\s+/s, "");
+  }
+  if (options.cssFramework !== "tailwindcss") {
+    svelteConfig = svelteConfig.replace(/require\('tailwindcss'\),\s+/, "");
+  }
+  if (!(options.plugins || []).includes("postcss")) {
+    svelteConfig = svelteConfig.replace(
+      new RegExp(`${s(4)}postcss.+?${s(4)}},\n`, "s"), ""
+    );
+  } else if (options.cssFramework === "tailwindcss") {
+    svelteConfig = svelteConfig.replace(/\s+require\('cssnano'\),/, "");
+  }
+  if (options.typescript || (options.plugins || []).includes("postcss")) {
+    fse.writeFileSync("svelte.config.js", svelteConfig);
+  }
 }
 
 async function createBase(options) {
@@ -37,17 +69,15 @@ async function createBase(options) {
 
   fse.copyFileSync(BASE_FILES.get("gitignore"), ".gitignore");
 
-  const targetTemplateDir = BASE_TEMPLATES.get(
-    `${options.jsFramework}${options.typescript ? "-typescript" : ""}`,
-  );
+  const targetTemplateDir = BASE_TEMPLATES.get(templateName(options));
   let readme = fse.readFileSync(
     path.join(targetTemplateDir, "README.md"), "utf8"
   );
   readme = readme.replace("New Project", path.basename(options.projectDir));
   if (options.useYarn) {
-    readme = readme.replace(/npm run/g, "npm").replace(/npm/g, "yarn");
+    readme = readme.replace(/\bnpm( run)?\b/g, "yarn");
   } else if (options.usePnpm) {
-    readme = readme.replace(/npm/g, "pnpm");
+    readme = readme.replace(/\bnpm\b/g, "pnpm");
   }
   fse.writeFileSync("README.md", readme);
 
@@ -58,10 +88,8 @@ async function createBase(options) {
   //   fse.copySync(path.join(targetTemplateDir, ".types"), ".types");
   // }
   // What does this folder do??
-  if (options.jsFramework === "svelte" && options.typescript) {
-    fse.copyFileSync(
-      path.join(targetTemplateDir, "svelte.config.js"), "svelte.config.js"
-    );
+  if (options.jsFramework === "svelte") {
+    generateSvelteConfig(options);
   }
   if (options.jsFramework === "lit-element") {
     fse.copyFileSync(
@@ -84,8 +112,8 @@ async function createBase(options) {
   if (options.sass) {
     switch (options.jsFramework) {
       case "blank":
-        fse.moveSync("public/index.css", "src/index.scss");
-        fileReadAndReplace("public/index.html", "index.css", "dist/index.css");
+      case "lit-element":
+        fse.renameSync("src/index.css", "src/index.scss");
         break;
       case "react":
       case "preact":
@@ -102,21 +130,27 @@ async function createBase(options) {
           );
         }
         break;
-      case "svelte":
+      default: // Svelte template has no CSS files
         break;
-      case "lit-element":
-        fileReadAndReplace("public/index.html", "index.css", "dist/index.css");
-        fse.moveSync("public/index.css", "src/index.scss");
-        break;
-      default:
-        console.error("Invalid framework");
-        process.exit(1);
     }
   }
 
   if ((options.plugins || []).includes("postcss")) {
-    console.log(BASE_FILES.get("postcssConfig"));
-    fse.copyFileSync(BASE_FILES.get("postcssConfig"), "postcss.config.js");
+    let postcssConfig = fse.readFileSync(
+      BASE_FILES.get("postcssConfig"), "utf8"
+    );
+    if (options.cssFramework === "tailwindcss") {
+      postcssConfig = postcssConfig.replace(
+        /\s+process.env.NODE_ENV === 'production' \? require\('cssnano'\).+/,
+        ""
+      );
+    } else {
+      postcssConfig = postcssConfig.replace(
+        /require\('tailwindcss'\),\s+/, ""
+      );
+    }
+    // cssnano doesn't work with TailwindCSS
+    fse.writeFileSync("postcss.config.js", postcssConfig);
   }
   if ((options.plugins || []).includes("wtr")) {
     fse.copyFileSync(BASE_FILES.get("wtrConfig"), "web-test-runner.config.js");
@@ -194,7 +228,8 @@ function generatePackageJson(options) {
     appPackageJson.scripts["type-check"] = "tsc";
   }
 
-  if (options.bundler === "webpack") {
+  if (options.bundler === "webpack"
+      || (options.plugins || []).includes("postcss")) {
     appPackageJson.browserslist = ["defaults"];
   }
 
@@ -208,9 +243,7 @@ function generatePackageJson(options) {
     appPackageJson.scripts.test = `web-test-runner \"src/**/*.test.${jsTestExt}\"`;
   }
 
-  fse.writeFileSync(
-    "package.json", JSON.stringify(appPackageJson, null, 2), "utf8"
-  );
+  fse.writeFileSync("package.json", JSON.stringify(appPackageJson, null, 2));
 }
 
 const PLUGIN_PACKAGES = new Map(Object.entries({
@@ -218,7 +251,7 @@ const PLUGIN_PACKAGES = new Map(Object.entries({
     "postcss",
     "postcss-cli",
     "postcss-preset-env",
-    "cssnano",
+    // "cssnano", // Added later conditionally
     "@snowpack/plugin-postcss",
   ],
   wtr: [
@@ -229,6 +262,11 @@ const PLUGIN_PACKAGES = new Map(Object.entries({
   srs: ["@snowpack/plugin-run-script"],
   sbs: ["@snowpack/plugin-build-script"],
 }));
+
+const MAJOR_VERSION_REGEX = /(\d+)\.\d+\.\d+/;
+function packageMajorVersion(version) {
+  return MAJOR_VERSION_REGEX.exec(version)[1];
+}
 
 function installPackages(options) {
   const prodPackages = [];
@@ -283,6 +321,33 @@ function installPackages(options) {
   for (const plugin of options.plugins || []) {
     devPackages.push(...PLUGIN_PACKAGES.get(plugin));
   }
+  if ((options.plugins || []).includes("postcss")) {
+    if (options.cssFramework !== "tailwindcss") {
+      devPackages.push("cssnano");
+    } else if (options.jsFramework === "svelte") {
+      devPackages.push("svelte-preprocess");
+    }
+  }
+
+  const basePackageJson = require(
+    path.join(BASE_TEMPLATES.get(templateName(options)), "package.json")
+  );
+  if (prodPackages.length && basePackageJson.dependencies) {
+    prodPackages.forEach((pkg, i) => {
+      if (pkg in basePackageJson.dependencies) {
+        const version = basePackageJson.dependencies[pkg];
+        prodPackages[i] = `${pkg}@${packageMajorVersion(version)}`;
+      }
+    });
+  }
+  if (devPackages.length && basePackageJson.devDependencies) {
+    devPackages.forEach((pkg, i) => {
+      if (pkg in basePackageJson.devDependencies) {
+        const version = basePackageJson.devDependencies[pkg];
+        devPackages[i] = `${pkg}@${packageMajorVersion(version)}`;
+      }
+    });
+  }
 
   console.log(styles.cyanBright("\n- Installing package dependencies. This might take a couple of minutes."));
   let cmd;
@@ -299,39 +364,27 @@ function installPackages(options) {
   execa.sync(`${cmd} -D`, devPackages, { stdio: "inherit" });
 }
 
-// For spacing in template literals
-function s(numSpaces) {
-  return " ".repeat(numSpaces);
-}
-
-// ['plugin', {}]
+// ['plugin', {
+//
+// }]
 // function blankPluginConfig(plugin) {
-//   return `[
-// ${s(6)}'${plugin}',
-// ${s(6)}{
-// ${s(8)}
-// ${s(6)}}
-// ${s(4)}]`;
+//   return `['${plugin}', {
+// ${s(6)}
+// ${s(4)}}]`;
 // }
 
-const srsConfig = `[
-${s(6)}'@snowpack/plugin-run-script',
-${s(6)}{
-${s(8)}cmd: 'echo \"production build command.\"',
-${s(8)}watch: 'echo \"dev server command.\"', // (optional)
-${s(6)}}
-${s(4)}]`;
+const srsConfig = `['@snowpack/plugin-run-script', {
+${s(6)}cmd: 'echo \"production build command.\"',
+${s(6)}watch: 'echo \"dev server command.\"', // (optional)
+${s(4)}}]`;
 
-const sbsConfig = `[
-${s(6)}'@snowpack/plugin-build-script',
-${s(6)}{
-${s(8)}input: [], // files to watch
-${s(8)}output: [], // files to export
-${s(8)}cmd: 'echo \"build command.\"', // cmd to run
-${s(6)}}
-${s(4)}]`;
+const sbsConfig = `['@snowpack/plugin-build-script', {
+${s(6)}input: [], // files to watch
+${s(6)}output: [], // files to export
+${s(6)}cmd: 'echo \"build command.\"', // cmd to run
+${s(4)}}]`;
 
-const CONFIG_PLUGIN_NAMES = new Map(Object.entries({
+const SNOWPACK_CONFIG_PLUGINS = new Map(Object.entries({
   webpack: "'@snowpack/plugin-webpack'",
   postcss: "'@snowpack/plugin-postcss'",
   srs: srsConfig,
@@ -346,7 +399,7 @@ const DEFAULT_BUILTIN_BUNDLER_SETTINGS = [
 ];
 
 // For Preact template
-const ALIAS = `
+const PREACT_ALIAS = `
 ${s(2)}alias: {
 ${s(4)}/* ... */
 ${s(2)}},
@@ -361,7 +414,7 @@ function generateSnowpackConfig(options) {
 
   if (options.jsFramework === "preact" && !options.typescript) {
     snowpackConfig = snowpackConfig.replace(
-      /(buildOptions.+},\n)/s, `$1${ALIAS}`
+      /(buildOptions.+},\n)/s, `$1${PREACT_ALIAS}`
     );
   }
 
@@ -381,12 +434,10 @@ function generateSnowpackConfig(options) {
 
   if (options.sass) {
     configPluginsList.push("'@snowpack/plugin-sass'");
-  } else {
-    snowpackConfig = snowpackConfig.replace(/\s+exclude: \[.+?\],/s, "");
   }
 
-  if (CONFIG_PLUGIN_NAMES.has(options.bundler)) {
-    configPluginsList.push(CONFIG_PLUGIN_NAMES.get(options.bundler));
+  if (SNOWPACK_CONFIG_PLUGINS.has(options.bundler)) {
+    configPluginsList.push(SNOWPACK_CONFIG_PLUGINS.get(options.bundler));
   } else if (options.bundler === "snowpack") {
     const builtinSettings = (
       DEFAULT_BUILTIN_BUNDLER_SETTINGS
@@ -399,8 +450,8 @@ function generateSnowpackConfig(options) {
   }
 
   for (const plugin of options.plugins || []) {
-    if (CONFIG_PLUGIN_NAMES.has(plugin)) {
-      configPluginsList.push(CONFIG_PLUGIN_NAMES.get(plugin));
+    if (SNOWPACK_CONFIG_PLUGINS.has(plugin)) {
+      configPluginsList.push(SNOWPACK_CONFIG_PLUGINS.get(plugin));
     }
   }
 
@@ -413,7 +464,24 @@ function generateSnowpackConfig(options) {
     );
   }
 
-  fse.writeFileSync("snowpack.config.js", snowpackConfig, "utf8");
+  fse.writeFileSync("snowpack.config.js", snowpackConfig);
+}
+
+function initializeTailwind(options) {
+  if (options.cssFramework === "tailwindcss") {
+    if (options.skipTailwindInit) {
+      console.log(styles.warningMsg("\n- Skipping TailwindCSS init.\n"));
+    } else {
+      try {
+        console.log(styles.cyanBright("\n- Generating tailwind.config.js."));
+        execa.sync("npx tailwindcss init", { stdio: "inherit" });
+        console.log(`\n  - ${styles.successMsg("Success!\n")}`);
+      } catch (error) {
+        console.error(error);
+        console.error(`\n  - ${styles.warningMsg("Something went wrong.\n")}`);
+      }
+    }
+  }
 }
 
 function initializeEslint(options) {
@@ -487,60 +555,6 @@ function displayQuickstart(options, startDir) {
   console.log("");
 }
 
-function getPackageMajorVersions(targetDir, deleteEmpty = true) {
-  // eslint-disable-next-line import/no-dynamic-require, global-require
-  const packageJson = require(path.join(targetDir, "package.json"));
-  const packageVersions = { dependencies: {}, devDependencies: {} };
-  for (const [name, version] of Object.entries(packageJson.dependencies || {})) {
-    const majorVersion = version.match(/(\d+)\.\d+\.\d+/)[1];
-    packageVersions.dependencies[name] = majorVersion;
-  }
-  for (const [name, version] of Object.entries(packageJson.devDependencies || {})) {
-    const majorVersion = version.match(/(\d+)\.\d+\.\d+/)[1];
-    packageVersions.devDependencies[name] = majorVersion;
-  }
-
-  if (deleteEmpty) {
-    if (!Object.keys(packageVersions.dependencies).length) {
-      delete packageVersions.dependencies;
-    }
-    if (!Object.keys(packageVersions.devDependencies).length) {
-      delete packageVersions.devDependencies;
-    }
-  }
-
-  return packageVersions;
-}
-
-function checkPackageMajorVersions(template) {
-  let versionMismatch = false;
-  const baseVersions = getPackageMajorVersions(
-    BASE_TEMPLATES.get(template), false
-  );
-  const starterVersions = getPackageMajorVersions(process.cwd(), false);
-  for (const [name, startVer] of Object.entries(starterVersions.dependencies)) {
-    if (name in baseVersions.dependencies) {
-      const baseVer = baseVersions.dependencies[name];
-      if (startVer !== baseVer) {
-        console.log(styles.warningMsg(`WARNING: Expected package ${name} to have major version ${baseVer}, found ${startVer}.`));
-        versionMismatch = true;
-      }
-    }
-  }
-  for (const [name, startVer] of Object.entries(starterVersions.devDependencies)) {
-    if (name in baseVersions.devDependencies) {
-      const baseVer = baseVersions.devDependencies[name];
-      if (startVer !== baseVer) {
-        console.log(styles.warningMsg(`WARNING: Expected package ${name} to have major version ${baseVer}, found ${startVer}.`));
-        versionMismatch = true;
-      }
-    }
-  }
-  if (versionMismatch) {
-    console.log(styles.warningMsg(`\nPlease install the correct version(s) from\nhttps://github.com/snowpackjs/snowpack/blob/main/create-snowpack-app/app-template-${template}/package.json\n\nand report this issue at\nhttps://github.com/andrew-1135/snowpack-start/issues\n`));
-  }
-}
-
 function nodeVersionCheck() {
   const currentMajorVersion = parseInt(process.versions.node.split(".")[0], 10);
   const minimumMajorVersion = 10;
@@ -565,13 +579,11 @@ async function main() {
   installPackages(options);
   generateSnowpackConfig(options);
 
+  initializeTailwind(options);
   initializeEslint(options);
   initializeGit(options);
 
   displayQuickstart(options, startDir);
-  checkPackageMajorVersions(
-    `${options.jsFramework}${options.typescript ? "-typescript" : ""}`
-  );
 }
 
 if (require.main === module) {
@@ -580,15 +592,20 @@ if (require.main === module) {
 
 module.exports = {
   _testing: {
+    s,
+    templateName,
     fileReadAndReplace,
+    generateSvelteConfig,
     createBase,
     generatePackageJson,
+    packageMajorVersion,
     installPackages,
-    s,
     generateSnowpackConfig,
+    initializeTailwind,
     initializeEslint,
     initializeGit,
+    formatCommand,
+    displayQuickstart,
     nodeVersionCheck,
-    getPackageMajorVersions,
   },
 };

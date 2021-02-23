@@ -6,11 +6,11 @@ module.exports = {
     "eslint",
     // "prettier",
   ],
-  sass: true,
+  sass: false,
   cssFramework: "none",
   bundler: "webpack",
   plugins: [
-    "wtr",
+    // "wtr",
     // "postcss",
     // "srs",
     // "sbs",
@@ -20,6 +20,7 @@ module.exports = {
 
   // useYarn: true,
   // usePnpm: true,
+  // skipTailwindInit: true,
   // skipGitInit: true,
   // skipEslintInit: true,
 };

@@ -14,6 +14,10 @@ const {
   generateSnowpackConfig,
 } = require("../src/index.js")._testing;
 
+function stripPackageVersions(packages) {
+  return packages.map(p => p.replace(/@.?\d+(\.\d+)*/, ""));
+}
+
 function newTempBase(options) {
   const tempDir = tmp.dirSync();
   tempDir.removeCallback();
@@ -73,6 +77,7 @@ const newTempSnowpackConfig = newTempConfigGenerator(
 );
 
 module.exports = {
+  stripPackageVersions,
   newTempBase,
   testDirectoryContentsEqual,
   newTempPackageJson,

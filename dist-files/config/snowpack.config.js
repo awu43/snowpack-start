@@ -1,8 +1,8 @@
 /** @type {import("snowpack").SnowpackUserConfig } */
 module.exports = {
-  exclude: [
-    '_*.scss',
-  ],
+  // exclude: [
+
+  // ],
   mount: {
     public: { url: '/', static: true },
     src: { url: '/dist' },
@@ -22,7 +22,8 @@ module.exports = {
     /* ... */
   },
   devOptions: {
-    /* ... */
+    // open: "none",
+    // port: 8081,
   },
   buildOptions: {
     /* ... */

@@ -3,6 +3,8 @@
 /* eslint-disable no-console */
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-undef */
+/* eslint-disable import/no-dynamic-require */
+/* eslint-disable global-require */
 const path = require("path");
 
 const execa = require("execa");
@@ -21,6 +23,7 @@ const { file } = chaiFiles;
 
 const styles = require("../src/styles.js");
 const {
+  stripPackageVersions,
   newTempBase,
   testDirectoryContentsEqual,
   newTempPackageJson,
@@ -28,22 +31,20 @@ const {
 } = require("./test-utils.js");
 
 const {
-  projectDirValidator,
-  OptionNameError,
-  OptionTypeError,
-  OptionValueError,
-  validateOptions,
-} = require("../src/get-options.js")._testing;
-
-const {
+  s,
+  templateName,
   fileReadAndReplace,
+  generateSvelteConfig,
   createBase,
   generatePackageJson,
+  packageMajorVersion,
   installPackages,
-  s,
   generateSnowpackConfig,
+  initializeTailwind,
   initializeEslint,
   initializeGit,
+  formatCommand,
+  displayQuickstart,
   nodeVersionCheck,
 } = require("../src/index.js")._testing;
 
@@ -52,80 +53,28 @@ const BASE_TEMPLATES = require("../dist-templates");
 
 const BLANK_CONFIG = { jsFramework: "blank" };
 
-describe("validateOptions", () => {
-  before(() => {
-    sinon.stub(execa, "commandSync");
+describe("stripPackageVersions", () => {
+  it("Strips 3 from vue@3", () => {
+    expect(stripPackageVersions(["vue@3"])).to.eql(["vue"]);
   });
-  beforeEach(() => {
-    execa.commandSync.reset();
+  it("Strips 3.0 from vue@3.0", () => {
+    expect(stripPackageVersions(["vue@3.0"])).to.eql(["vue"]);
   });
-  after(() => {
-    execa.commandSync.restore();
-  });
-
-  it("Throws OptionNameError if unknown option found", () => {
-    expect(() => validateOptions({ unknownOpt: "unknown value" }))
-      .to.throw(OptionNameError);
-    expect(() => validateOptions({ unknownOpt: "unknown value" }))
-      .to.throw(
-        styles.errorMsg(`Unknown option ${styles.cyanBright("unknownOpt")}`)
-      );
-  });
-  it("Throws OptionTypeError if option value type is incorrect", () => {
-    expect(() => validateOptions({ author: ["should not be an array"] }))
-      .to.throw(OptionTypeError);
-    expect(() => validateOptions({ author: ["should not be an array"] }))
-      .to.throw(styles.errorMsg(`Expected value of type ${styles.cyanBright("string")} for ${styles.cyanBright("author")}, received type ${styles.cyanBright("object")} (${styles.cyanBright(["should not be an array"])})`));
-  });
-  it("Throws OptionValueError if option value choice is invalid", () => {
-    expect(() => validateOptions({ bundler: "unsupportedbundler" }))
-      .to.throw(OptionValueError);
-    expect(() => validateOptions({ bundler: "unsupportedbundler" }))
-      .to.throw(styles.errorMsg(`Invalid value ${styles.cyanBright("unsupportedbundler")} for ${styles.cyanBright("bundler")}\nValid values: ${["webpack", "snowpack", "none"].map(c => styles.cyanBright(c)).join("/")}`));
-  });
-  it("Throws OptionValueError if option values are invalid", () => {
-    const invalidOptions = { codeFormatters: ["eslint", "pylint"] };
-    expect(() => validateOptions(invalidOptions)).to.throw(OptionValueError);
-    expect(() => validateOptions(invalidOptions))
-      .to.throw(styles.errorMsg(`Invalid value ${styles.cyanBright(invalidOptions.codeFormatters)} for ${styles.cyanBright("codeFormatters")}\nValid values: ${["eslint", "prettier"].map(c => styles.cyanBright(c)).join("/")}`));
-  });
-  it("Throws Error if useYarn and usePnpm are both passed", () => {
-    expect(() => validateOptions({ useYarn: true, usePnpm: true }))
-      .to.throw(styles.errorMsg("You can't use Yarn and pnpm at the same time"));
-    expect(execa.commandSync).to.not.have.been.called;
-  });
-  it("Throws Error if Yarn is not installed", () => {
-    execa.commandSync.throws();
-    expect(() => validateOptions({ useYarn: true }))
-      .to.throw(styles.errorMsg("Yarn doesn't seem to be installed"));
-    expect(execa.commandSync)
-      .to.have.been.calledOnceWithExactly("yarn --version");
-  });
-  it("Throws Error if Pnpm is not installed", () => {
-    execa.commandSync.throws();
-    expect(() => validateOptions({ usePnpm: true }))
-      .to.throw(styles.errorMsg("pnpm doesn't seem to be installed"));
-    expect(execa.commandSync)
-      .to.have.been.calledOnceWithExactly("pnpm --version");
+  it("Strips 3.0.0 from vue@3.0.0", () => {
+    expect(stripPackageVersions(["vue@3.0.0"])).to.eql(["vue"]);
   });
 });
 
-describe("projectDirValidator", () => {
-  it("Checks if projectDir is empty string", () => {
-    expect(projectDirValidator("")).to.equal("No directory provided");
+describe("s", () => {
+  it("Returns a number of spaces", () => {
+    expect(s(4)).to.equal("    ");
   });
-  it("Checks if projectDir is only whitespace", () => {
-    expect(projectDirValidator(" ")).to.equal("No directory provided");
-  });
-  it("Checks if projectDir already exists", () => {
-    const tempDir = tmp.dirSync();
-    expect(projectDirValidator(tempDir.name))
-      .to.equal("Project directory already exists");
-  });
-  it("Returns true for a valid projectDir", () => {
-    const tempDir = tmp.dirSync();
-    tempDir.removeCallback();
-    expect(projectDirValidator(tempDir.name)).to.equal(true);
+});
+
+describe("templateName", () => {
+  it("Returns the full template name", () => {
+    expect(templateName({ jsFramework: "react", typescript: true }))
+      .to.equal("react-typescript");
   });
 });
 
@@ -138,6 +87,35 @@ describe("fileReadAndReplace", () => {
     fileReadAndReplace(tempFile.name, ".css", ".scss");
     const newContents = fse.readFileSync(tempFile.name, "utf8");
     expect(newContents).to.equal("import index.scss\nimport index.js\n");
+  });
+});
+
+describe("generateSvelteConfig", () => {
+  beforeEach(() => {
+    const tempDir = tmp.dirSync();
+    process.chdir(tempDir.name);
+  });
+
+  it("Removes postcss property", () => {
+    generateSvelteConfig({ typescript: true });
+    expect(file("svelte.config.js")).to.contain("defaults");
+    expect(file("svelte.config.js")).to.not.contain("postcss");
+  });
+  it("Removes defaults property", () => {
+    generateSvelteConfig({ plugins: ["postcss"] });
+    expect(file("svelte.config.js")).to.not.contain("defaults");
+    expect(file("svelte.config.js")).to.contain("postcss");
+  });
+  it("Removes require('tailwindcss')", () => {
+    generateSvelteConfig({ plugins: ["postcss"] });
+    expect(file("svelte.config.js")).to.not.contain("require('tailwindcss')");
+    expect(file("svelte.config.js")).to.contain("require('cssnano')");
+  });
+  it("Removes require('cssnano')", () => {
+    generateSvelteConfig({ cssFramework: "tailwindcss", plugins: ["postcss"] });
+    expect(file("svelte.config.js")).to.contain("postcss");
+    expect(file("svelte.config.js")).to.not.contain("require('cssnano')");
+    expect(file("svelte.config.js")).to.contain("require('tailwindcss')");
   });
 });
 
@@ -166,9 +144,23 @@ describe("createBase", () => {
     newTempBase(BLANK_CONFIG);
     expect(file(".gitignore")).to.equal(file(BASE_FILES.get("gitignore")));
   });
-  it("Generates README.md", () => {
+  it("Generates README.md for npm", () => {
     newTempBase(BLANK_CONFIG);
-    expect(file("README.md")).to.exist;
+    expect(file("README.md")).to.match(/\bnpm\b/);
+    expect(file("README.md")).to.not.match(/\byarn\b/);
+    expect(file("README.md")).to.not.match(/\bpnpm\b/);
+  });
+  it("Generates README.md for yarn", () => {
+    newTempBase({ ...BLANK_CONFIG, useYarn: true });
+    expect(file("README.md")).to.not.match(/\bnpm\b/);
+    expect(file("README.md")).to.match(/\byarn\b/);
+    expect(file("README.md")).to.not.match(/\bpnpm\b/);
+  });
+  it("Generates README.md for pnpm", () => {
+    newTempBase({ ...BLANK_CONFIG, usePnpm: true });
+    expect(file("README.md")).to.not.match(/\bnpm\b/);
+    expect(file("README.md")).to.not.match(/\byarn\b/);
+    expect(file("README.md")).to.match(/\bpnpm\b/);
   });
   it("Copies public and src folders", () => {
     newTempBase({ jsFramework: "vue", typescript: true });
@@ -193,16 +185,14 @@ describe("createBase", () => {
     newTempBase({ ...BLANK_CONFIG, codeFormatters: ["prettier"] });
     expect(file(".prettierrc")).to.equal(file(BASE_FILES.get("prettierConfig")));
   });
-  it("Moves public/index.css to src/index.scss for blank template", () => {
+  it("Renames CSS files to SCSS for blank template", () => {
     newTempBase({ ...BLANK_CONFIG, sass: true });
-    expect(file("public/index.html")).to.contain("dist/index.css");
-    expect(file("public/index.css")).to.not.exist;
+    expect(file("src/index.css")).to.not.exist;
     expect(file("src/index.scss")).to.exist;
   });
-  it("Moves public/index.css to src/index.scss for blank-typescript template", () => {
+  it("Renames CSS files to SCSS for blank-typescript template", () => {
     newTempBase({ ...BLANK_CONFIG, typescript: true, sass: true });
-    expect(file("public/index.html")).to.contain("dist/index.css");
-    expect(file("public/index.css")).to.not.exist;
+    expect(file("src/index.css")).to.not.exist;
     expect(file("src/index.scss")).to.exist;
   });
   it("Renames CSS files to SCSS for react template", () => {
@@ -226,6 +216,12 @@ describe("createBase", () => {
     expect(file("src/components/Foo.module.css")).to.not.exist;
     expect(file("src/components/Foo.module.scss")).to.exist;
   });
+  it("Does not rename any CSS files for svelt-template", () => {
+    sinon.stub(fse, "renameSync");
+    newTempBase({ jsFramework: "svelte", sass: true });
+    expect(fse.renameSync).to.not.have.been.called;
+    fse.renameSync.restore();
+  });
   it("Renames CSS files to SCSS for preact template", () => {
     newTempBase({ jsFramework: "preact", sass: true });
     expect(file("src/App.css")).to.not.exist;
@@ -240,22 +236,31 @@ describe("createBase", () => {
     expect(file("src/index.css")).to.not.exist;
     expect(file("src/index.scss")).to.exist;
   });
-  it("Moves public/index.css to src/index.scss for lit-element template", () => {
+  it("Renames CSS files to SCSS for lit-element template", () => {
     newTempBase({ jsFramework: "lit-element", sass: true });
-    expect(file("public/index.html")).to.contain("dist/index.css");
-    expect(file("public/index.css")).to.not.exist;
+    expect(file("src/index.css")).to.not.exist;
     expect(file("src/index.scss")).to.exist;
   });
-  it("Moves public/index.css to src/index.scss for lit-element-typescript template", () => {
+  it("Renames CSS files to SCSS for lit-element-typescript template", () => {
     newTempBase({ jsFramework: "lit-element", typescript: true, sass: true });
-    expect(file("public/index.html")).to.contain("dist/index.css");
-    expect(file("public/index.css")).to.not.exist;
+    expect(file("src/index.css")).to.not.exist;
     expect(file("src/index.scss")).to.exist;
   });
-  it("Copies postcss.config.js", () => {
-    newTempBase({ jsFramework: "blank", plugins: ["postcss"] });
-    expect(file("postcss.config.js"))
-      .to.equal(file(BASE_FILES.get("postcssConfig")));
+  it("Generates postcss.config.js", () => {
+    newTempBase({ ...BLANK_CONFIG, plugins: ["postcss"] });
+    expect(file("postcss.config.js")).to.exist;
+  });
+  it("Removes TailwindCSS from postcss.config.js", () => {
+    newTempBase({ ...BLANK_CONFIG, plugins: ["postcss"] });
+    expect(file("postcss.config.js")).to.not.contain("require('tailwindcss')");
+    expect(file("postcss.config.js")).to.contain("require('cssnano')");
+  });
+  it("Removes cssnano from postcss.config.js", () => {
+    newTempBase({
+      ...BLANK_CONFIG, cssFramework: "tailwindcss", plugins: ["postcss"]
+    });
+    expect(file("postcss.config.js")).to.not.contain("require('cssnano')");
+    expect(file("postcss.config.js")).to.contain("require('tailwindcss')");
   });
   it("Copies web-test-runner.config.js", () => {
     newTempBase({ jsFramework: "blank", plugins: ["wtr"] });
@@ -341,6 +346,18 @@ describe("generatePackageJson", () => {
     );
     expect(packageJson.browserslist).to.eql(["defaults"]);
   });
+  it("Adds browserlist if using PostCSS", () => {
+    const packageJson = newTempPackageJson(
+      { ...BLANK_CONFIG, plugins: ["postcss"] },
+    );
+    expect(packageJson.browserslist).to.eql(["defaults"]);
+  });
+});
+
+describe("packageMajorVersion", () => {
+  it("Finds the major version from semantic versioning", () => {
+    expect(packageMajorVersion("4.3.0")).to.equal("4");
+  });
 });
 
 describe("installPackages", () => {
@@ -350,6 +367,7 @@ describe("installPackages", () => {
   });
   beforeEach(() => {
     execa.sync.reset();
+    console.log.reset();
   });
   after(() => {
     console.log.restore();
@@ -364,9 +382,8 @@ describe("installPackages", () => {
       "@types/snowpack-env",
     ];
     installPackages({ ...BLANK_CONFIG, typescript: true });
-    expect(execa.sync).to.have.been.calledOnceWithExactly(
-      "npm install -D", devPackages, { stdio: "inherit" }
-    );
+    expect(execa.sync).to.have.been.calledOnce;
+    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs @types/chai", () => {
     const devPackages = [
@@ -380,69 +397,92 @@ describe("installPackages", () => {
       "@snowpack/web-test-runner-plugin",
     ];
     installPackages({ ...BLANK_CONFIG, typescript: true, plugins: ["wtr"] });
-    expect(execa.sync).to.have.been.calledOnceWithExactly(
-      "npm install -D", devPackages, { stdio: "inherit" }
-    );
+    expect(execa.sync).to.have.been.calledOnce;
+    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs ESLint", () => {
     const devPackages = ["snowpack", "eslint"];
     installPackages({ ...BLANK_CONFIG, codeFormatters: ["eslint"] });
-    expect(execa.sync).to.have.been.calledOnceWithExactly(
-      "npm install -D", devPackages, { stdio: "inherit" }
-    );
+    expect(execa.sync).to.have.been.calledOnce;
+    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs Prettier", () => {
     const devPackages = ["snowpack", "prettier"];
     installPackages({ ...BLANK_CONFIG, codeFormatters: ["prettier"] });
-    expect(execa.sync).to.have.been.calledOnceWithExactly(
-      "npm install -D", devPackages, { stdio: "inherit" }
-    );
+    expect(execa.sync).to.have.been.calledOnce;
+    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs ESLint and Prettier", () => {
     const devPackages = ["snowpack", "eslint", "prettier"];
     installPackages(
       { ...BLANK_CONFIG, codeFormatters: ["eslint", "prettier"] }
     );
-    expect(execa.sync).to.have.been.calledOnceWithExactly(
-      "npm install -D", devPackages, { stdio: "inherit" }
-    );
+    expect(execa.sync).to.have.been.calledOnce;
+    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs @snowpack/plugin-sass", () => {
     const devPackages = ["snowpack", "@snowpack/plugin-sass"];
     installPackages(
       { ...BLANK_CONFIG, sass: true }
     );
-    expect(execa.sync).to.have.been.calledOnceWithExactly(
-      "npm install -D", devPackages, { stdio: "inherit" }
-    );
+    expect(execa.sync).to.have.been.calledOnce;
+    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs no CSS framework", () => {
     const devPackages = ["snowpack"];
     installPackages({ ...BLANK_CONFIG, cssFramework: null });
-    expect(execa.sync).to.have.been.calledOnceWithExactly(
-      "npm install -D", devPackages, { stdio: "inherit" }
-    );
+    expect(execa.sync).to.have.been.calledOnce;
+    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs Tailwind CSS", () => {
     const devPackages = ["snowpack", "tailwindcss"];
     installPackages({ ...BLANK_CONFIG, cssFramework: "tailwindcss" });
-    expect(execa.sync).to.have.been.calledOnceWithExactly(
-      "npm install -D", devPackages, { stdio: "inherit" }
-    );
+    expect(execa.sync).to.have.been.calledOnce;
+    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
+  });
+  it("Installs cssnano when using PostCSS without TailwindCSS", () => {
+    const devPackages = [
+      "snowpack",
+      "postcss",
+      "postcss-cli",
+      "postcss-preset-env",
+      "@snowpack/plugin-postcss",
+      "cssnano",
+    ];
+    installPackages({ ...BLANK_CONFIG, plugins: ["postcss"] });
+    expect(execa.sync).to.have.been.calledOnce;
+    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
+  });
+  it("Installs svelte-preprocess when using TailwindCSS with PostCSS", () => {
+    const devPackages = [
+      "snowpack",
+      "@snowpack/plugin-svelte",
+      "@snowpack/plugin-dotenv",
+      "tailwindcss",
+      "postcss",
+      "postcss-cli",
+      "postcss-preset-env",
+      "@snowpack/plugin-postcss",
+      "svelte-preprocess",
+    ];
+    installPackages({
+      jsFramework: "svelte", cssFramework: "tailwindcss", plugins: ["postcss"]
+    });
+    expect(execa.sync).to.have.been.calledTwice;
+    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(["svelte"]);
+    expect(stripPackageVersions(execa.sync.args[1][1])).to.eql(devPackages);
   });
   it("Installs Bootstrap", () => {
     const devPackages = ["snowpack", "bootstrap"];
     installPackages({ ...BLANK_CONFIG, cssFramework: "bootstrap" });
-    expect(execa.sync).to.have.been.calledOnceWithExactly(
-      "npm install -D", devPackages, { stdio: "inherit" }
-    );
+    expect(execa.sync).to.have.been.calledOnce;
+    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs @snowpack/plugin-webpack", () => {
     const devPackages = ["snowpack", "@snowpack/plugin-webpack"];
     installPackages({ ...BLANK_CONFIG, bundler: "webpack" });
-    expect(execa.sync).to.have.been.calledOnceWithExactly(
-      "npm install -D", devPackages, { stdio: "inherit" }
-    );
+    expect(execa.sync).to.have.been.calledOnce;
+    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs plugins (postcss + wtr)", () => {
     const devPackages = [
@@ -450,34 +490,27 @@ describe("installPackages", () => {
       "postcss",
       "postcss-cli",
       "postcss-preset-env",
-      "cssnano",
       "@snowpack/plugin-postcss",
       "@web/test-runner",
       "chai",
       "@snowpack/web-test-runner-plugin",
+      "cssnano",
     ];
     installPackages({ ...BLANK_CONFIG, plugins: ["postcss", "wtr"] });
-    expect(execa.sync).to.have.been.calledOnceWithExactly(
-      "npm install -D", devPackages, { stdio: "inherit" }
-    );
+    expect(execa.sync).to.have.been.calledOnce;
+    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs packages using Yarn", () => {
     installPackages({ ...BLANK_CONFIG, useYarn: true });
-    expect(execa.sync).to.have.been.calledOnceWithExactly(
-      "yarn add -D", ["snowpack"], { stdio: "inherit" }
-    );
+    expect(execa.sync).to.have.been.calledOnce;
+    expect(execa.sync.args[0][0]).to.equal("yarn add -D");
+    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(["snowpack"]);
   });
   it("Installs packages using pnpm", () => {
     installPackages({ ...BLANK_CONFIG, usePnpm: true });
-    expect(execa.sync).to.have.been.calledOnceWithExactly(
-      "pnpm add -D", ["snowpack"], { stdio: "inherit" }
-    );
-  });
-});
-
-describe("s", () => {
-  it("Returns a number of spaces", () => {
-    expect(s(4)).to.equal("    ");
+    expect(execa.sync).to.have.been.calledOnce;
+    expect(execa.sync.args[0][0]).to.equal("pnpm add -D");
+    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(["snowpack"]);
   });
 });
 
@@ -510,12 +543,7 @@ describe("generateSnowpackConfig", () => {
     const snowpackConfig = newTempSnowpackConfig(
       { ...BLANK_CONFIG, sass: true }
     );
-    expect(snowpackConfig.exclude).to.eql(["_*.scss"]);
     expect(snowpackConfig.plugins).to.eql(["@snowpack/plugin-sass"]);
-  });
-  it("Removes exclude property", () => {
-    const snowpackConfig = newTempSnowpackConfig(BLANK_CONFIG);
-    expect(snowpackConfig.exclude).to.be.undefined;
   });
   it("Adds @snowpack/plugin-webpack", () => {
     const snowpackConfig = newTempSnowpackConfig(
@@ -539,22 +567,65 @@ describe("generateSnowpackConfig", () => {
       { ...BLANK_CONFIG, plugins: ["srs", "sbs"] }
     );
     expect(snowpackConfig.plugins).to.eql([
-      [
-        "@snowpack/plugin-run-script",
-        {
-          cmd: 'echo \"production build command.\"',
-          watch: 'echo \"dev server command.\"',
-        }
-      ],
-      [
-        "@snowpack/plugin-build-script",
-        {
-          input: [],
-          output: [],
-          cmd: 'echo \"build command.\"',
-        }
-      ]
+      ["@snowpack/plugin-run-script", {
+        cmd: 'echo \"production build command.\"',
+        watch: 'echo \"dev server command.\"',
+      }],
+      ["@snowpack/plugin-build-script", {
+        input: [],
+        output: [],
+        cmd: 'echo \"build command.\"',
+      }],
     ]);
+  });
+});
+
+describe("initializeTailwind", () => {
+  before(() => {
+    sinon.stub(execa, "sync");
+    sinon.stub(console, "log");
+    sinon.stub(console, "error");
+  });
+  beforeEach(() => {
+    execa.sync.reset();
+    console.log.reset();
+    console.error.reset();
+  });
+  after(() => {
+    console.log.restore();
+    execa.sync.restore();
+    console.error.restore();
+  });
+
+  it("Initializes TailwindCSS", () => {
+    initializeTailwind({ ...BLANK_CONFIG, cssFramework: "tailwindcss" });
+    expect(console.log).to.have.been.calledTwice;
+    expect(console.log.firstCall).to.have.been.calledWithExactly(
+      styles.cyanBright("\n- Generating tailwind.config.js.")
+    );
+    expect(execa.sync).to.have.been.calledOnceWithExactly(
+      "npx tailwindcss init", { stdio: "inherit" }
+    );
+    expect(console.log.secondCall).to.have.been.calledWithExactly(
+      `\n  - ${styles.successMsg("Success!\n")}`
+    );
+  });
+  it("Skips initializing TailwindCSS", () => {
+    initializeTailwind({
+      ...BLANK_CONFIG, cssFramework: "tailwindcss", skipTailwindInit: true
+    });
+    expect(console.log).to.have.been.calledOnceWithExactly(
+      styles.warningMsg("\n- Skipping TailwindCSS init.\n")
+    );
+    expect(execa.sync).to.not.have.been.called;
+  });
+  it("Displays an error message", () => {
+    execa.sync.throws();
+    initializeTailwind({ ...BLANK_CONFIG, cssFramework: "tailwindcss" });
+    expect(console.error).to.have.been.calledTwice;
+    expect(console.error.secondCall).to.have.been.calledWithExactly(
+      `\n  - ${styles.warningMsg("Something went wrong.\n")}`
+    );
   });
 });
 
@@ -640,6 +711,55 @@ describe("initializeGit", () => {
     expect(console.error).to.have.been.calledTwice;
     expect(console.error.secondCall).to.have.been.calledWithExactly(
       `\n  - ${styles.warningMsg("Something went wrong.\n")}`
+    );
+  });
+});
+
+describe("displayQuickstart", () => {
+  before(() => {
+    sinon.stub(console, "log");
+  });
+  beforeEach(() => {
+    console.log.reset();
+  });
+  after(() => {
+    console.log.restore();
+  });
+
+  it("Displays quickstart with npm", () => {
+    displayQuickstart({}, "");
+    expect(console.log).to.have.been.calledWithExactly(
+      formatCommand("npm start", "Start your development server.")
+    );
+    expect(console.log).to.have.been.calledWithExactly(
+      formatCommand("npm run build", "Build your website for production.")
+    );
+    expect(console.log).to.have.been.calledWithExactly(
+      formatCommand("npm test", "Run your tests.")
+    );
+  });
+  it("Displays quickstart with yarn", () => {
+    displayQuickstart({ useYarn: true }, "");
+    expect(console.log).to.have.been.calledWithExactly(
+      formatCommand("yarn start", "Start your development server.")
+    );
+    expect(console.log).to.have.been.calledWithExactly(
+      formatCommand("yarn build", "Build your website for production.")
+    );
+    expect(console.log).to.have.been.calledWithExactly(
+      formatCommand("yarn test", "Run your tests.")
+    );
+  });
+  it("Displays quickstart with pnpm", () => {
+    displayQuickstart({ usePnpm: true }, "");
+    expect(console.log).to.have.been.calledWithExactly(
+      formatCommand("pnpm start", "Start your development server.")
+    );
+    expect(console.log).to.have.been.calledWithExactly(
+      formatCommand("pnpm run build", "Build your website for production.")
+    );
+    expect(console.log).to.have.been.calledWithExactly(
+      formatCommand("pnpm test", "Run your tests.")
     );
   });
 });

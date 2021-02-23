@@ -24,7 +24,7 @@ module.exports = new Map(Object.entries({
     ],
   },
   vue: {
-    prodPackages: ["vue@3.0.0"],
+    prodPackages: ["vue"],
     devPackages: [
       "@snowpack/plugin-vue",
       "@snowpack/plugin-dotenv",

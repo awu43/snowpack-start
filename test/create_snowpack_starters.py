@@ -79,25 +79,32 @@ SOURCE_CONFIGS = {
 }
 
 def create_starter(config_item):
-    name, config = config_item
-    cmd = " ".join([
-        "node src/index.js",
-        f"snowpack-starters/{name}",
-        *config,
-        "--no-sass",
-        "--css-framework none",
-        "--bundler none",
-        "--license none",
-        "--skip-git-init",
-    ])
-    # print(cmd, flush=True)
-    subprocess.run(
-        cmd,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.STDOUT,
-        shell=True,
-    )
-    print(f"Created Snowpack starter template {name}.", flush=True)
+    template, config = config_item
+    folder = f"snowpack-starters/{template}"
+    if os.path.exists(folder):
+        print(
+            f"Snowpack starter template {template} already exists.",
+            flush=True
+        )
+    else:
+        cmd = " ".join([
+            "node src/index.js",
+            folder,
+            *config,
+            "--no-sass",
+            "--css-framework none",
+            "--bundler none",
+            "--license none",
+            "--skip-git-init",
+        ])
+        # print(cmd, flush=True)
+        subprocess.run(
+            cmd,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT,
+            shell=True,
+        )
+        print(f"Created Snowpack starter template {template}.", flush=True)
 
 def main():
     threads = os.cpu_count()

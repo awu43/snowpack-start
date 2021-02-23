@@ -7,23 +7,29 @@ const { installPackages } = require("../src/index.js")._testing;
 const { SOURCE_CONFIGS } = require("../src-templates");
 
 function createSnowpackApps() {
-  if (fse.pathExistsSync("created-snowpack-apps")) {
-    console.log("Delete the existing created-snowpack-apps folder before creating a new one");
-    return;
+  console.log("Creating Snowpack apps\n");
+  if (!fse.existsSync("created-snowpack-apps")) {
+    fse.mkdirSync("created-snowpack-apps");
+    fse.copyFileSync("dist-templates/index.js", "created-snowpack-apps/index.js");
   }
 
-  fse.mkdirSync("created-snowpack-apps");
-  fse.copyFileSync("dist-templates/index.js", "created-snowpack-apps/index.js");
   try {
     execa.sync("python test/create_snowpack_apps.py", { stdio: "inherit" });
   } catch (error) {
     for (const template of SOURCE_CONFIGS.keys()) {
-      const args = [
-        `created-snowpack-apps/${template}`,
-        `--template @snowpack/app-template-${template}`,
-        "--no-install",
-      ];
-      execa.sync("npx create-snowpack-app", args, { stdio: "inherit" });
+      const folder = `created-snowpack-apps/${template}`;
+      if (fse.existsSync(folder)) {
+        console.log(`Snowpack app template ${template} already exists.`);
+      } else {
+        const args = [
+          "npx",
+          `create-snowpack-app created-snowpack-apps/${template}`,
+          `--template @snowpack/app-template-${template}`,
+          "--no-install",
+        ];
+        execa.commandSync(args.join(" "));
+        console.log(`Created Snowpack app template ${template}.`);
+      }
     }
   }
   for (const template of SOURCE_CONFIGS.keys()) {
@@ -34,23 +40,27 @@ function createSnowpackApps() {
 }
 
 function createSnowpackStarters() {
-  if (fse.pathExistsSync("snowpack-starters")) {
-    console.log("Delete the existing snowpack-starters folder before creating a new one");
-    return;
+  console.log("\nCreating Snowpack starters\n");
+  if (!fse.existsSync("snowpack-starters")) {
+    fse.mkdirSync("snowpack-starters");
+    fse.copyFileSync("dist-templates/index.js", "snowpack-starters/index.js");
   }
 
-  fse.mkdirSync("snowpack-starters");
-  fse.copyFileSync("dist-templates/index.js", "snowpack-starters/index.js");
   try {
-    execa.sync("python test/create_snowpack_starters.py");
+    execa.sync("python test/create_snowpack_starters.py", { stdio: "inherit" });
   } catch (error) {
     process.chdir("snowpack-starters");
     for (const [template, config] of SOURCE_CONFIGS.entries()) {
-      fse.mkdirSync(template);
-      process.chdir(template);
-      fse.writeFileSync("package.json", JSON.stringify({}, null, 2), "utf8");
-      installPackages(config);
-      process.chdir("..");
+      if (fse.existsSync(template)) {
+        console.log(`Snowpack starter template ${template} already exists.`);
+      } else {
+        fse.mkdirSync(template);
+        process.chdir(template);
+        fse.writeFileSync("package.json", JSON.stringify({}, null, 2), "utf8");
+        installPackages(config);
+        process.chdir("..");
+        console.log(`Created Snowpack starter template ${template}.`);
+      }
     }
   }
 }
