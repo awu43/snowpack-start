@@ -1,7 +1,7 @@
 const path = require("path");
 
 const BASE_FILES = new Map(Object.entries({
-  gitignore: ".gitignore",
+  gitignore: "gitignore.txt",
 
   gpl: "license/GPL",
   mit: "license/MIT",
