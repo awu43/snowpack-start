@@ -1,6 +1,6 @@
 # snowpack-start
 
-The problem: manually customizing templates from `create-snowpack-app` was annoying.
+The problem: manually customizing templates from [`create-snowpack-app`](https://github.com/snowpackjs/snowpack/tree/main/create-snowpack-app/cli) was annoying.
 
 The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-start` installs your packages and generates boilerplate so you can get to developing faster.
 
@@ -109,7 +109,7 @@ Later options overwrite earlier ones:
 
 ## Issues
 ### Known
-* `@web/test-runner` has not been verified to work with Vue or LitElement.
+* `@snowpack/web-test-runner-plugin` has not been verified to work with Vue or LitElement.
 * ESLint init only supports React and Vue, additional setup required for using ESLint with Svelte, Preact, and LitElement.
 
 ### The mystery `.types` folder
