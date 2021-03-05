@@ -108,13 +108,12 @@ def create_starter(config_item):
 
 def main():
     threads = os.cpu_count()
-    if threads is not None and threads >= 6:
-        processes = min(12, math.floor(3/8 * threads))
-        with Pool(processes=processes) as pool:
-            pool.map(create_starter, SOURCE_CONFIGS.items())
-    else:
-        for temp in SOURCE_CONFIGS.items():
-            create_starter(temp)
+    if threads is None or threads < 6:
+        raise SystemExit(1)
+
+    processes = min(12, math.floor(3/8 * threads))
+    with Pool(processes=processes) as pool:
+        pool.map(create_starter, SOURCE_CONFIGS.items())
 
 if __name__ == "__main__":
     main()

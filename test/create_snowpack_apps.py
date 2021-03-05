@@ -30,19 +30,18 @@ def create_app(template_name):
 
 def main():
     threads = os.cpu_count()
-    if threads is not None and threads >= 6:
-        # 3 processes maxes out a 4C/8T Ryzen 1500X
-        # 6T -> 2p
-        # 8T -> 3p
-        # 12T -> 4p
-        # ...
-        # 32T -> 12p
-        processes = min(12, math.floor(3/8 * threads))
-        with Pool(processes=processes) as pool:
-            pool.map(create_app, TEMPLATE_NAMES)
-    else:
-        for temp in TEMPLATE_NAMES:
-            create_app(temp)
+    if threads is None or threads < 6:
+        raise SystemExit(1)
+
+    # 3 processes maxes out a 4C/8T Ryzen 1500X
+    # 6T -> 2p
+    # 8T -> 3p
+    # 12T -> 4p
+    # ...
+    # 32T -> 12p
+    processes = min(12, math.floor(3/8 * threads))
+    with Pool(processes=processes) as pool:
+        pool.map(create_app, TEMPLATE_NAMES)
 
 if __name__ == "__main__":
     main()
