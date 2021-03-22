@@ -352,16 +352,16 @@ function installPackages(options) {
   console.log(styles.cyanBright("\n- Installing package dependencies. This might take a couple of minutes."));
   let cmd;
   if (options.useYarn) {
-    cmd = "yarn add";
+    cmd = ["yarn", "add"];
   } else if (options.usePnpm) {
-    cmd = "pnpm add";
+    cmd = ["pnpm", "add"];
   } else {
-    cmd = "npm install";
+    cmd = ["npm", "install"];
   }
   if (prodPackages.length) {
-    execa.sync(cmd, prodPackages, { stdio: "inherit" });
+    execa.sync(cmd[0], [cmd[1], ...prodPackages], { stdio: "inherit" });
   }
-  execa.sync(`${cmd} -D`, devPackages, { stdio: "inherit" });
+  execa.sync(cmd[0], [cmd[1], "-D", ...devPackages], { stdio: "inherit" });
 }
 
 // ['plugin', {
@@ -474,7 +474,7 @@ function initializeTailwind(options) {
     } else {
       try {
         console.log(styles.cyanBright("\n- Generating tailwind.config.js."));
-        execa.sync("npx tailwindcss init", { stdio: "inherit" });
+        execa.sync("npx", ["tailwindcss", "init"], { stdio: "inherit" });
         console.log(`\n  - ${styles.successMsg("Success!\n")}`);
       } catch (error) {
         console.error(error);
@@ -489,7 +489,7 @@ function initializeEslint(options) {
     if (!options.skipEslintInit) {
       try {
         console.log(styles.cyanBright("\n- Initializing ESLint.\n"));
-        execa.sync("npx eslint --init", { stdio: "inherit" });
+        execa.sync("npx", ["eslint", "--init"], { stdio: "inherit" });
       } catch (error) {
         console.error(error);
         console.error(`\n  - ${styles.warningMsg("Something went wrong.\n")}`);
@@ -504,9 +504,11 @@ function initializeGit(options) {
   if (!options.skipGitInit) {
     console.log(styles.cyanBright("\n- Initializing git repo.\n"));
     try {
-      execa.sync("git init", { stdio: "inherit" });
-      execa.sync("git add -A", { stdio: "inherit" });
-      execa.sync("git commit -m \"Intial commit\"", { stdio: "inherit" });
+      execa.sync("git", ["init"], { stdio: "inherit" });
+      execa.sync("git", ["add", "-A"], { stdio: "inherit" });
+      execa.sync(
+        "git", ["commit", "-m", "\"Intial commit\""], { stdio: "inherit" }
+      );
       console.log(`\n  - ${styles.successMsg("Success!\n")}`);
     } catch (error) {
       console.error(error);

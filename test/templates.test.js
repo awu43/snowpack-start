@@ -22,11 +22,12 @@ const { SOURCE_PATHS, SOURCE_CONFIGS } = require("../src-templates");
 const { installPackages } = require("../src/index.js")._testing;
 
 const {
-  stripPackageVersions,
   newTempBase,
   // testDirectoryContentsEqual,
   newTempPackageJson,
   newTempSnowpackConfig,
+  parseExecaProdArgs,
+  parseExecaDevArgs,
 } = require("./test-utils.js");
 
 describe("createBase", () => {
@@ -120,8 +121,8 @@ describe("generatePackageJson", () => {
 function testPackagesInstalled(template) {
   installPackages(SOURCE_CONFIGS.get(template));
   expect(execa.sync).to.have.been.calledTwice;
-  const installedProdPackages = stripPackageVersions(execa.sync.args[0][1]);
-  const installedDevPackages = stripPackageVersions(execa.sync.args[1][1]);
+  const installedProdPackages = parseExecaProdArgs(execa.sync.args[0][1]);
+  const installedDevPackages = parseExecaDevArgs(execa.sync.args[1][1]);
   const basePackageJson = require(
     path.join(SOURCE_PATHS.get(template), "package.json")
   );
@@ -151,7 +152,7 @@ describe("installPackages", () => {
   it("Installs packages for blank template", () => {
     installPackages(SOURCE_CONFIGS.get("blank"));
     expect(execa.sync).to.have.been.calledOnce;
-    const installedDevPackages = stripPackageVersions(execa.sync.args[0][1]);
+    const installedDevPackages = parseExecaDevArgs(execa.sync.args[0][1]);
     const basePackageJson = require(
       path.join(SOURCE_PATHS.get("blank"), "package.json")
     );
@@ -163,7 +164,7 @@ describe("installPackages", () => {
   it("Installs packages for blank-typescript template", () => {
     installPackages(SOURCE_CONFIGS.get("blank-typescript"));
     expect(execa.sync).to.have.been.calledOnce;
-    const installedDevPackages = stripPackageVersions(execa.sync.args[0][1]);
+    const installedDevPackages = parseExecaDevArgs(execa.sync.args[0][1]);
     const basePackageJson = require(
       path.join(SOURCE_PATHS.get("blank-typescript"), "package.json")
     );

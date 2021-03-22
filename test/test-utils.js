@@ -76,10 +76,20 @@ const newTempSnowpackConfig = newTempConfigGenerator(
   generateSnowpackConfig, "snowpack.config.js"
 );
 
+function parseExecaProdArgs(execaArgs) {
+  return stripPackageVersions(execaArgs.slice(1));
+}
+
+function parseExecaDevArgs(execaArgs) {
+  return stripPackageVersions(execaArgs.slice(2));
+}
+
 module.exports = {
   stripPackageVersions,
   newTempBase,
   testDirectoryContentsEqual,
   newTempPackageJson,
   newTempSnowpackConfig,
+  parseExecaProdArgs,
+  parseExecaDevArgs,
 };

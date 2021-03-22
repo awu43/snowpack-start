@@ -28,6 +28,8 @@ const {
   testDirectoryContentsEqual,
   newTempPackageJson,
   newTempSnowpackConfig,
+  parseExecaProdArgs,
+  parseExecaDevArgs,
 } = require("./test-utils.js");
 
 const {
@@ -383,7 +385,7 @@ describe("installPackages", () => {
     ];
     installPackages({ ...BLANK_CONFIG, typescript: true });
     expect(execa.sync).to.have.been.calledOnce;
-    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
+    expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs @types/chai", () => {
     const devPackages = [
@@ -398,19 +400,19 @@ describe("installPackages", () => {
     ];
     installPackages({ ...BLANK_CONFIG, typescript: true, plugins: ["wtr"] });
     expect(execa.sync).to.have.been.calledOnce;
-    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
+    expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs ESLint", () => {
     const devPackages = ["snowpack", "eslint"];
     installPackages({ ...BLANK_CONFIG, codeFormatters: ["eslint"] });
     expect(execa.sync).to.have.been.calledOnce;
-    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
+    expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs Prettier", () => {
     const devPackages = ["snowpack", "prettier"];
     installPackages({ ...BLANK_CONFIG, codeFormatters: ["prettier"] });
     expect(execa.sync).to.have.been.calledOnce;
-    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
+    expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs ESLint and Prettier", () => {
     const devPackages = ["snowpack", "eslint", "prettier"];
@@ -418,7 +420,7 @@ describe("installPackages", () => {
       { ...BLANK_CONFIG, codeFormatters: ["eslint", "prettier"] }
     );
     expect(execa.sync).to.have.been.calledOnce;
-    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
+    expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs @snowpack/plugin-sass", () => {
     const devPackages = ["snowpack", "@snowpack/plugin-sass"];
@@ -426,19 +428,19 @@ describe("installPackages", () => {
       { ...BLANK_CONFIG, sass: true }
     );
     expect(execa.sync).to.have.been.calledOnce;
-    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
+    expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs no CSS framework", () => {
     const devPackages = ["snowpack"];
     installPackages({ ...BLANK_CONFIG, cssFramework: null });
     expect(execa.sync).to.have.been.calledOnce;
-    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
+    expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs Tailwind CSS", () => {
     const devPackages = ["snowpack", "tailwindcss"];
     installPackages({ ...BLANK_CONFIG, cssFramework: "tailwindcss" });
     expect(execa.sync).to.have.been.calledOnce;
-    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
+    expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs cssnano when using PostCSS without TailwindCSS", () => {
     const devPackages = [
@@ -451,7 +453,7 @@ describe("installPackages", () => {
     ];
     installPackages({ ...BLANK_CONFIG, plugins: ["postcss"] });
     expect(execa.sync).to.have.been.calledOnce;
-    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
+    expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs svelte-preprocess when using TailwindCSS with PostCSS", () => {
     const devPackages = [
@@ -469,20 +471,20 @@ describe("installPackages", () => {
       jsFramework: "svelte", cssFramework: "tailwindcss", plugins: ["postcss"]
     });
     expect(execa.sync).to.have.been.calledTwice;
-    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(["svelte"]);
-    expect(stripPackageVersions(execa.sync.args[1][1])).to.eql(devPackages);
+    expect(parseExecaProdArgs(execa.sync.args[0][1])).to.eql(["svelte"]);
+    expect(parseExecaDevArgs(execa.sync.args[1][1])).to.eql(devPackages);
   });
   it("Installs Bootstrap", () => {
     const devPackages = ["snowpack", "bootstrap"];
     installPackages({ ...BLANK_CONFIG, cssFramework: "bootstrap" });
     expect(execa.sync).to.have.been.calledOnce;
-    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
+    expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs @snowpack/plugin-webpack", () => {
     const devPackages = ["snowpack", "@snowpack/plugin-webpack"];
     installPackages({ ...BLANK_CONFIG, bundler: "webpack" });
     expect(execa.sync).to.have.been.calledOnce;
-    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
+    expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs plugins (postcss + wtr)", () => {
     const devPackages = [
@@ -498,19 +500,21 @@ describe("installPackages", () => {
     ];
     installPackages({ ...BLANK_CONFIG, plugins: ["postcss", "wtr"] });
     expect(execa.sync).to.have.been.calledOnce;
-    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(devPackages);
+    expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
   });
   it("Installs packages using Yarn", () => {
     installPackages({ ...BLANK_CONFIG, useYarn: true });
     expect(execa.sync).to.have.been.calledOnce;
-    expect(execa.sync.args[0][0]).to.equal("yarn add -D");
-    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(["snowpack"]);
+    expect(execa.sync.args[0][0]).to.equal("yarn");
+    expect(execa.sync.args[0][1].slice(0, 2)).to.eql(["add", "-D"]);
+    expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(["snowpack"]);
   });
   it("Installs packages using pnpm", () => {
     installPackages({ ...BLANK_CONFIG, usePnpm: true });
     expect(execa.sync).to.have.been.calledOnce;
-    expect(execa.sync.args[0][0]).to.equal("pnpm add -D");
-    expect(stripPackageVersions(execa.sync.args[0][1])).to.eql(["snowpack"]);
+    expect(execa.sync.args[0][0]).to.equal("pnpm");
+    expect(execa.sync.args[0][1].slice(0, 2)).to.eql(["add", "-D"]);
+    expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(["snowpack"]);
   });
 });
 
@@ -604,7 +608,7 @@ describe("initializeTailwind", () => {
       styles.cyanBright("\n- Generating tailwind.config.js.")
     );
     expect(execa.sync).to.have.been.calledOnceWithExactly(
-      "npx tailwindcss init", { stdio: "inherit" }
+      "npx", ["tailwindcss", "init"], { stdio: "inherit" }
     );
     expect(console.log.secondCall).to.have.been.calledWithExactly(
       `\n  - ${styles.successMsg("Success!\n")}`
@@ -656,7 +660,7 @@ describe("initializeEslint", () => {
   it("Initializes ESLint", () => {
     initializeEslint({ codeFormatters: ["eslint"] });
     expect(execa.sync).to.have.been.calledOnceWithExactly(
-      "npx eslint --init", { stdio: "inherit" }
+      "npx", ["eslint", "--init"], { stdio: "inherit" }
     );
   });
   it("Displays an error message", () => {
@@ -696,13 +700,13 @@ describe("initializeGit", () => {
   it("Initializes a git repository", () => {
     initializeGit({});
     expect(execa.sync.firstCall).to.have.been.calledWithExactly(
-      "git init", { stdio: "inherit" }
+      "git", ["init"], { stdio: "inherit" }
     );
     expect(execa.sync.secondCall).to.have.been.calledWithExactly(
-      "git add -A", { stdio: "inherit" }
+      "git", ["add", "-A"], { stdio: "inherit" }
     );
     expect(execa.sync.thirdCall).to.have.been.calledWithExactly(
-      "git commit -m \"Intial commit\"", { stdio: "inherit" }
+      "git", ["commit", "-m", "\"Intial commit\""], { stdio: "inherit" }
     );
   });
   it("Displays an error message", () => {
