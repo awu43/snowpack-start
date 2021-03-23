@@ -346,13 +346,15 @@ describe("generatePackageJson", () => {
     const packageJson = newTempPackageJson(
       { ...BLANK_CONFIG, bundler: "webpack" },
     );
-    expect(packageJson.browserslist).to.eql(["defaults"]);
+    expect(packageJson.browserslist)
+      .to.eql(["defaults", "not ie 11", "not op_mini all"]);
   });
   it("Adds browserlist if using PostCSS", () => {
     const packageJson = newTempPackageJson(
       { ...BLANK_CONFIG, plugins: ["postcss"] },
     );
-    expect(packageJson.browserslist).to.eql(["defaults"]);
+    expect(packageJson.browserslist)
+      .to.eql(["defaults", "not ie 11", "not op_mini all"]);
   });
 });
 

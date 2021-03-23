@@ -230,7 +230,11 @@ function generatePackageJson(options) {
 
   if (options.bundler === "webpack"
       || (options.plugins || []).includes("postcss")) {
-    appPackageJson.browserslist = ["defaults"];
+    appPackageJson.browserslist = [
+      "defaults",
+      "not ie 11",
+      "not op_mini all",
+    ];
   }
 
   // No example tests for Vue/LitElement
