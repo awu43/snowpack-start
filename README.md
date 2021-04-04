@@ -1,17 +1,20 @@
 # snowpack-start
 
+> [What is Snowpack?](https://www.snowpack.dev/)
+>
+> Snowpack is a lightning-fast frontend build tool, designed for the modern web. It is an alternative to heavier, more complex bundlers like webpack or Parcel in your development workflow.
+
 The problem: manually customizing templates from [`create-snowpack-app`](https://github.com/snowpackjs/snowpack/tree/main/create-snowpack-app/cli) was annoying.
 
 The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-start` installs your packages and generates boilerplate so you can get to developing faster.
 
-## New in 1.0.0-beta-4
+## New in 1.0.0-beta.4
 
 ### 🚨 Breaking Changes
 None
 
 ### ⚠️ Non-breaking Changes
-`1ac43b4` — Changed default browserslist to exclude IE11 and Opera Mini
-
+`1ac43b4` — Changed default browserslist to exclude IE11 and Opera Mini<br>
 `f650914` — Added CSS import renaming
 
 ### 🔧 Fixes
