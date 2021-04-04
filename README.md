@@ -4,7 +4,7 @@ The problem: manually customizing templates from [`create-snowpack-app`](https:/
 
 The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-start` installs your packages and generates boilerplate so you can get to developing faster.
 
-## Upcoming in 1.0.0-beta-4
+## New in 1.0.0-beta-4
 
 ### 🚨 Breaking Changes
 None
@@ -12,7 +12,7 @@ None
 ### ⚠️ Non-breaking Changes
 `1ac43b4` — Changed default browserslist to exclude IE11 and Opera Mini
 
-latest — Added CSS import renaming
+`f650914` — Added CSS import renaming
 
 ### 🔧 Fixes
 None
