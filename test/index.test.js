@@ -204,6 +204,13 @@ describe("createBase", () => {
     expect(file("src/index.css")).to.not.exist;
     expect(file("src/index.scss")).to.exist;
   });
+  it("Changes CSS imports to SCSS for react template", () => {
+    newTempBase({ jsFramework: "react", sass: true });
+    expect(file("src/App.jsx")).to.not.contain("App.css");
+    expect(file("src/App.jsx")).to.contain("App.scss");
+    expect(file("src/index.jsx")).to.not.contain("index.css");
+    expect(file("src/index.jsx")).to.contain("index.scss");
+  });
   it("Renames CSS files to SCSS for react-typescript template", () => {
     newTempBase({ jsFramework: "react", typescript: true, sass: true });
     expect(file("src/App.css")).to.not.exist;
@@ -211,12 +218,26 @@ describe("createBase", () => {
     expect(file("src/index.css")).to.not.exist;
     expect(file("src/index.scss")).to.exist;
   });
+  it("Changes CSS imports to SCSS for react-typescript template", () => {
+    newTempBase({ jsFramework: "react", typescript: true, sass: true });
+    expect(file("src/App.tsx")).to.not.contain("App.css");
+    expect(file("src/App.tsx")).to.contain("App.scss");
+    expect(file("src/index.tsx")).to.not.contain("index.css");
+    expect(file("src/index.tsx")).to.contain("index.scss");
+  });
   it("Renames CSS files to SCSS for vue-typescript template", () => {
     newTempBase({ jsFramework: "vue", typescript: true, sass: true });
     expect(file("src/components/Bar.module.css")).to.not.exist;
     expect(file("src/components/Bar.module.scss")).to.exist;
     expect(file("src/components/Foo.module.css")).to.not.exist;
     expect(file("src/components/Foo.module.scss")).to.exist;
+  });
+  it("Changes CSS imports to SCSS for vue-typescript template", () => {
+    newTempBase({ jsFramework: "vue", typescript: true, sass: true });
+    expect(file("src/components/Bar.jsx")).to.not.contain("Bar.module.css");
+    expect(file("src/components/Bar.jsx")).to.contain("Bar.module.scss");
+    expect(file("src/components/Foo.tsx")).to.not.contain("Foo.module.css");
+    expect(file("src/components/Foo.tsx")).to.contain("Foo.module.scss");
   });
   it("Does not rename any CSS files for svelt-template", () => {
     sinon.stub(fse, "renameSync");
@@ -231,12 +252,26 @@ describe("createBase", () => {
     expect(file("src/index.css")).to.not.exist;
     expect(file("src/index.scss")).to.exist;
   });
+  it("Changes CSS imports to SCSS for preact template", () => {
+    newTempBase({ jsFramework: "preact", sass: true });
+    expect(file("src/App.jsx")).to.not.contain("App.css");
+    expect(file("src/App.jsx")).to.contain("App.scss");
+    expect(file("src/index.jsx")).to.not.contain("index.css");
+    expect(file("src/index.jsx")).to.contain("index.scss");
+  });
   it("Renames CSS files to SCSS for preact-typescript template", () => {
     newTempBase({ jsFramework: "preact", typescript: true, sass: true });
     expect(file("src/App.css")).to.not.exist;
     expect(file("src/App.scss")).to.exist;
     expect(file("src/index.css")).to.not.exist;
     expect(file("src/index.scss")).to.exist;
+  });
+  it("Changes CSS imports to SCSS for preact-typescript template", () => {
+    newTempBase({ jsFramework: "preact", typescript: true, sass: true });
+    expect(file("src/App.tsx")).to.not.contain("App.css");
+    expect(file("src/App.tsx")).to.contain("App.scss");
+    expect(file("src/index.tsx")).to.not.contain("index.css");
+    expect(file("src/index.tsx")).to.contain("index.scss");
   });
   it("Renames CSS files to SCSS for lit-element template", () => {
     newTempBase({ jsFramework: "lit-element", sass: true });

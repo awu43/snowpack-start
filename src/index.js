@@ -110,6 +110,7 @@ async function createBase(options) {
   }
 
   if (options.sass) {
+    const jsExt = options.typescript ? "ts" : "js";
     switch (options.jsFramework) {
       case "blank":
       case "lit-element":
@@ -119,6 +120,8 @@ async function createBase(options) {
       case "preact":
         fse.renameSync("src/App.css", "src/App.scss");
         fse.renameSync("src/index.css", "src/index.scss");
+        fileReadAndReplace(`src/App.${jsExt}x`, "App.css", "App.scss");
+        fileReadAndReplace(`src/index.${jsExt}x`, "index.css", "index.scss");
         break;
       case "vue":
         if (options.typescript) {
@@ -127,6 +130,12 @@ async function createBase(options) {
           );
           fse.renameSync(
             "src/components/Foo.module.css", "src/components/Foo.module.scss"
+          );
+          fileReadAndReplace(
+            "src/components/Bar.jsx", "Bar.module.css", "Bar.module.scss"
+          );
+          fileReadAndReplace(
+            "src/components/Foo.tsx", "Foo.module.css", "Foo.module.scss"
           );
         }
         break;
