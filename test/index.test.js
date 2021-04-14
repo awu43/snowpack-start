@@ -598,7 +598,6 @@ describe("generateSnowpackConfig", () => {
     );
     expect(snowpackConfig.optimize).to.eql({
       bundle: true,
-      treeshake: true,
       minify: true,
       target: "es2017",
     });

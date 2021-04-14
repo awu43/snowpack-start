@@ -406,7 +406,6 @@ const SNOWPACK_CONFIG_PLUGINS = new Map(Object.entries({
 
 const DEFAULT_BUILTIN_BUNDLER_SETTINGS = [
   "bundle: true",
-  "treeshake: true",
   "minify: true",
   "target: 'es2017'",
 ];
