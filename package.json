@@ -9,11 +9,11 @@
     "init",
     "create"
   ],
-  "author": "andrew-1135",
+  "author": "awu43",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/andrew-1135/snowpack-start.git"
+    "url": "https://github.com/awu43/snowpack-start.git"
   },
   "engines": {
     "node": ">=10"

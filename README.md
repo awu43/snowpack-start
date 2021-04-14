@@ -34,7 +34,7 @@ All CLI options (including project directory) are optional.
 With no CLI options:
 
 <div>
-    <img src="https://github.com/andrew-1135/snowpack-start/raw/master/media/no-cli-args.gif" alt="No CLI options">
+    <img src="https://github.com/awu43/snowpack-start/raw/master/media/no-cli-args.gif" alt="No CLI options">
 </div>
 
 <br>
@@ -42,7 +42,7 @@ With no CLI options:
 With some CLI options:
 
 <div>
-    <img src="https://github.com/andrew-1135/snowpack-start/raw/master/media/some-cli-args.gif" alt="Some CLI options">
+    <img src="https://github.com/awu43/snowpack-start/raw/master/media/some-cli-args.gif" alt="Some CLI options">
 </div>
 
 
@@ -95,10 +95,10 @@ Using all CLI options and skipping prompts entirely is also possible.
 <br>
 
 ### Default Options
-On startup, `snowpack-start` will look for a `.snowpackstart.js` file in the home directory. If it exists, then those options are loaded and applied as the initial selections/values of the prompts. Otherwise, the [built-in default options](https://github.com/andrew-1135/snowpack-start/blob/master/src/defaults.js) are used.
+On startup, `snowpack-start` will look for a `.snowpackstart.js` file in the home directory. If it exists, then those options are loaded and applied as the initial selections/values of the prompts. Otherwise, the [built-in default options](https://github.com/awu43/snowpack-start/blob/master/src/defaults.js) are used.
 
 <div>
-    <img src="https://github.com/andrew-1135/snowpack-start/raw/master/media/default-app.png" alt="Using default options">
+    <img src="https://github.com/awu43/snowpack-start/raw/master/media/default-app.png" alt="Using default options">
 </div>
 
 <br>
@@ -107,7 +107,7 @@ On startup, `snowpack-start` will look for a `.snowpackstart.js` file in the hom
 Specify paths to files, and options will be loaded from them:
 
 <div>
-    <img src="https://github.com/andrew-1135/snowpack-start/raw/master/media/loading-files.png" alt="Loading options from files">
+    <img src="https://github.com/awu43/snowpack-start/raw/master/media/loading-files.png" alt="Loading options from files">
 </div>
 
 <br>
@@ -120,7 +120,7 @@ Defaults >> Files >> CLI >> Prompts
 Later options overwrite earlier ones:
 
 <div>
-    <img src="https://github.com/andrew-1135/snowpack-start/raw/master/media/overwriting-options.png" alt="Overwriting previous options">
+    <img src="https://github.com/awu43/snowpack-start/raw/master/media/overwriting-options.png" alt="Overwriting previous options">
 </div>
 
 <br>
@@ -134,7 +134,7 @@ Later options overwrite earlier ones:
 When using `create-snowpack-app` with `app-template-react`, a `.types` folder of unknown purpose is generated in the app directory. Deleting it has no effect on the dev server, testing, or the final build and nobody answered [when I asked](https://github.com/snowpackjs/snowpack/discussions/2657) what it was for so it has been removed from distribution. If you're having issues with React, try adding it back in.
 
 ### Reporting
-Please report any other issues [here](https://github.com/andrew-1135/snowpack-start/issues).
+Please report any other issues [here](https://github.com/awu43/snowpack-start/issues).
 
 <br>
 
