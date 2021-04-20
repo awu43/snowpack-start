@@ -15,7 +15,8 @@ None
 
 ### ⚠️ Non-breaking Changes
 `f99bb0c` — Removed `treeshake` from Snowpack bundler default settings<br>
-`_` — Removed cssnano when using Snowpack bundler
+`d4777d6` — Removed cssnano when using Snowpack bundler
+`_` — Added limited PostCSS processing in development env
 
 ### 🔧 Fixes
 None

@@ -38,6 +38,7 @@ const {
   fileReadAndReplace,
   generateSvelteConfig,
   createBase,
+  DEFAULT_BROWSERSLIST,
   generatePackageJson,
   packageMajorVersion,
   installPackages,
@@ -386,15 +387,13 @@ describe("generatePackageJson", () => {
     const packageJson = newTempPackageJson(
       { ...BLANK_CONFIG, bundler: "webpack" },
     );
-    expect(packageJson.browserslist)
-      .to.eql(["defaults", "not ie 11", "not op_mini all"]);
+    expect(packageJson.browserslist).to.eql(DEFAULT_BROWSERSLIST);
   });
   it("Adds browserlist if using PostCSS", () => {
     const packageJson = newTempPackageJson(
       { ...BLANK_CONFIG, plugins: ["postcss"] },
     );
-    expect(packageJson.browserslist)
-      .to.eql(["defaults", "not ie 11", "not op_mini all"]);
+    expect(packageJson.browserslist).to.eql(DEFAULT_BROWSERSLIST);
   });
 });
 

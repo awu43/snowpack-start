@@ -178,6 +178,20 @@ async function createBase(options) {
   }
 }
 
+const DEFAULT_BROWSERSLIST = {
+  production: [
+    "defaults",
+    "not ie 11",
+    "not op_mini all",
+  ],
+  development: [
+    "last 1 chrome version",
+    "last 1 firefox version",
+    "last 1 safari version",
+    "last 1 edge version",
+  ]
+};
+
 function generatePackageJson(options) {
   const appPackageJson = {
     private: true,
@@ -241,11 +255,7 @@ function generatePackageJson(options) {
 
   if (options.bundler === "webpack"
       || (options.plugins || []).includes("postcss")) {
-    appPackageJson.browserslist = [
-      "defaults",
-      "not ie 11",
-      "not op_mini all",
-    ];
+    appPackageJson.browserslist = DEFAULT_BROWSERSLIST;
   }
 
   // No example tests for Vue/LitElement
@@ -616,6 +626,7 @@ module.exports = {
     fileReadAndReplace,
     generateSvelteConfig,
     createBase,
+    DEFAULT_BROWSERSLIST,
     generatePackageJson,
     packageMajorVersion,
     installPackages,
