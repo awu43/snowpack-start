@@ -14,7 +14,8 @@ The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-st
 None
 
 ### ⚠️ Non-breaking Changes
-`_` — Removed `treeshake` from Snowpack bundler default settings
+`f99bb0c` — Removed `treeshake` from Snowpack bundler default settings<br>
+`_` — Removed cssnano when using Snowpack bundler
 
 ### 🔧 Fixes
 None

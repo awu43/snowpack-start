@@ -53,7 +53,9 @@ const {
 const BASE_FILES = require("../dist-files");
 const BASE_TEMPLATES = require("../dist-templates");
 
-const BLANK_CONFIG = { jsFramework: "blank" };
+const BLANK_CONFIG = {
+  jsFramework: "blank", cssFramework: null, bundler: null
+};
 
 describe("stripPackageVersions", () => {
   it("Strips 3 from vue@3", () => {
@@ -290,14 +292,17 @@ describe("createBase", () => {
   it("Removes TailwindCSS from postcss.config.js", () => {
     newTempBase({ ...BLANK_CONFIG, plugins: ["postcss"] });
     expect(file("postcss.config.js")).to.not.contain("require('tailwindcss')");
-    expect(file("postcss.config.js")).to.contain("require('cssnano')");
   });
-  it("Removes cssnano from postcss.config.js", () => {
+  it("Removes cssnano from postcss.config.js when using TailwindCSS", () => {
     newTempBase({
       ...BLANK_CONFIG, cssFramework: "tailwindcss", plugins: ["postcss"]
     });
     expect(file("postcss.config.js")).to.not.contain("require('cssnano')");
     expect(file("postcss.config.js")).to.contain("require('tailwindcss')");
+  });
+  it("Removes cssnano from postcss.config.js when using Snowpack bundler", () => {
+    newTempBase({ ...BLANK_CONFIG, bundler: "snowpack", plugins: ["postcss"] });
+    expect(file("postcss.config.js")).to.not.contain("require('cssnano')");
   });
   it("Copies web-test-runner.config.js", () => {
     newTempBase({ jsFramework: "blank", plugins: ["wtr"] });
@@ -479,7 +484,7 @@ describe("installPackages", () => {
     expect(execa.sync).to.have.been.calledOnce;
     expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
   });
-  it("Installs cssnano when using PostCSS without TailwindCSS", () => {
+  it("Installs cssnano when using PostCSS", () => {
     const devPackages = [
       "snowpack",
       "postcss",
@@ -492,7 +497,36 @@ describe("installPackages", () => {
     expect(execa.sync).to.have.been.calledOnce;
     expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
   });
-  it("Installs svelte-preprocess when using TailwindCSS with PostCSS", () => {
+  it("Doesn't install cssnano when using PostCSS with TailwindCSS", () => {
+    const devPackages = [
+      "snowpack",
+      "tailwindcss",
+      "postcss",
+      "postcss-cli",
+      "postcss-preset-env",
+      "@snowpack/plugin-postcss",
+    ];
+    installPackages({
+      ...BLANK_CONFIG, cssFramework: "tailwindcss", plugins: ["postcss"]
+    });
+    expect(execa.sync).to.have.been.calledOnce;
+    expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
+  });
+  it("Doesn't install cssnano when using PostCSS with Snowpack bundler", () => {
+    const devPackages = [
+      "snowpack",
+      "postcss",
+      "postcss-cli",
+      "postcss-preset-env",
+      "@snowpack/plugin-postcss",
+    ];
+    installPackages({
+      ...BLANK_CONFIG, bundler: "snowpack", plugins: ["postcss"]
+    });
+    expect(execa.sync).to.have.been.calledOnce;
+    expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
+  });
+  it("Installs svelte-preprocess when using Svelte and TailwindCSS with PostCSS", () => {
     const devPackages = [
       "snowpack",
       "@snowpack/plugin-svelte",

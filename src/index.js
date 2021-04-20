@@ -148,17 +148,19 @@ async function createBase(options) {
     let postcssConfig = fse.readFileSync(
       BASE_FILES.get("postcssConfig"), "utf8"
     );
-    if (options.cssFramework === "tailwindcss") {
+    if (options.cssFramework === "tailwindcss"
+        || options.bundler === "snowpack") {
       postcssConfig = postcssConfig.replace(
         /\s+process.env.NODE_ENV === 'production' \? require\('cssnano'\).+/,
         ""
       );
-    } else {
+    }
+    // cssnano doesn't work with TailwindCSS
+    if (options.cssFramework !== "tailwindcss") {
       postcssConfig = postcssConfig.replace(
         /require\('tailwindcss'\),\s+/, ""
       );
     }
-    // cssnano doesn't work with TailwindCSS
     fse.writeFileSync("postcss.config.js", postcssConfig);
   }
   if ((options.plugins || []).includes("wtr")) {
@@ -335,9 +337,12 @@ function installPackages(options) {
     devPackages.push(...PLUGIN_PACKAGES.get(plugin));
   }
   if ((options.plugins || []).includes("postcss")) {
-    if (options.cssFramework !== "tailwindcss") {
+    if (options.cssFramework !== "tailwindcss"
+        && options.bundler !== "snowpack") {
       devPackages.push("cssnano");
-    } else if (options.jsFramework === "svelte") {
+    }
+    if (options.jsFramework === "svelte"
+        && options.cssFramework === "tailwindcss") {
       devPackages.push("svelte-preprocess");
     }
   }
