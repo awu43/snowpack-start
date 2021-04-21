@@ -396,12 +396,18 @@ function installPackages(options) {
 // ${s(4)}}]`;
 // }
 
-const srsConfig = `['@snowpack/plugin-run-script', {
+const TS_PLUGIN_CONFIG = `['@snowpack/plugin-typescript', {
+${s(6)}// Yarn PnP workaround
+${s(6)}// https://www.npmjs.com/package/@snowpack/plugin-typescript
+${s(6)}...(process.versions.pnp ? { tsc: 'yarn pnpify tsc' } : {}),
+${s(4)}}]`;
+
+const SRS_CONFIG = `['@snowpack/plugin-run-script', {
 ${s(6)}cmd: 'echo \"production build command.\"',
 ${s(6)}watch: 'echo \"dev server command.\"', // (optional)
 ${s(4)}}]`;
 
-const sbsConfig = `['@snowpack/plugin-build-script', {
+const SBS_CONFIG = `['@snowpack/plugin-build-script', {
 ${s(6)}input: [], // files to watch
 ${s(6)}output: [], // files to export
 ${s(6)}cmd: 'echo \"build command.\"', // cmd to run
@@ -410,8 +416,8 @@ ${s(4)}}]`;
 const SNOWPACK_CONFIG_PLUGINS = new Map(Object.entries({
   webpack: "'@snowpack/plugin-webpack'",
   postcss: "'@snowpack/plugin-postcss'",
-  srs: srsConfig,
-  sbs: sbsConfig,
+  srs: SRS_CONFIG,
+  sbs: SBS_CONFIG,
 }));
 
 const DEFAULT_BUILTIN_BUNDLER_SETTINGS = [
@@ -427,7 +433,6 @@ ${s(4)}/* ... */
 ${s(2)}},
 `;
 
-// TODO: Update plugin-typescript config
 function generateSnowpackConfig(options) {
   let snowpackConfig = fse.readFileSync(
     BASE_FILES.get("snowpackConfig"), "utf8"
@@ -447,11 +452,9 @@ function generateSnowpackConfig(options) {
         1, 0, "'@snowpack/plugin-vue/plugin-tsx-jsx.js'"
       );
     } else if (options.jsFramework === "preact") {
-      configPluginsList.splice(
-        1, 0, "'@snowpack/plugin-typescript'"
-      );
+      configPluginsList.splice(1, 0, TS_PLUGIN_CONFIG);
     } else {
-      configPluginsList.push("'@snowpack/plugin-typescript'");
+      configPluginsList.push(TS_PLUGIN_CONFIG);
     }
   }
 

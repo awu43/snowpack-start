@@ -588,7 +588,11 @@ describe("generateSnowpackConfig", () => {
     const snowpackConfig = newTempSnowpackConfig(
       { ...BLANK_CONFIG, typescript: true }
     );
-    expect(snowpackConfig.plugins).to.eql(["@snowpack/plugin-typescript"]);
+    expect(snowpackConfig.plugins).to.eql([
+      ["@snowpack/plugin-typescript", {
+        ...(process.versions.pnp ? { tsc: 'yarn pnpify tsc' } : {})
+      }]
+    ]);
   });
   it("Adds @snowpack/plugin-sass", () => {
     const snowpackConfig = newTempSnowpackConfig(
