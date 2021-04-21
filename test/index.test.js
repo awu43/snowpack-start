@@ -106,7 +106,7 @@ describe("generateSvelteConfig", () => {
     expect(file("svelte.config.js")).to.contain("defaults");
     expect(file("svelte.config.js")).to.not.contain("postcss");
   });
-  it("Removes defaults property", () => {
+  it("Removes defaults property when not using TypeScript", () => {
     generateSvelteConfig({ plugins: ["postcss"] });
     expect(file("svelte.config.js")).to.not.contain("defaults");
     expect(file("svelte.config.js")).to.contain("postcss");
@@ -114,13 +114,11 @@ describe("generateSvelteConfig", () => {
   it("Removes require('tailwindcss')", () => {
     generateSvelteConfig({ plugins: ["postcss"] });
     expect(file("svelte.config.js")).to.not.contain("require('tailwindcss')");
-    expect(file("svelte.config.js")).to.contain("require('cssnano')");
   });
-  it("Removes require('cssnano')", () => {
-    generateSvelteConfig({ cssFramework: "tailwindcss", plugins: ["postcss"] });
+  it("Removes require('cssnano') when using Snowpack bundler", () => {
+    generateSvelteConfig({ bundler: "snowpack", plugins: ["postcss"] });
     expect(file("svelte.config.js")).to.contain("postcss");
     expect(file("svelte.config.js")).to.not.contain("require('cssnano')");
-    expect(file("svelte.config.js")).to.contain("require('tailwindcss')");
   });
 });
 
@@ -293,13 +291,6 @@ describe("createBase", () => {
   it("Removes TailwindCSS from postcss.config.js", () => {
     newTempBase({ ...BLANK_CONFIG, plugins: ["postcss"] });
     expect(file("postcss.config.js")).to.not.contain("require('tailwindcss')");
-  });
-  it("Removes cssnano from postcss.config.js when using TailwindCSS", () => {
-    newTempBase({
-      ...BLANK_CONFIG, cssFramework: "tailwindcss", plugins: ["postcss"]
-    });
-    expect(file("postcss.config.js")).to.not.contain("require('cssnano')");
-    expect(file("postcss.config.js")).to.contain("require('tailwindcss')");
   });
   it("Removes cssnano from postcss.config.js when using Snowpack bundler", () => {
     newTempBase({ ...BLANK_CONFIG, bundler: "snowpack", plugins: ["postcss"] });
@@ -496,21 +487,6 @@ describe("installPackages", () => {
     expect(execa.sync).to.have.been.calledOnce;
     expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
   });
-  it("Doesn't install cssnano when using PostCSS with TailwindCSS", () => {
-    const devPackages = [
-      "snowpack",
-      "tailwindcss",
-      "postcss",
-      "postcss-cli",
-      "postcss-preset-env",
-      "@snowpack/plugin-postcss",
-    ];
-    installPackages({
-      ...BLANK_CONFIG, cssFramework: "tailwindcss", plugins: ["postcss"]
-    });
-    expect(execa.sync).to.have.been.calledOnce;
-    expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
-  });
   it("Doesn't install cssnano when using PostCSS with Snowpack bundler", () => {
     const devPackages = [
       "snowpack",
@@ -535,6 +511,7 @@ describe("installPackages", () => {
       "postcss-cli",
       "postcss-preset-env",
       "@snowpack/plugin-postcss",
+      "cssnano",
       "svelte-preprocess",
     ];
     installPackages({

@@ -39,12 +39,14 @@ function generateSvelteConfig(options) {
   if (options.cssFramework !== "tailwindcss") {
     svelteConfig = svelteConfig.replace(/require\('tailwindcss'\),\s+/, "");
   }
+  if ((options.plugins || []).includes("postcss")
+      && options.bundler === "snowpack") {
+    svelteConfig = svelteConfig.replace(/\s+require\('cssnano'\),/, "");
+  }
   if (!(options.plugins || []).includes("postcss")) {
     svelteConfig = svelteConfig.replace(
       new RegExp(`${s(4)}postcss.+?${s(4)}},\n`, "s"), ""
     );
-  } else if (options.cssFramework === "tailwindcss") {
-    svelteConfig = svelteConfig.replace(/\s+require\('cssnano'\),/, "");
   }
   if (options.typescript || (options.plugins || []).includes("postcss")) {
     fse.writeFileSync("svelte.config.js", svelteConfig);
@@ -148,14 +150,12 @@ async function createBase(options) {
     let postcssConfig = fse.readFileSync(
       BASE_FILES.get("postcssConfig"), "utf8"
     );
-    if (options.cssFramework === "tailwindcss"
-        || options.bundler === "snowpack") {
+    if (options.bundler === "snowpack") {
       postcssConfig = postcssConfig.replace(
         /\s+process.env.NODE_ENV === 'production' \? require\('cssnano'\).+/,
         ""
       );
     }
-    // cssnano doesn't work with TailwindCSS
     if (options.cssFramework !== "tailwindcss") {
       postcssConfig = postcssConfig.replace(
         /require\('tailwindcss'\),\s+/, ""
@@ -347,8 +347,7 @@ function installPackages(options) {
     devPackages.push(...PLUGIN_PACKAGES.get(plugin));
   }
   if ((options.plugins || []).includes("postcss")) {
-    if (options.cssFramework !== "tailwindcss"
-        && options.bundler !== "snowpack") {
+    if (options.bundler !== "snowpack") {
       devPackages.push("cssnano");
     }
     if (options.jsFramework === "svelte"
