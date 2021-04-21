@@ -8,7 +8,7 @@ The problem: manually customizing templates from [`create-snowpack-app`](https:/
 
 The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-start` installs your packages and generates boilerplate so you can get to developing faster.
 
-## Upcoming in 1.0.0-beta.5
+## New in 1.0.0-beta.5
 
 ### 🚨 Breaking Changes
 None
@@ -18,7 +18,7 @@ None
 `d4777d6` — Removed cssnano when using Snowpack bundler<br>
 `2831bf9` — Added limited PostCSS processing in development env<br>
 `2b174ab` — Added back cssnano when using Tailwind CSS<br>
-`_` — Moved `script` element in `blank` and `blank-typescript` templates
+`3fd530c` — Moved `script` element in `blank` and `blank-typescript` templates
 
 ### 🔧 Fixes
 None
