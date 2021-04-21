@@ -431,6 +431,7 @@ ${s(4)}/* ... */
 ${s(2)}},
 `;
 
+// TODO: Update plugin-typescript config
 function generateSnowpackConfig(options) {
   let snowpackConfig = fse.readFileSync(
     BASE_FILES.get("snowpackConfig"), "utf8"
