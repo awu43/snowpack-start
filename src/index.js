@@ -439,6 +439,9 @@ function generateSnowpackConfig(options) {
   );
 
   const configPluginsList = [...JS_FRAMEWORKS.get(options.jsFramework).plugins];
+  if (options.jsFramework === "preact" && options.typescript) {
+    configPluginsList.reverse();
+  }
 
   if (options.jsFramework === "preact" && !options.typescript) {
     snowpackConfig = snowpackConfig.replace(
@@ -451,8 +454,6 @@ function generateSnowpackConfig(options) {
       configPluginsList.splice(
         1, 0, "'@snowpack/plugin-vue/plugin-tsx-jsx.js'"
       );
-    } else if (options.jsFramework === "preact") {
-      configPluginsList.splice(1, 0, TS_PLUGIN_CONFIG);
     } else {
       configPluginsList.push(TS_PLUGIN_CONFIG);
     }

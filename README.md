@@ -20,7 +20,12 @@ None
 `2b174ab` — Added back cssnano when using Tailwind CSS
 
 ### 🔧 Fixes
-`_` — Added Yarn PnP workaround in plugin-typescript config (from Snowpack templates)
+None
+
+### 🏔️ Snowpack Template Changes
+`8b748ee` — Changed `tsconfig.json` in `lit-element-typescript` template<br>
+`720ff9e` — Added Yarn PnP workaround in `@snowpack/plugin-typescript` config<br>
+`_` — Changed order of Snowpack plugins in `preact-typescript` template
 
 <br>
 
