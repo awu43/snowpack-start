@@ -6,6 +6,7 @@
 const path = require("path");
 
 const execa = require("execa");
+const tmp = require("tmp");
 
 const chai = require("chai");
 const chaiFiles = require("chai-files");
@@ -19,7 +20,10 @@ const { file } = chaiFiles;
 
 const { SOURCE_PATHS, SOURCE_CONFIGS } = require("../src-templates");
 
-const { installPackages } = require("../src/index.js")._testing;
+const {
+  installPackages,
+  generateSvelteConfig
+} = require("../src/index.js")._testing;
 
 const {
   newTempBase,
@@ -40,20 +44,19 @@ describe("createBase", () => {
     console.error.restore();
   });
 
-  // it("Copies the .types folder for react template", () => {
-  //   newTempBase(SOURCE_CONFIGS.get("react"));
-  //   testDirectoryContentsEqual(
-  //     ".types", path.join(SOURCE_PATHS.get("react"), ".types")
-  //   );
-  // });
-  // it("Copies svelte.config.js for svelte-typescript template", () => {
-  //   newTempBase(SOURCE_CONFIGS.get("svelte-typescript"));
-  //   const baseSvelteConfig = path.join(
-  //     SOURCE_PATHS.get("svelte-typescript"), "svelte.config.js"
-  //   );
-  //   expect(file("svelte.config.js")).to.equal(file(baseSvelteConfig));
-  // });
-  // Fails due to trailing newline
+  it("Generates svelte.config.js for svelte-typescript template", () => {
+    const tempDir = tmp.dirSync();
+    process.chdir(tempDir.name);
+    generateSvelteConfig({
+      typescript: true, cssFramework: null, bundler: null, plugins: []
+    });
+    const generatedSvelteConfig = path.join(tempDir.name, "svelte.config.js");
+
+    const baseSvelteConfig = path.join(
+      SOURCE_PATHS.get("svelte-typescript"), "svelte.config.js"
+    );
+    expect(file(generatedSvelteConfig)).to.equal(file(baseSvelteConfig));
+  });
   it("Copies babel.config.json for lit-element template", () => {
     newTempBase(SOURCE_CONFIGS.get("lit-element"));
     const baseBabelConfig = path.join(
