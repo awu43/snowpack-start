@@ -86,10 +86,6 @@ async function createBase(options) {
   fse.copySync(path.join(targetTemplateDir, "public"), "public");
   fse.copySync(path.join(targetTemplateDir, "src"), "src");
 
-  // if (options.jsFramework === "react" && !options.typescript) {
-  //   fse.copySync(path.join(targetTemplateDir, ".types"), ".types");
-  // }
-  // What does this folder do??
   if (options.jsFramework === "svelte") {
     generateSvelteConfig(options);
   }

@@ -132,9 +132,6 @@ Later options overwrite earlier ones:
 * `@snowpack/web-test-runner-plugin` has not been verified to work with Vue or LitElement.
 * ESLint init only supports React and Vue, additional setup required for using ESLint with Svelte, Preact, and LitElement.
 
-### The mystery `.types` folder
-When using `create-snowpack-app` with `app-template-react`, a `.types` folder of unknown purpose is generated in the app directory. Deleting it has no effect on the dev server, testing, or the final build and nobody answered [when I asked](https://github.com/snowpackjs/snowpack/discussions/2657) what it was for so it has been removed from distribution. If you're having issues with React, try adding it back in.
-
 ### Reporting
 Please report any other issues [here](https://github.com/awu43/snowpack-start/issues).
 
