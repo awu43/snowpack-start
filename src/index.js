@@ -223,10 +223,8 @@ function generatePackageJson(options) {
     jsExts.length > 1 ? `{${jsExts.join(",")}}` : jsExts.toString()
   );
 
-  // eslint-disable-next-line quotes
-  const eslintFormat = 'eslint --fix \"src/**/*\"';
-  // eslint-disable-next-line quotes
-  const eslintLint = 'eslint \"src/**/*\"';
+  const eslintFormat = `eslint --fix \"src/**/*.${fmtExts}\"`;
+  const eslintLint = `eslint \"src/**/*.${fmtExts}\"`;
   const prettierFormat = `prettier --write \"src/**/*.${fmtExts}\"`;
   const prettierLint = `prettier --check \"src/**/*.${fmtExts}\"`;
 

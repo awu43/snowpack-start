@@ -8,25 +8,19 @@ The problem: manually customizing templates from [`create-snowpack-app`](https:/
 
 The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-start` installs your packages and generates boilerplate so you can get to developing faster.
 
-## New in 1.0.0-beta.5
+## Upcoming in 1.0.0-beta.6
 
 ### 🚨 Breaking Changes
 None
 
 ### ⚠️ Non-breaking Changes
-`f99bb0c` — Removed `treeshake` from Snowpack bundler default settings<br>
-`d4777d6` — Removed cssnano when using Snowpack bundler<br>
-`2831bf9` — Added limited PostCSS processing in development env<br>
-`2b174ab` — Added back cssnano when using Tailwind CSS<br>
-`3fd530c` — Moved `script` element in `blank` and `blank-typescript` templates
-
-### 🔧 Fixes
 None
 
+### 🔧 Fixes
+`_` — Added file extensions to ESLint scripts
+
 ### 🏔️ Snowpack Template Changes
-`8b748ee` — Changed `tsconfig.json` in `lit-element-typescript` template<br>
-`720ff9e` — Added Yarn PnP workaround in `@snowpack/plugin-typescript` config<br>
-`11d7fd2` — Changed order of Snowpack plugins in `preact-typescript` template
+None
 
 <br>
 
