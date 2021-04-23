@@ -17,7 +17,7 @@ None
 None
 
 ### 🔧 Fixes
-`_` — Added file extensions to ESLint scripts
+`a0c8b28` — Added file extensions to ESLint scripts
 
 ### 🏔️ Snowpack Template Changes
 None

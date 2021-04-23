@@ -351,12 +351,12 @@ describe("generatePackageJson", () => {
         start: "snowpack dev",
         build: "snowpack build",
         test: 'echo \"This template does not include a test runner by default.\" && exit 1',
-        format: 'eslint --fix \"src/**/*\"',
-        lint: 'eslint \"src/**/*\"',
+        format: 'eslint --fix \"src/**/*.js\"',
+        lint: 'eslint \"src/**/*.js\"',
       },
     });
   });
-  /// Prettier only is tested in templates
+  // Prettier only is tested in templates
   it("Adds scripts for ESLint and Prettier", () => {
     const packageJson = newTempPackageJson(
       { ...BLANK_CONFIG, codeFormatters: ["eslint", "prettier"] }
@@ -367,8 +367,8 @@ describe("generatePackageJson", () => {
         start: "snowpack dev",
         build: "snowpack build",
         test: 'echo \"This template does not include a test runner by default.\" && exit 1',
-        esfix: 'eslint --fix \"src/**/*\"',
-        eslint: 'eslint \"src/**/*\"',
+        esfix: 'eslint --fix \"src/**/*.js\"',
+        eslint: 'eslint \"src/**/*.js\"',
         pwrite: 'prettier --write \"src/**/*.js\"',
         pcheck: 'prettier --check \"src/**/*.js\"',
       },
