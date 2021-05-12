@@ -8,6 +8,11 @@ The problem: manually customizing templates from [`create-snowpack-app`](https:/
 
 The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-start` installs your packages and generates boilerplate so you can get to developing faster.
 
+## New in 1.0.0-beta.7
+
+### 🔧 Fixes
+`_` — Changed TypeScript from dependency to dev dependency
+
 ## New in 1.0.0-beta.6
 
 ### 🚨 Breaking Changes
