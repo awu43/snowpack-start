@@ -27,10 +27,11 @@
     "snowpack-start": "./dist/index.js"
   },
   "scripts": {
-    "transpile": "tsc",
-    "posttranspile": "node posttranspile.js",
+    "build": "tsc",
+    "postbuild": "node postbuild.js",
     "generate": "node test/generate.js",
     "gen-test": "mocha \"test/src-templates-test.js\" && mocha \"test/package-versions-test.js\"",
+    "pretest": "npm run build",
     "test": "mocha \"test/*.test.js\"",
     "coverage": "nyc --reporter=html --reporter=text mocha \"test/*.test.js\""
   },

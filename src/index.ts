@@ -307,7 +307,7 @@ function installPackages(options: OptionSet) {
     devPackages.push(...jsFramework.wtrPackages);
   }
 
-  if (["react", "svelte"].includes(options.jsFramework)
+  if (["react", "svelte", "preact"].includes(options.jsFramework)
       && options.typescript && (options.plugins || []).includes("wtr")) {
     devPackages.push("@types/mocha");
   }
