@@ -42,7 +42,7 @@ module.exports = new Map(Object.entries({
       "@snowpack/plugin-svelte",
       "@snowpack/plugin-dotenv",
     ],
-    tsPackages: ["svelte-preprocess"],
+    tsPackages: ["svelte-preprocess", "@tsconfig/svelte"],
     wtrPackages: ["@testing-library/svelte"],
     plugins: [
       "'@snowpack/plugin-svelte'",
