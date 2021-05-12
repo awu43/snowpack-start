@@ -11,7 +11,7 @@ The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-st
 ## New in 1.0.0-beta.7
 
 ### 🔧 Fixes
-`_` — Changed TypeScript from dependency to dev dependency
+`5ff6b8e` — Changed TypeScript from dependency to dev dependency
 
 ## New in 1.0.0-beta.6
 
