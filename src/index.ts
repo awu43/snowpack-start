@@ -140,23 +140,7 @@ async function createBase(options: OptionSet) {
         fileReadAndReplace(`src/App.${jsExt}x`, "App.css", "App.scss");
         fileReadAndReplace(`src/index.${jsExt}x`, "index.css", "index.scss");
         break;
-      case "vue":
-        if (options.typescript) {
-          fse.renameSync(
-            "src/components/Bar.module.css", "src/components/Bar.module.scss"
-          );
-          fse.renameSync(
-            "src/components/Foo.module.css", "src/components/Foo.module.scss"
-          );
-          fileReadAndReplace(
-            "src/components/Bar.jsx", "Bar.module.css", "Bar.module.scss"
-          );
-          fileReadAndReplace(
-            "src/components/Foo.tsx", "Foo.module.css", "Foo.module.scss"
-          );
-        }
-        break;
-      default: // Svelte template has no CSS files
+      default: // Vue/Svelte templates have no CSS files
         break;
     }
   }

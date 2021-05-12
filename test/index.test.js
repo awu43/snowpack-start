@@ -173,7 +173,6 @@ describe("createBase", () => {
     testDirectoryContentsEqual(
       "src", path.join(BASE_TEMPLATES.get("vue-typescript"), "src")
     );
-    // vue-ts template tests multiple levels
   });
   it("Copies types folder and tsconfig.json", () => {
     newTempBase({ ...BLANK_CONFIG, typescript: true });
@@ -226,23 +225,27 @@ describe("createBase", () => {
     expect(file("src/index.tsx")).to.not.contain("index.css");
     expect(file("src/index.tsx")).to.contain("index.scss");
   });
-  it("Renames CSS files to SCSS for vue-typescript template", () => {
-    newTempBase({ jsFramework: "vue", typescript: true, sass: true });
-    expect(file("src/components/Bar.module.css")).to.not.exist;
-    expect(file("src/components/Bar.module.scss")).to.exist;
-    expect(file("src/components/Foo.module.css")).to.not.exist;
-    expect(file("src/components/Foo.module.scss")).to.exist;
+  it("Does not rename any CSS files for vue template", () => {
+    sinon.stub(fse, "renameSync");
+    newTempBase({ jsFramework: "vue", sass: true });
+    expect(fse.renameSync).to.not.have.been.called;
+    fse.renameSync.restore();
   });
-  it("Changes CSS imports to SCSS for vue-typescript template", () => {
+  it("Does not rename any CSS files for vue-typescript template", () => {
+    sinon.stub(fse, "renameSync");
     newTempBase({ jsFramework: "vue", typescript: true, sass: true });
-    expect(file("src/components/Bar.jsx")).to.not.contain("Bar.module.css");
-    expect(file("src/components/Bar.jsx")).to.contain("Bar.module.scss");
-    expect(file("src/components/Foo.tsx")).to.not.contain("Foo.module.css");
-    expect(file("src/components/Foo.tsx")).to.contain("Foo.module.scss");
+    expect(fse.renameSync).to.not.have.been.called;
+    fse.renameSync.restore();
   });
-  it("Does not rename any CSS files for svelt-template", () => {
+  it("Does not rename any CSS files for svelte template", () => {
     sinon.stub(fse, "renameSync");
     newTempBase({ jsFramework: "svelte", sass: true });
+    expect(fse.renameSync).to.not.have.been.called;
+    fse.renameSync.restore();
+  });
+  it("Does not rename any CSS files for svelte-typescript template", () => {
+    sinon.stub(fse, "renameSync");
+    newTempBase({ jsFramework: "svelte", typescript: true, sass: true });
     expect(fse.renameSync).to.not.have.been.called;
     fse.renameSync.restore();
   });
