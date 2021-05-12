@@ -8,7 +8,7 @@ The problem: manually customizing templates from [`create-snowpack-app`](https:/
 
 The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-start` installs your packages and generates boilerplate so you can get to developing faster.
 
-## Upcoming in 1.0.0-beta.6
+## New in 1.0.0-beta.6
 
 ### 🚨 Breaking Changes
 None
@@ -23,8 +23,8 @@ None
 ### 🏔️ Snowpack Template Changes
 `bc80ded` — Added `types` to `tsconfig.json` in `react-typescript` template<br>
 `eea75d3` — Removed `tsx` components from `vue-typescript` template<br>
-`535175e` — Added `@tsconfig/svelte/tsconfig.json` as dev dependency and changed `tsconfig.json` for `svelte-typescript` template<br>
-`535175e` — Added `types` to `tsconfig.json` in `preact-typescript` template<br>
+`535175e` — Added `@tsconfig/svelte` as dev dependency and changed `tsconfig.json` for `svelte-typescript` template<br>
+`535175e` — Added `types` to `tsconfig.json` and added `@types/mocha` as dev dependency for `preact-typescript` template<br>
 `0612c77` — Added `types` to `tsconfig.json` in `lit-element-typescript` template
 
 <br>
