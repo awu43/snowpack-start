@@ -8,28 +8,47 @@ const path = require("path");
 const execa = require("execa");
 const fse = require("fs-extra");
 
-const styles = require("./styles.js");
-const { getOptions } = require("./get-options.js");
-const JS_FRAMEWORKS = require("./js-frameworks.js");
+const styles = require("./styles.ts");
+const { getOptions } = require("./get-options.ts");
+const JS_FRAMEWORKS = require("./js-frameworks.ts");
 const BASE_FILES = require("../dist-files");
 const BASE_TEMPLATES = require("../dist-templates");
 
+interface OptionSet {
+  projectDir: string,
+  jsFramework: string,
+  typescript: boolean,
+  codeFormatters: string[],
+  sass: boolean,
+  cssFramework: string,
+  bundler: string,
+  plugins: string[],
+  license: string,
+  author: string,
+
+  useYarn: boolean,
+  usePnpm: boolean,
+  skipTailwindInit: boolean,
+  skipGitInit: boolean,
+  skipEslintInit: boolean,
+}
+
 // For spacing in template literals
-function s(numSpaces) {
+function s(numSpaces: number) {
   return " ".repeat(numSpaces);
 }
 
-function templateName(options) {
+function templateName(options: OptionSet) {
   return `${options.jsFramework}${options.typescript ? "-typescript" : ""}`;
 }
 
-function fileReadAndReplace(file, targetStr, replStr) {
+function fileReadAndReplace(file: string, targetStr: string, replStr: string) {
   fse.writeFileSync(
     file, fse.readFileSync(file, "utf8").replace(targetStr, replStr), "utf8"
   );
 }
 
-function generateSvelteConfig(options) {
+function generateSvelteConfig(options: OptionSet) {
   let svelteConfig = fse.readFileSync(
     BASE_FILES.get("svelteConfig"), "utf8"
   );
@@ -53,7 +72,7 @@ function generateSvelteConfig(options) {
   }
 }
 
-async function createBase(options) {
+async function createBase(options: OptionSet) {
   console.log(`\n- Creating a new Snowpack app in ${styles.cyanBright(path.resolve(options.projectDir))}`);
   try {
     if (fse.pathExistsSync(options.projectDir)) {
@@ -188,8 +207,11 @@ const DEFAULT_BROWSERSLIST = {
   ]
 };
 
-function generatePackageJson(options) {
-  const appPackageJson = {
+interface PackageJson {
+  [key: string]: any;
+}
+function generatePackageJson(options: OptionSet) {
+  const appPackageJson: PackageJson = {
     private: true,
     scripts: {
       start: "snowpack dev",
@@ -203,9 +225,9 @@ function generatePackageJson(options) {
   if (["react", "preact"].includes(options.jsFramework)) {
     jsExts.push("jsx");
   } else if (options.jsFramework === "vue") {
-    jsExts.shift("vue");
+    jsExts.unshift("vue");
   } else if (options.jsFramework === "svelte") {
-    jsExts.shift("svelte");
+    jsExts.unshift("svelte");
   }
   if (options.typescript) {
     if (options.jsFramework === "blank") {
@@ -283,11 +305,11 @@ const PLUGIN_PACKAGES = new Map(Object.entries({
 }));
 
 const MAJOR_VERSION_REGEX = /(\d+)\.\d+\.\d+/;
-function packageMajorVersion(version) {
-  return MAJOR_VERSION_REGEX.exec(version)[1];
+function packageMajorVersion(version: string) {
+  return MAJOR_VERSION_REGEX.exec(version)![1];
 }
 
-function installPackages(options) {
+function installPackages(options: OptionSet) {
   const prodPackages = [];
   const devPackages = ["snowpack"];
 
@@ -338,7 +360,7 @@ function installPackages(options) {
   }
 
   for (const plugin of options.plugins || []) {
-    devPackages.push(...PLUGIN_PACKAGES.get(plugin));
+    devPackages.push(...(PLUGIN_PACKAGES.get(plugin) as string[]));
   }
   if ((options.plugins || []).includes("postcss")) {
     if (options.bundler !== "snowpack") {
@@ -431,7 +453,7 @@ ${s(4)}/* ... */
 ${s(2)}},
 `;
 
-function generateSnowpackConfig(options) {
+function generateSnowpackConfig(options: OptionSet) {
   let snowpackConfig = fse.readFileSync(
     BASE_FILES.get("snowpackConfig"), "utf8"
   );
@@ -492,7 +514,7 @@ function generateSnowpackConfig(options) {
   fse.writeFileSync("snowpack.config.js", snowpackConfig);
 }
 
-function initializeTailwind(options) {
+function initializeTailwind(options: OptionSet) {
   if (options.cssFramework === "tailwindcss") {
     if (options.skipTailwindInit) {
       console.log(styles.warningMsg("\n- Skipping TailwindCSS init.\n"));
@@ -509,7 +531,7 @@ function initializeTailwind(options) {
   }
 }
 
-function initializeEslint(options) {
+function initializeEslint(options: OptionSet) {
   if ((options.codeFormatters || []).includes("eslint")) {
     if (!options.skipEslintInit) {
       try {
@@ -525,7 +547,7 @@ function initializeEslint(options) {
   }
 }
 
-function initializeGit(options) {
+function initializeGit(options: OptionSet) {
   if (!options.skipGitInit) {
     console.log(styles.cyanBright("\n- Initializing git repo.\n"));
     try {
@@ -545,11 +567,11 @@ function initializeGit(options) {
 }
 
 // From create-snowpack-app
-function formatCommand(command, description) {
+function formatCommand(command: string, description: string) {
   return `${s(2)}${command.padEnd(17)}${description}`;
 }
 
-function displayQuickstart(options, startDir) {
+function displayQuickstart(options: OptionSet, startDir: string) {
   let installer;
   if (options.useYarn) {
     installer = "yarn";

@@ -3,7 +3,7 @@ const path = require("path");
 const execa = require("execa");
 const fse = require("fs-extra");
 
-const { installPackages } = require("../src/index.js")._testing;
+const { installPackages } = require("../dist/index.js")._testing;
 const { SOURCE_CONFIGS } = require("../src-templates");
 
 function createSnowpackApps() {
@@ -26,16 +26,12 @@ function createSnowpackApps() {
           `create-snowpack-app created-snowpack-apps/${template}`,
           `--template @snowpack/app-template-${template}`,
           "--no-install",
+          "--no-git",
         ];
         execa.commandSync(args.join(" "));
         console.log(`Created Snowpack app template ${template}.`);
       }
     }
-  }
-  for (const template of SOURCE_CONFIGS.keys()) {
-    fse.rmdirSync(
-      path.join("created-snowpack-apps", template, ".git"), { recursive: true }
-    );
   }
 }
 

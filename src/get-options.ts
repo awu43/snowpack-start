@@ -1,3 +1,5 @@
+export {}; // Makes 'Cannot redeclare block-scoped variable' go away
+
 /* eslint-disable global-require */
 /* eslint-disable import/no-dynamic-require */
 /* eslint-disable no-console */
@@ -9,17 +11,17 @@ const execa = require("execa"); // Better child_process
 const fse = require("fs-extra"); // Extra file manipulation utils
 const prompts = require("prompts"); // User prompts
 
-const styles = require("./styles.js");
+const styles = require("./styles.ts");
 const PACKAGE_JSON = require("../package.json");
 
 const userDefaultsPath = path.join(os.homedir(), ".snowpackstart.js");
 const DEFAULT_OPTIONS = (
   fse.pathExistsSync(userDefaultsPath)
     ? require(userDefaultsPath)
-    : require("./defaults.js")
+    : require("./defaults.ts")
 );
 
-function projectDirValidator(projectDir) {
+function projectDirValidator(projectDir: string) {
   if (!projectDir.trim().length) {
     return "No directory provided";
   } else if (fse.pathExistsSync(projectDir)) {
@@ -29,6 +31,28 @@ function projectDirValidator(projectDir) {
   }
 }
 
+interface BasePrompt {
+  type: string | null;
+  name: string;
+}
+interface Choice {
+  title: string;
+  value: string;
+  selected?: boolean;
+}
+interface SelectPrompt {
+  type: string;
+  name: string;
+  message: string;
+  choices: Choice[];
+}
+interface TogglePrompt {
+  type: string;
+  name: string;
+  active: string;
+  inactive: string;
+  initial?: boolean;
+}
 const PROMPTS = new Map(Object.entries({
   projectDir: {
     type: "text",
@@ -115,7 +139,7 @@ const PROMPTS = new Map(Object.entries({
     ],
   },
   author: {
-    type: (prev, values) => {
+    type: (prev: string, values: object) => {
       if (prev === "mit" && "license" in values) {
         return "text";
       } else {
@@ -167,48 +191,57 @@ const OPTION_TYPES = new Map(Object.entries({
   skipGitInit: "boolean",
 }));
 
+function isString(opt: any) {
+  return typeof opt === "string";
+}
+function isBoolean(opt: any) {
+  return typeof opt === "boolean";
+}
+function isArray(opt: any) {
+  return Array.isArray(opt);
+}
 const OPTION_TYPE_CHECKS = new Map(Object.entries({
-  projectDir: opt => typeof opt === "string",
-  jsFramework: opt => typeof opt === "string",
-  typescript: opt => typeof opt === "boolean",
-  codeFormatters: opt => Array.isArray(opt),
-  sass: opt => typeof opt === "boolean",
-  cssFramework: opt => typeof opt === "string",
-  bundler: opt => typeof opt === "string",
-  plugins: opt => Array.isArray(opt),
-  license: opt => typeof opt === "string",
-  author: opt => typeof opt === "string",
+  projectDir: isString,
+  jsFramework: isString,
+  typescript: isBoolean,
+  codeFormatters: isArray,
+  sass: isBoolean,
+  cssFramework: isString,
+  bundler: isString,
+  plugins: isArray,
+  license: isString,
+  author: isString,
 
-  useYarn: opt => typeof opt === "boolean",
-  usePnpm: opt => typeof opt === "boolean",
-  skipTailwindInit: opt => typeof opt === "boolean",
-  skipGitInit: opt => typeof opt === "boolean",
-  skipEslintInit: opt => typeof opt === "boolean",
+  useYarn: isBoolean,
+  usePnpm: isBoolean,
+  skipTailwindInit: isBoolean,
+  skipGitInit: isBoolean,
+  skipEslintInit: isBoolean,
 }));
 
 class OptionNameError extends Error {
-  constructor(optName) {
+  constructor(optName: string) {
     super(styles.errorMsg(`Unknown option ${styles.cyanBright(optName)}`));
     this.name = "OptionNameError";
   }
 }
 
 class OptionTypeError extends Error {
-  constructor(optName, optValue) {
+  constructor(optName: string, optValue: any) {
     super(styles.errorMsg(`Expected value of type ${styles.cyanBright(OPTION_TYPES.get(optName))} for ${styles.cyanBright(optName)}, received type ${styles.cyanBright(typeof optValue)} (${styles.cyanBright(optValue)})`));
     this.name = "OptionTypeError";
   }
 }
 
 class OptionValueError extends Error {
-  constructor(optName, optValue, promptChoices) {
+  constructor(optName: string, optValue: any, promptChoices: string[]) {
     super(styles.errorMsg(`Invalid value ${styles.cyanBright(optValue)} for ${styles.cyanBright(optName)}\nValid values: ${promptChoices.map(c => styles.cyanBright(c)).join("/")}`));
     this.name = "OptionValueError";
   }
 }
 
 // From create-snowpack-app
-function packageManagerInstalled(packageManager) {
+function packageManagerInstalled(packageManager: string) {
   try {
     execa.commandSync(`${packageManager} --version`);
     return true;
@@ -217,23 +250,43 @@ function packageManagerInstalled(packageManager) {
   }
 }
 
-function validateOptions(options) {
+interface OptionSet {
+  projectDir?: string,
+  jsFramework?: string,
+  typescript?: boolean,
+  codeFormatters?: string[],
+  sass?: boolean,
+  cssFramework?: string,
+  bundler?: string,
+  plugins?: string[],
+  license?: string,
+  author?: string,
+
+  useYarn?: boolean,
+  usePnpm?: boolean,
+  skipTailwindInit?: boolean,
+  skipGitInit?: boolean,
+  skipEslintInit?: boolean,
+}
+function validateOptions(options: OptionSet) {
   for (const [optName, optValue] of Object.entries(options)) {
     if (!OPTION_TYPES.has(optName)) {
       throw new OptionNameError(optName);
     }
-    if (!OPTION_TYPE_CHECKS.get(optName)(optValue)) {
+    if (!OPTION_TYPE_CHECKS.get(optName)!(optValue)) {
       throw new OptionTypeError(optName, optValue);
     }
-    const promptType = PROMPTS.get(optName).type;
-    if (["select", "multiselect"].includes(promptType)) {
-      const promptChoices = PROMPTS.get(optName).choices.map(c => c.value);
+    const promptType = PROMPTS.get(optName)!.type;
+    if (["select", "multiselect"].includes(promptType as string)) {
+      const promptChoices = (
+        (PROMPTS.get(optName) as SelectPrompt).choices.map(c => c.value)
+      );
       const invalidSingleSelect = (
         promptType === "select" && !promptChoices.includes(optValue)
       );
       const invalidMultiselect = (
         promptType === "multiselect"
-        && !optValue.every(v => promptChoices.includes(v))
+        && !optValue.every((v: string) => promptChoices.includes(v))
       );
       if (invalidSingleSelect || invalidMultiselect) {
         throw new OptionValueError(optName, optValue, promptChoices);
@@ -255,15 +308,15 @@ function validateOptions(options) {
   }
 }
 
-function choicesLine(optName) {
-  return PROMPTS.get(optName).choices
+function choicesLine(optName: string) {
+  return (PROMPTS.get(optName) as SelectPrompt).choices
     .map(c => styles.cyanBright(c.value))
     .join("/");
 }
 
-function choicesList(optName) {
-  const optMessage = `${PROMPTS.get(optName).message} (<${styles.cyanBright("none")}> for none)`;
-  const values = PROMPTS.get(optName).choices
+function choicesList(optName: string) {
+  const optMessage = `${(PROMPTS.get(optName) as SelectPrompt).message} (<${styles.cyanBright("none")}> for none)`;
+  const values = (PROMPTS.get(optName) as SelectPrompt).choices
     .map(c => `<${styles.cyanBright(c.value)}> (${c.title})`).join("\n");
   return [optMessage, "-".repeat(10), values, "-".repeat(10)].join("\n");
 }
@@ -277,13 +330,17 @@ function displayDefaults() {
   console.log("");
 }
 
+interface CliOptionSet extends OptionSet {
+  defaults?: boolean;
+  load?: string[];
+}
 function getCliOptions() {
   let projectDir;
   let cliOptions = new commander.Command(PACKAGE_JSON.name)
     .version(PACKAGE_JSON.version)
     .arguments("[project-dir]") // No prefix required
     .usage(`${styles.cyanBright("[project-directory]")} [other options]`)
-    .action(pd => { projectDir = pd; })
+    .action((pd: string) => { projectDir = pd; })
     .description("Start a new custom Snowpack app.")
     .option("-d, --defaults", "Use default options")
     .option("--load <files...>", "Load options from files")
@@ -329,7 +386,7 @@ function getCliOptions() {
   return cliOptions;
 }
 
-function loadFiles(cliOptions) {
+function loadFiles(cliOptions: CliOptionSet) {
   const loadedOptions = [];
   if (cliOptions.load) {
     for (const file of cliOptions.load) {
@@ -357,27 +414,27 @@ function loadFiles(cliOptions) {
   return loadedOptions;
 }
 
-function overwrittenLater(optName, laterOptions) {
+function overwrittenLater(optName: string, laterOptions: OptionSet[]) {
   return laterOptions.some(opts => optName in opts);
 }
 
 function applyDefaultsToPrompts() {
   for (const [optName, optValue] of Object.entries(DEFAULT_OPTIONS)) {
     if (typeof optValue === "string") {
-      const targetPrompt = PROMPTS.get(optName);
+      const targetPrompt = PROMPTS.get(optName) as any;
       if (targetPrompt.type === "text" || targetPrompt.name === "author") {
         // Project dir, author
         targetPrompt.initial = optValue;
       } else if (targetPrompt.type === "select") {
         // JS framework, CSS framework, bundler, license
         targetPrompt.initial = (
-          targetPrompt.choices.findIndex(c => c.value === optValue)
+          targetPrompt.choices.findIndex((c: Choice) => c.value === optValue)
         );
       }
     } else if (typeof optValue === "boolean") { // TypeScript, Sass
-      PROMPTS.get(optName).initial = optValue;
+      (PROMPTS.get(optName) as TogglePrompt).initial = optValue;
     } else if (Array.isArray(optValue)) { // Code formatters, plugins
-      for (const choice of PROMPTS.get(optName).choices) {
+      for (const choice of (PROMPTS.get(optName) as SelectPrompt).choices) {
         if (optValue.includes(choice.value)) {
           choice.selected = true;
         }
@@ -400,7 +457,7 @@ async function getOptions() {
   const cliOptions = getCliOptions();
   const loadedOptions = loadFiles(cliOptions);
 
-  const options = {};
+  const options: {[key: string]: boolean | string | string[] | null } = {};
   if (cliOptions.defaults) {
     try {
       validateOptions(DEFAULT_OPTIONS);
@@ -418,7 +475,7 @@ async function getOptions() {
 
     console.log(styles.cyanBright("\n-- Default options --"));
     for (const [optName, optValue] of Object.entries(options)) {
-      let optMessage = styles.whiteBold(PROMPTS.get(optName).message);
+      let optMessage = styles.whiteBold(PROMPTS.get(optName)!.message);
       if (overwrittenLater(optName, [cliOptions, ...loadedOptions])) {
         optMessage = `${styles.errorMsg("×")} ${optMessage}`;
       } else {
@@ -441,7 +498,9 @@ async function getOptions() {
 
       console.log(styles.cyanBright(`\n-- ${fileName} --`));
       for (const [optName, optValue] of Object.entries(opts)) {
-        let optMessage = styles.whiteBold(PROMPTS.get(optName).message);
+        let optMessage = styles.whiteBold(
+          (PROMPTS.get(optName) as SelectPrompt).message
+        );
         if (overwrittenLater(optName, [cliOptions, ...arr.slice(i + 1)])) {
           optMessage = `${styles.errorMsg("×")} ${optMessage}`;
         } else {
@@ -466,7 +525,9 @@ async function getOptions() {
       process.exit(1);
     }
     for (const [optName, optValue] of Object.entries(cliOptions)) {
-      const optMessage = styles.whiteBold(`${PROMPTS.get(optName).message}: `);
+      const optMessage = styles.whiteBold(
+        `${PROMPTS.get(optName)!.message}: `
+      );
       console.log(`${styles.successMsg("√")} ${optMessage}${optValue}`);
     }
     Object.assign(options, cliOptions);
@@ -474,7 +535,7 @@ async function getOptions() {
 
   const remainingPrompts = (
     [...PROMPTS.keys()]
-      .filter(k => PROMPTS.get(k).type !== null) // Doesn't catch author
+      .filter(k => (PROMPTS.get(k) as BasePrompt).type !== null) // Doesn't catch author
       .filter(k => !(k in options))
       .map(k => PROMPTS.get(k))
   );

@@ -88,7 +88,7 @@ def create_starter(config_item):
         )
     else:
         cmd = " ".join([
-            "node src/index.js",
+            "node dist/index.js",
             folder,
             *config,
             "--no-sass",

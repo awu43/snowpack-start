@@ -17,7 +17,8 @@ None
 None
 
 ### 🔧 Fixes
-`a0c8b28` — Added file extensions to ESLint scripts
+`a0c8b28` — Added file extensions to `package.json` ESLint scripts<br>
+`_` — Fixed file extensions for Vue+Svelte `package.json` ESLint/Prettier scripts
 
 ### 🏔️ Snowpack Template Changes
 None
@@ -97,7 +98,7 @@ Using all CLI options and skipping prompts entirely is also possible.
 <br>
 
 ### Default Options
-On startup, `snowpack-start` will look for a `.snowpackstart.js` file in the home directory. If it exists, then those options are loaded and applied as the initial selections/values of the prompts. Otherwise, the [built-in default options](https://github.com/awu43/snowpack-start/blob/master/src/defaults.js) are used.
+On startup, `snowpack-start` will look for a `.snowpackstart.js` file in the home directory. If it exists, then those options are loaded and applied as the initial selections/values of the prompts. Otherwise, the [built-in default options](https://github.com/awu43/snowpack-start/blob/master/src/defaults.ts) are used.
 
 <div>
     <img src="https://github.com/awu43/snowpack-start/raw/master/media/default-app.png" alt="Using default options">

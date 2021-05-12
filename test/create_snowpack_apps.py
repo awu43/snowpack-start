@@ -18,6 +18,7 @@ def create_app(template_name):
             f"npx create-snowpack-app {folder}",
             f"--template @snowpack/app-template-{template_name}",
             "--no-install",
+            "--no-git",
         ])
         # print(cmd, flush=True)
         subprocess.run(
