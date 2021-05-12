@@ -18,7 +18,7 @@ None
 
 ### 🔧 Fixes
 `a0c8b28` — Added file extensions to `package.json` ESLint scripts<br>
-`_` — Fixed file extensions for Vue+Svelte `package.json` ESLint/Prettier scripts
+`ae20c41` — Fixed file extensions for Vue+Svelte `package.json` ESLint/Prettier scripts
 
 ### 🏔️ Snowpack Template Changes
 None
