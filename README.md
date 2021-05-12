@@ -22,7 +22,9 @@ None
 
 ### 🏔️ Snowpack Template Changes
 `bc80ded` — Added `types` to `tsconfig.json` in `react-typescript` template<br>
-`eea75d3` — Removed `tsx` components from `vue-typescript` template
+`eea75d3` — Removed `tsx` components from `vue-typescript` template<br>
+`535175e` — Added `@tsconfig/svelte/tsconfig.json` as dev dependency and changed `tsconfig.json` for `svelte-typescript` template<br>
+`_` — Added `types` to `tsconfig.json` in `preact-typescript` template
 
 <br>
 
