@@ -22,7 +22,7 @@ None
 
 ### 🏔️ Snowpack Template Changes
 `bc80ded` — Added `types` to `tsconfig.json` in `react-typescript` template<br>
-`_` — Removed `tsx` components from `vue-typescript` template
+`eea75d3` — Removed `tsx` components from `vue-typescript` template
 
 <br>
 
