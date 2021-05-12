@@ -476,8 +476,8 @@ function generateSnowpackConfig(options: OptionSet) {
     );
     snowpackConfig = snowpackConfig.replace(
       /(optimize: {\n)\s+\/\*.+?\n(\s+},)/s, `$1${builtinSettings}$2`
-      // /* ... */ -> content
     );
+    // /* ... */ -> content
   }
 
   for (const plugin of options.plugins || []) {
