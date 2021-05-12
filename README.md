@@ -21,10 +21,10 @@ None
 `ae20c41` — Fixed file extensions for Vue+Svelte `package.json` ESLint/Prettier scripts
 
 ### 🏔️ Snowpack Template Changes
-`bc80ded` — Added `types` to `tsconfig.json` in `react-typescript` template<br>
+`c6920af` — Added `types` to `tsconfig.json` in `react-typescript` template<br>
 `eea75d3` — Removed `tsx` components from `vue-typescript` template<br>
 `535175e` — Added `@tsconfig/svelte` as dev dependency and changed `tsconfig.json` for `svelte-typescript` template<br>
-`535175e` — Added `types` to `tsconfig.json` and added `@types/mocha` as dev dependency for `preact-typescript` template<br>
+`55caeb9` — Added `types` to `tsconfig.json` and added `@types/mocha` as dev dependency for `preact-typescript` template<br>
 `0612c77` — Added `types` to `tsconfig.json` in `lit-element-typescript` template
 
 <br>
