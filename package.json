@@ -36,7 +36,9 @@
     "coverage": "nyc --reporter=html --reporter=text mocha \"test/*.test.js\""
   },
   "devDependencies": {
+    "@types/fs-extra": "^9.0.11",
     "@types/node": "^15.0.2",
+    "@types/prompts": "^2.0.12",
     "@typescript-eslint/eslint-plugin": "^4.23.0",
     "@typescript-eslint/parser": "^4.23.0",
     "chai": "^4.3.4",

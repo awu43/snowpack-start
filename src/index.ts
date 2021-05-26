@@ -3,10 +3,10 @@
 /* eslint-disable no-console */
 /* eslint-disable import/no-dynamic-require */
 /* eslint-disable global-require */
-const path = require("path");
+import path = require("path");
 
-const execa = require("execa");
-const fse = require("fs-extra");
+import execa = require("execa");
+import fse = require("fs-extra");
 
 const styles = require("./styles.ts");
 const { getOptions } = require("./get-options.ts");

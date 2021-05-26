@@ -1,4 +1,4 @@
-const chalk = require("chalk"); // Terminal styling
+import chalk = require("chalk"); // Terminal styling
 
 module.exports = {
   cyanBright: chalk.cyanBright,

@@ -1,15 +1,13 @@
-export {}; // Makes 'Cannot redeclare block-scoped variable' go away
-
 /* eslint-disable global-require */
 /* eslint-disable import/no-dynamic-require */
 /* eslint-disable no-console */
 
-const os = require("os");
-const path = require("path");
-const commander = require("commander"); // Command line util
-const execa = require("execa"); // Better child_process
-const fse = require("fs-extra"); // Extra file manipulation utils
-const prompts = require("prompts"); // User prompts
+import os = require("os");
+import path = require("path");
+import commander = require("commander"); // Command line util
+import execa = require("execa"); // Better child_process
+import fse = require("fs-extra"); // Extra file manipulation utils
+import prompts = require("prompts"); // User prompts
 
 const styles = require("./styles.ts");
 const PACKAGE_JSON = require("../package.json");
@@ -41,13 +39,13 @@ interface Choice {
   selected?: boolean;
 }
 interface SelectPrompt {
-  type: string;
+  type: "select" | "multiselect";
   name: string;
   message: string;
   choices: Choice[];
 }
 interface TogglePrompt {
-  type: string;
+  type: "toggle";
   name: string;
   active: string;
   inactive: string;
@@ -555,7 +553,10 @@ async function getOptions() {
     } else {
       console.log(styles.cyanBright("\n-- Options --"));
     }
-    Object.assign(options, await prompts(remainingPrompts, { onCancel }));
+    Object.assign(
+      options,
+      await prompts(remainingPrompts as prompts.PromptObject[], { onCancel })
+    );
   }
 
   if (options.license === "mit" && !("author" in options)) {
