@@ -33,7 +33,8 @@
     "gen-test": "mocha \"test/src-templates-test.js\" && mocha \"test/package-versions-test.js\"",
     "pretest": "tsc && node postbuild.js",
     "test": "mocha \"test/*.test.js\"",
-    "coverage": "nyc --reporter=html --reporter=text mocha \"test/*.test.js\""
+    "coverage": "nyc --reporter=html --reporter=text mocha \"test/*.test.js\"",
+    "lint": "eslint \"src/**/*.{js,ts}\""
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.11",
