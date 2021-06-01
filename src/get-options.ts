@@ -176,7 +176,7 @@ function isBoolean(opt: unknown): opt is boolean {
 function isArray(opt: unknown): opt is Array<string> {
   return Array.isArray(opt);
 }
-const OPTION_TYPE_CHECKS: OptionTypeChecksMap = new Map(Object.entries({
+const OPTION_TYPE_CHECKS = new Map(Object.entries({
   projectDir: isString,
   jsFramework: isString,
   typescript: isBoolean,
@@ -193,7 +193,7 @@ const OPTION_TYPE_CHECKS: OptionTypeChecksMap = new Map(Object.entries({
   skipTailwindInit: isBoolean,
   skipGitInit: isBoolean,
   skipEslintInit: isBoolean,
-}));
+})) as OptionTypeCheckMap;
 
 class OptionNameError extends Error {
   constructor(optName: string) {
@@ -247,7 +247,7 @@ function validateOptions(options: PartialOptionSet): void {
       throw new OptionNameError(optName as OptionKey);
     }
 
-    if (!OPTION_TYPE_CHECKS.get(optName)(optValue)) {
+    if (!OPTION_TYPE_CHECKS.get(optName as OptionKey)(optValue)) {
       throw new OptionTypeError(optName as OptionKey, optValue);
     }
 

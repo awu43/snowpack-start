@@ -112,8 +112,9 @@ type OptionTypesMap = WriteOnlyMap<OptionKey, OptionTypeString> & {
   get(K: OptionKey): OptionTypeString;
 };
 
-type OptionTypeChecksMap = WriteOnlyMap & {
-  get(K: OptionKey): boolean;
+type OptionTypeCheckFunc = (opt: unknown) => boolean;
+type OptionTypeCheckMap = WriteOnlyMap<OptionKey, OptionTypeCheckFunc> & {
+  get(K: OptionKey): OptionTypeCheckFunc;
 }
 
 type OptionValueType = string | boolean | string[];
