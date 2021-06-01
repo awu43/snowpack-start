@@ -2,8 +2,6 @@ type DirValidResult = (
   "No directory provided" | "Project directory already exists" | true
 );
 
-type WriteOnlyMap<K, V> = Omit<Map<K, V>, "get">;
-
 type ProjectDirPromptKey = "projectDir";
 type SelectPromptKey = "jsFramework" | "cssFramework" | "bundler" | "license";
 type TogglePromptKey = "typescript" | "sass";

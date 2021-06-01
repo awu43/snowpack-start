@@ -21,4 +21,4 @@ for (const [baseKey, basePath] of BASE_FILES.entries()) {
   BASE_FILES.set(baseKey, filePath);
 }
 
-module.exports = BASE_FILES;
+export = BASE_FILES as DistPathMap;

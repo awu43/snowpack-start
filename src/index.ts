@@ -11,8 +11,8 @@ import fse = require("fs-extra");
 import styles = require("./styles");
 import _getOptions = require("./get-options");
 import JS_FRAMEWORKS = require("./js-frameworks");
-const BASE_FILES = require("./dist-files.ts");
-const BASE_TEMPLATES = require("./dist-templates.ts");
+import BASE_FILES = require("./dist-files");
+import BASE_TEMPLATES = require("./dist-templates");
 
 const { getOptions } = _getOptions;
 

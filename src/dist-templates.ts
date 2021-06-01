@@ -21,4 +21,4 @@ for (const template of TEMPLATE_NAMES) {
   );
 }
 
-module.exports = BASE_TEMPLATES;
+export = BASE_TEMPLATES as DistPathMap;
