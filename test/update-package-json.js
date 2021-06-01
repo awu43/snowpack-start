@@ -3,7 +3,7 @@ const path = require("path");
 const fse = require("fs-extra");
 
 const SOURCE_TEMPLATES = require("../src-templates").SOURCE_PATHS;
-const DIST_TEMPLATES = require("../dist/dist-templates.js");
+const DIST_TEMPLATES = require("../src/dist-templates.ts");
 
 for (const template of SOURCE_TEMPLATES.keys()) {
   const srcPackageJson = fse.readFileSync(

@@ -23,7 +23,7 @@ const { SOURCE_PATHS, SOURCE_CONFIGS } = require("../src-templates");
 const {
   installPackages,
   generateSvelteConfig
-} = require("../dist/index.js")._testing;
+} = require("../src/index.ts")._testing;
 
 const {
   newTempBase,

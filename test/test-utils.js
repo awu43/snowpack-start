@@ -12,7 +12,7 @@ const {
   createBase,
   generatePackageJson,
   generateSnowpackConfig,
-} = require("../dist/index.js")._testing;
+} = require("../src/index.ts")._testing;
 
 function stripPackageVersions(packages) {
   return packages.map(p => p.replace(/@.?\d+(\.\d+)*/, ""));

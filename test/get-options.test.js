@@ -12,7 +12,7 @@ const sinonChai = require("sinon-chai");
 chai.use(sinonChai);
 const { expect } = chai;
 
-const styles = require("../dist/styles.js");
+const styles = require("../src/styles.ts");
 
 const {
   projectDirValidator,
@@ -22,7 +22,7 @@ const {
   validateOptions,
   loadFiles,
   overwrittenLater,
-} = require("../dist/get-options.js")._testing;
+} = require("../src/get-options.ts")._testing;
 
 describe("validateOptions", () => {
   before(() => {

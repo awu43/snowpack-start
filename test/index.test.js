@@ -21,7 +21,7 @@ chai.use(chaiFiles);
 const { expect } = chai;
 const { file } = chaiFiles;
 
-const styles = require("../dist/styles.js");
+const styles = require("../src/styles.ts");
 const {
   stripPackageVersions,
   newTempBase,
@@ -49,10 +49,10 @@ const {
   formatCommand,
   displayQuickstart,
   nodeVersionCheck,
-} = require("../dist/index.js")._testing;
+} = require("../src/index.ts")._testing;
 
-const BASE_FILES = require("../dist/dist-files.js");
-const BASE_TEMPLATES = require("../dist/dist-templates.js");
+const BASE_FILES = require("../src/dist-files.ts");
+const BASE_TEMPLATES = require("../src/dist-templates.ts");
 
 const BLANK_CONFIG = {
   jsFramework: "blank", cssFramework: null, bundler: null
