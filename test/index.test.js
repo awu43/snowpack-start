@@ -51,8 +51,8 @@ const {
   nodeVersionCheck,
 } = require("../dist/index.js")._testing;
 
-const BASE_FILES = require("../dist-files");
-const BASE_TEMPLATES = require("../dist-templates");
+const BASE_FILES = require("../dist/dist-files.js");
+const BASE_TEMPLATES = require("../dist/dist-templates.js");
 
 const BLANK_CONFIG = {
   jsFramework: "blank", cssFramework: null, bundler: null
