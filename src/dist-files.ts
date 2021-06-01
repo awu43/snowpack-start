@@ -1,4 +1,4 @@
-const path = require("path");
+import path = require("path");
 
 const BASE_FILES = new Map(Object.entries({
   gitignore: "gitignore.txt",
@@ -15,7 +15,10 @@ const BASE_FILES = new Map(Object.entries({
 }));
 
 for (const [baseKey, basePath] of BASE_FILES.entries()) {
-  BASE_FILES.set(baseKey, path.join(__dirname, basePath));
+  const filePath = path.join(
+    path.dirname(__dirname), "dist-templates", basePath
+  );
+  BASE_FILES.set(baseKey, filePath);
 }
 
 module.exports = BASE_FILES;
