@@ -60,7 +60,8 @@ function generateSvelteConfig(options: FullOptionSet): void {
 }
 
 async function createBase(options: FullOptionSet): Promise<void> {
-  console.log(`\n- Creating a new Snowpack app in ${styles.cyanBright(path.resolve(options.projectDir))}`);
+  const projectDir = styles.cyanBright(path.resolve(options.projectDir));
+  console.log(`\n- Creating a new Snowpack app in ${projectDir}`);
   try {
     if (fse.pathExistsSync(options.projectDir)) {
       throw Error("Project directory already exists.");
@@ -178,9 +179,6 @@ const DEFAULT_BROWSERSLIST = {
   ]
 };
 
-interface PackageJson {
-  [key: string]: any;
-}
 function generatePackageJson(options: FullOptionSet): void {
   const appPackageJson: PackageJson = {
     private: true,
@@ -273,11 +271,11 @@ const PLUGIN_PACKAGES = new Map(Object.entries({
   ],
   srs: ["@snowpack/plugin-run-script"],
   sbs: ["@snowpack/plugin-build-script"],
-}));
+})) as PluginPackagesMap;
 
 const MAJOR_VERSION_REGEX = /(\d+)\.\d+\.\d+/;
 function packageMajorVersion(version: string) {
-  return MAJOR_VERSION_REGEX.exec(version)![1];
+  return (MAJOR_VERSION_REGEX.exec(version) as RegExpExecArray)[1];
 }
 
 function installPackages(options: FullOptionSet): void {
@@ -409,7 +407,7 @@ const SNOWPACK_CONFIG_PLUGINS = new Map(Object.entries({
   postcss: "'@snowpack/plugin-postcss'",
   srs: SRS_CONFIG,
   sbs: SBS_CONFIG,
-}));
+})) as PluginConfigMap;
 
 const DEFAULT_BUILTIN_BUNDLER_SETTINGS = [
   "bundle: true",
@@ -454,8 +452,10 @@ function generateSnowpackConfig(options: FullOptionSet): void {
     configPluginsList.push("'@snowpack/plugin-sass'");
   }
 
-  if (SNOWPACK_CONFIG_PLUGINS.has(options.bundler)) {
-    configPluginsList.push(SNOWPACK_CONFIG_PLUGINS.get(options.bundler));
+  if (SNOWPACK_CONFIG_PLUGINS.has(options.bundler as string)) {
+    configPluginsList.push(
+      SNOWPACK_CONFIG_PLUGINS.get(options.bundler as string)
+    );
   } else if (options.bundler === "snowpack") {
     const builtinSettings = (
       DEFAULT_BUILTIN_BUNDLER_SETTINGS

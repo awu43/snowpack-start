@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable global-require */
 /* eslint-disable import/no-dynamic-require */
 /* eslint-disable no-console */
@@ -569,6 +568,7 @@ async function getOptions(): Promise<FullOptionSet> {
     options.jsFramework = "blank";
   }
 
+  // TODO: Switch to empty string for none
   const nullableOptionKeys = ["cssFramework", "bundler", "license"];
   for (const optKey of nullableOptionKeys as NullableOptionKey[]) {
     if (options[optKey] === "none") {
