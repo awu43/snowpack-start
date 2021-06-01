@@ -12,3 +12,7 @@ declare module "get-options" {
   };
   export default _getOptions;
 }
+
+declare module "js-frameworks" {
+  export default JsFrameworkMap;
+}

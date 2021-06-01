@@ -10,7 +10,7 @@ import fse = require("fs-extra");
 
 import styles = require("./styles");
 import _getOptions = require("./get-options");
-const JS_FRAMEWORKS = require("./js-frameworks.ts");
+import JS_FRAMEWORKS = require("./js-frameworks");
 const BASE_FILES = require("./dist-files.ts");
 const BASE_TEMPLATES = require("./dist-templates.ts");
 

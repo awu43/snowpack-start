@@ -1,4 +1,4 @@
-module.exports = new Map(Object.entries({
+export = new Map(Object.entries({
   blank: {
     prodPackages: [],
     devPackages: [],
@@ -77,4 +77,4 @@ module.exports = new Map(Object.entries({
       "'@snowpack/plugin-dotenv'",
     ],
   },
-}));
+})) as JsFrameworkMap;
