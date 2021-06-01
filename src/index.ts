@@ -9,10 +9,12 @@ import execa = require("execa");
 import fse = require("fs-extra");
 
 import styles = require("./styles");
-const { getOptions } = require("./get-options.ts");
+import _getOptions = require("./get-options");
 const JS_FRAMEWORKS = require("./js-frameworks.ts");
 const BASE_FILES = require("./dist-files.ts");
 const BASE_TEMPLATES = require("./dist-templates.ts");
+
+const { getOptions } = _getOptions;
 
 interface OptionSet {
   projectDir: string,

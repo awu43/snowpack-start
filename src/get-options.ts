@@ -581,7 +581,7 @@ async function getOptions(): Promise<FullOptionSet> {
   return options as FullOptionSet;
 }
 
-module.exports = {
+export = {
   getOptions,
   _testing: {
     projectDirValidator,
