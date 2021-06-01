@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable global-require */
 /* eslint-disable import/no-dynamic-require */
 /* eslint-disable no-console */
 
 import os = require("os");
 import path = require("path");
+
 import commander = require("commander"); // Command line util
 import execa = require("execa"); // Better child_process
 import fse = require("fs-extra"); // Extra file manipulation utils
@@ -11,14 +13,15 @@ import prompts = require("prompts"); // User prompts
 
 import styles = require("./styles");
 
-const PACKAGE_JSON = require("../package.json");
+const PACKAGE_JSON: { name: string, version: string} = require("../package.json");
 
+// eslint-disable-next-line import/newline-after-import
+const BUILTIN_DEFAULTS: PartialOptionSet = require("./defaults.ts");
 const userDefaultsPath = path.join(os.homedir(), ".snowpackstart.js");
-const DEFAULT_OPTIONS = (
-  fse.pathExistsSync(userDefaultsPath)
-    ? require(userDefaultsPath)
-    : require("./defaults.ts")
+const USER_DEFAULTS: PartialOptionSet | null = (
+  fse.pathExistsSync(userDefaultsPath) ? require(userDefaultsPath) : null
 );
+const DEFAULT_OPTIONS = USER_DEFAULTS ?? BUILTIN_DEFAULTS;
 
 function projectDirValidator(projectDir: string): DirValidResult {
   if (!projectDir.trim().length) {
@@ -364,7 +367,7 @@ function getCliOptions(): PartialPreprocessOptionSet {
 }
 
 function loadFiles(cliOptions: { load?: string[] }): PartialOptionSet[] {
-  const loadedOptions = [];
+  const loadedOptions: PartialOptionSet[] = [];
   if (cliOptions.load) {
     for (const file of cliOptions.load) {
       const fullPath = path.resolve(file);
@@ -376,7 +379,7 @@ function loadFiles(cliOptions: { load?: string[] }): PartialOptionSet[] {
             styles.fatalError(`Invalid file type ${path.extname(fullPath)}, expected .js`)
           );
         } else {
-          loadedOptions.push(require(fullPath));
+          loadedOptions.push(require(fullPath) as PartialOptionSet);
         }
       } catch (error) {
         console.error(error.message);
@@ -398,7 +401,6 @@ function overwrittenLater(
   return laterOptions.some(opts => optName in opts);
 }
 
-// TODO: Default options types
 function applyDefaultsToPrompts(): void {
   for (const [optName, optValue] of Object.entries(DEFAULT_OPTIONS)) {
     if (typeof optValue === "string") {
