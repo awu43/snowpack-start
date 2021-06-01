@@ -1,33 +1,39 @@
 module.exports = {
   env: {
+    commonjs: true,
     es2021: true,
     node: true,
   },
   extends: [
     "airbnb-base",
-    "plugin:@typescript-eslint/recommended",
   ],
-  parser: "@typescript-eslint/parser",
   parserOptions: {
     ecmaVersion: 12,
-    sourceType: "module",
   },
-  plugins: [
-    "@typescript-eslint",
-  ],
   rules: {
     quotes: ["error", "double"],
     "no-restricted-syntax": ["error", "ForInStatement", "LabeledStatement", "WithStatement"],
     "comma-dangle": ["error", "only-multiline"],
     "arrow-parens": ["error", "as-needed"],
-    "no-else-return": [0],
-    "max-classes-per-file": [0],
-    "no-underscore-dangle": [0],
-
-    "no-unused-vars": [0],
-    "@typescript-eslint/no-unused-vars": ["error", {
-      varsIgnorePattern: "^_",
-      argsIgnorePattern: "^_",
-    }],
+    "no-else-return": "off",
+    "max-classes-per-file": "off",
+    "no-underscore-dangle": "off",
   },
+  overrides: [{
+    files: ["**/*.ts"],
+    extends: [
+      "plugin:@typescript-eslint/recommended",
+    ],
+    parser: "@typescript-eslint/parser",
+    plugins: [
+      "@typescript-eslint",
+    ],
+    rules: {
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": ["error", {
+        varsIgnorePattern: "^_",
+        argsIgnorePattern: "^_",
+      }],
+    },
+  }]
 };
