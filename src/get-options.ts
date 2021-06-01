@@ -9,7 +9,8 @@ import execa = require("execa"); // Better child_process
 import fse = require("fs-extra"); // Extra file manipulation utils
 import prompts = require("prompts"); // User prompts
 
-const styles = require("./styles.ts");
+import styles = require("./styles");
+
 const PACKAGE_JSON = require("../package.json");
 
 const userDefaultsPath = path.join(os.homedir(), ".snowpackstart.js");

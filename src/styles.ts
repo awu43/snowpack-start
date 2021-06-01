@@ -1,6 +1,6 @@
 import chalk = require("chalk"); // Terminal styling
 
-module.exports = {
+export = {
   cyanBright: chalk.cyanBright,
   whiteBold: chalk.white.bold,
   successMsg: chalk.green,

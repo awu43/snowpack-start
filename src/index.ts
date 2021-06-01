@@ -8,7 +8,7 @@ import path = require("path");
 import execa = require("execa");
 import fse = require("fs-extra");
 
-const styles = require("./styles.ts");
+import styles = require("./styles");
 const { getOptions } = require("./get-options.ts");
 const JS_FRAMEWORKS = require("./js-frameworks.ts");
 const BASE_FILES = require("./dist-files.ts");
