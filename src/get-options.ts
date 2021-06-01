@@ -29,7 +29,7 @@ function projectDirValidator(projectDir: string): DirValidResult {
   }
 }
 
-const PROMPTS: PromptsMap = new Map(Object.entries({
+const PROMPTS = new Map(Object.entries({
   projectDir: {
     type: "text",
     name: "projectDir",
@@ -146,7 +146,7 @@ const PROMPTS: PromptsMap = new Map(Object.entries({
     type: null,
     message: "Skip git init",
   },
-}));
+})) as PromptsMap;
 
 const OPTION_TYPES: OptionTypesMap = new Map(Object.entries({
   projectDir: "string",
@@ -196,7 +196,7 @@ const OPTION_TYPE_CHECKS: OptionTypeChecksMap = new Map(Object.entries({
 }));
 
 class OptionNameError extends Error {
-  constructor(optName: OptionKey) {
+  constructor(optName: string) {
     super(styles.errorMsg(`Unknown option ${styles.cyanBright(optName)}`));
     this.name = "OptionNameError";
   }
@@ -246,13 +246,17 @@ function validateOptions(options: PartialOptionSet): void {
     if (!OPTION_TYPES.has(optName)) {
       throw new OptionNameError(optName as OptionKey);
     }
+
     if (!OPTION_TYPE_CHECKS.get(optName)(optValue)) {
       throw new OptionTypeError(optName as OptionKey, optValue);
     }
-    const promptType = PROMPTS.get(optName).type;
-    if (["select", "multiselect"].includes(promptType)) {
+
+    const promptType = PROMPTS.get(optName as OptionKey).type;
+    if (["select", "multiselect"].includes(promptType as string)) {
+      // Function type of author prompt and null type of non-prompts
+      // are not assignable to string
       const promptChoiceValues = (
-        (PROMPTS.get(optName) as SelectPrompt).choices.map(c => c.value)
+        PROMPTS.get(optName as SelectPromptKey).choices.map(c => c.value)
       );
       const invalidSingleSelect = (
         promptType === "select" && !promptChoiceValues.includes(optValue)
@@ -267,6 +271,7 @@ function validateOptions(options: PartialOptionSet): void {
         );
       }
     }
+
     if (options.useYarn && options.usePnpm) {
       throw new Error(
         styles.errorMsg("You can't use Yarn and pnpm at the same time")
@@ -284,14 +289,14 @@ function validateOptions(options: PartialOptionSet): void {
 }
 
 function choicesLine(optName: SelectPromptKey): string {
-  return (PROMPTS.get(optName) as SelectPrompt).choices
+  return PROMPTS.get(optName).choices
     .map(c => styles.cyanBright(c.value))
     .join("/");
 }
 
 function choicesList(optName: MultiSelectPromptKey): string {
   const optMessage = `${(PROMPTS.get(optName)).message} (<${styles.cyanBright("none")}> for none)`;
-  const values = (PROMPTS.get(optName) as MultiSelectPrompt).choices
+  const values = PROMPTS.get(optName).choices
     .map(c => `<${styles.cyanBright(c.value)}> (${c.title})`).join("\n");
   return [optMessage, "-".repeat(10), values, "-".repeat(10)].join("\n");
 }
@@ -396,20 +401,20 @@ function overwrittenLater(
 function applyDefaultsToPrompts(): void {
   for (const [optName, optValue] of Object.entries(DEFAULT_OPTIONS)) {
     if (typeof optValue === "string") {
-      const targetPrompt = PROMPTS.get(optName);
+      const targetPrompt = PROMPTS.get(optName as StringOptionKey);
       if (targetPrompt.type === "text" || targetPrompt.name === "author") {
         // Project dir, author
         targetPrompt.initial = optValue;
       } else if (targetPrompt.type === "select") {
         // JS framework, CSS framework, bundler, license
         targetPrompt.initial = (
-          targetPrompt.choices.findIndex((c: any) => c.value === optValue)
+          targetPrompt.choices.findIndex(c => c.value === optValue)
         );
       }
     } else if (typeof optValue === "boolean") { // TypeScript, Sass
-      (PROMPTS.get(optName) as TogglePrompt).initial = optValue;
+      PROMPTS.get(optName as BooleanOptionKey).initial = optValue;
     } else if (Array.isArray(optValue)) { // Code formatters, plugins
-      for (const choice of (PROMPTS.get(optName) as SelectPrompt).choices) {
+      for (const choice of PROMPTS.get(optName as ArrayOptionKey).choices) {
         if (optValue.includes(choice.value)) {
           choice.selected = true;
         }
@@ -418,7 +423,9 @@ function applyDefaultsToPrompts(): void {
       console.error(
         styles.fatalError("Error while processing default options")
       );
-      throw new OptionTypeError(optName as any, optValue as any);
+      throw new OptionTypeError(
+        optName as OptionKey, optValue as OptionValueType
+      );
     }
   }
 }
@@ -450,7 +457,9 @@ async function getOptions(): Promise<FullOptionSet> {
 
     console.log(styles.cyanBright("\n-- Default options --"));
     for (const [optName, optValue] of Object.entries(options)) {
-      let optMessage = styles.whiteBold(PROMPTS.get(optName).message);
+      let optMessage = styles.whiteBold(
+        PROMPTS.get(optName as OptionKey).message
+      );
       if (overwrittenLater(
         optName as OptionKey, [cliOptions, ...loadedOptions]
       )) {
@@ -479,7 +488,9 @@ async function getOptions(): Promise<FullOptionSet> {
 
       console.log(styles.cyanBright(`\n-- ${fileName} --`));
       for (const [optName, optValue] of Object.entries(opts)) {
-        let optMessage = styles.whiteBold(PROMPTS.get(optName).message);
+        let optMessage = styles.whiteBold(
+          PROMPTS.get(optName as OptionKey).message
+        );
         if (overwrittenLater(
           optName as OptionKey, [cliOptions, ...arr.slice(i + 1)]
         )) {
@@ -506,7 +517,9 @@ async function getOptions(): Promise<FullOptionSet> {
       process.exit(1);
     }
     for (const [optName, optValue] of Object.entries(cliOptions)) {
-      const optMessage = styles.whiteBold(`${PROMPTS.get(optName).message}: `);
+      const optMessage = styles.whiteBold(
+        `${PROMPTS.get(optName as OptionKey).message}: `
+      );
       console.log(`${styles.successMsg("√")} ${optMessage}${optValue}`);
     }
     Object.assign(options, cliOptions);

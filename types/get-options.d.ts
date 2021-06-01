@@ -4,96 +4,108 @@ type DirValidResult = (
 
 type WriteOnlyMap<K, V> = Omit<Map<K, V>, "get">;
 
+type ProjectDirPromptKey = "projectDir";
 type SelectPromptKey = "jsFramework" | "cssFramework" | "bundler" | "license";
-
+type TogglePromptKey = "typescript" | "sass";
 type MultiSelectPromptKey = "codeFormatters" | "plugins";
-
+type AuthorPromptKey = "author";
 type NonPromptKey = (
   "useYarn" | "usePnpm" | "skipTailwindInit" | "skipEslintInit" | "skipGitInit"
+);
+type OptionKey = (
+  ProjectDirPromptKey
+  | SelectPromptKey
+  | TogglePromptKey
+  | MultiSelectPromptKey
+  | AuthorPromptKey
+  | NonPromptKey
 );
 
 interface BasePrompt {
   name: string;
   message: string;
 }
-
 interface ProjectDirPrompt extends BasePrompt {
   type: "text";
   validate: (projectDir: string) => DirValidResult;
+  initial?: string;
 }
-
 interface Choice {
   title: string;
   value: string;
   selected?: boolean;
 }
-
 interface SelectPrompt extends BasePrompt {
   type: "select";
   choices: Choice[];
+  initial?: number;
 }
-
 interface TogglePrompt extends BasePrompt {
   type: "toggle";
   active: string;
   inactive: string;
   initial?: boolean;
 }
-
 interface MultiSelectPrompt extends BasePrompt {
   type: "multiselect";
   choices: Choice[];
 }
-
 interface AuthorPrompt extends BasePrompt {
   type: (prev: string, values: { license ?: string }) => "text" | null;
+  initial?: string;
 }
-
 interface NonPrompt {
   type: null;
   message: string;
 }
-
-type PromptsMap = WriteOnlyMap & {
-  get(K: "projectDir"): ProjectDirPrompt;
-  get(K: SelectPromptKey): SelectPrompt;
-  get(K: "typescript" | "sass"): TogglePrompt;
-  get(K: MultiSelectPromptKey): MultiSelectPrompt;
-  get(K: "author"): AuthorPrompt;
-  get(K: NonPromptKey): NonPrompt;
-}
-
-// type StringOptKey = (
-//   "projectDir"
-//   | "jsFramework"
-//   | "cssFramework"
-//   | "bundler"
-//   | "license"
-//   | "author"
-// );
-
-// type BooleanOptKey = "typescript" | "sass" | NonPromptKey;
-
-// type ArrayOptKey = "codeFormatters" | "plugins";
-
-type OptionKey = (
-  "projectDir"
-  | "jsFramework"
-  | "typescript"
-  | "codeFormatters"
-  | "sass"
-  | "cssFramework"
-  | "bundler"
-  | "plugins"
-  | "license"
-  | "author"
-
-  | "useYarn"
-  | "usePnpm"
-  | "skipTailwindInit"
-  | "skipEslintInit"
-  | "skipGitInit"
+type AnyPrompt = (
+  ProjectDirPrompt
+  | SelectPrompt
+  | TogglePrompt
+  | MultiSelectPrompt
+  | AuthorPrompt
+  | NonPrompt
 );
+
+// interface PromptRecord {
+//   ProjectDirPromptKey: ProjectDirPrompt;
+//   SelectPromptKey: SelectPrompt;
+//   TogglePromptKey: TogglePrompt;
+//   MultiSelectPromptKey: MultiSelectPrompt;
+//   AuthorPromptKey: AuthorPrompt;
+//   NonPromptKey: NonPrompt;
+// }
+
+type StringOptionKey = Extract<
+  OptionKey,
+  ProjectDirPromptKey | SelectPromptKey | AuthorPromptKey
+>;
+type StringOptionPrompt = Extract<
+  AnyPrompt, ProjectDirPrompt | SelectPrompt | AuthorPrompt
+>;
+type BooleanOptionKey = Extract<OptionKey, TogglePromptKey | NonPromptKey>;
+type BooleanOptionPrompt = Extract<
+  OptionPrompt,
+  TogglePromptPrompt | NonPromptPrompt
+>;
+type ArrayOptionKey = Extract<OptionKey, MultiSelectPromptKey>;
+type ArrayOptionPrompt = Extract<OptionPrompt, MultiSelectPromptPrompt>;
+
+type PromptsMap = WriteOnlyMap<OptionKey, AnyPrompt> & {
+  // Can't quite figure out how to replace this with keyof
+  get(K: ProjectDirPromptKey): ProjectDirPrompt;
+  get(K: SelectPromptKey): SelectPrompt;
+  get(K: TogglePromptKey): TogglePrompt;
+  get(K: MultiSelectPromptKey): MultiSelectPrompt;
+  get(K: AuthorPromptKey): AuthorPrompt;
+  get(K: NonPromptKey): NonPrompt;
+
+  get(K: StringOptionKey): StringOptionPrompt;
+  get(K: BooleanOptionKey): BooleanOptionPrompt;
+  get(K: ArrayOptionKey): ArrayOptionPrompt;
+
+  get(K: OptionKey): AnyPrompt;
+}
 
 type OptionTypesMap = WriteOnlyMap & {
   get(K: OptionKey): "string" | "boolean" | "array"
