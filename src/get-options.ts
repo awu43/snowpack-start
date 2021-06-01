@@ -12,7 +12,7 @@ import prompts = require("prompts"); // User prompts
 
 import styles = require("./styles");
 
-const PACKAGE_JSON: { name: string, version: string} = require("../package.json");
+const PACKAGE_JSON: { name: string, version: string } = require("../package.json");
 
 // eslint-disable-next-line import/newline-after-import
 const BUILTIN_DEFAULTS: PartialOptionSet = require("./defaults.ts");

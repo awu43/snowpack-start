@@ -6,6 +6,6 @@ interface JsFrameworkData {
   plugins: string[];
 }
 
-type JsFrameworkMap = WriteOnlyMap<string, JsFrameworkData> & {
+type JsFrameworkMap = LockedMap<string, JsFrameworkData> & {
   get(K: string): JsFrameworkData;
 };

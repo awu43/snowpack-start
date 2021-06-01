@@ -89,7 +89,7 @@ type BooleanOptionPrompt = Extract<
 type ArrayOptionKey = Extract<OptionKey, MultiSelectPromptKey>;
 type ArrayOptionPrompt = Extract<OptionPrompt, MultiSelectPromptPrompt>;
 
-type PromptsMap = WriteOnlyMap<OptionKey, AnyPrompt> & {
+type PromptsMap = LockedMap<OptionKey, AnyPrompt> & {
   // Can't quite figure out how to replace this with keyof
   get(K: ProjectDirPromptKey): ProjectDirPrompt;
   get(K: SelectPromptKey): SelectPrompt;
@@ -106,12 +106,12 @@ type PromptsMap = WriteOnlyMap<OptionKey, AnyPrompt> & {
 };
 
 type OptionTypeString = "string" | "boolean" | "array";
-type OptionTypesMap = WriteOnlyMap<OptionKey, OptionTypeString> & {
+type OptionTypesMap = LockedMap<OptionKey, OptionTypeString> & {
   get(K: OptionKey): OptionTypeString;
 };
 
 type OptionTypeCheckFunc = (opt: unknown) => boolean;
-type OptionTypeCheckMap = WriteOnlyMap<OptionKey, OptionTypeCheckFunc> & {
+type OptionTypeCheckMap = LockedMap<OptionKey, OptionTypeCheckFunc> & {
   get(K: OptionKey): OptionTypeCheckFunc;
 }
 

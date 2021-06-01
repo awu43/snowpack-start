@@ -1,7 +1,7 @@
-type WriteOnlyMap<K, V> = Omit<Map<K, V>, "get">;
+type LockedMap<K, V> = Omit<Map<K, V>, "get" | "set">;
 
 // dist-files and dist-templates
-type DistPathMap = WriteOnlyMap<string, string> & {
+type DistPathMap = LockedMap<string, string> & {
   get(K: string): string;
 }
 
@@ -13,10 +13,10 @@ interface PackageJson {
   devDependencies?: { [key: string]: string };
 }
 
-type PluginPackagesMap = WriteOnlyMap<string, string[]> & {
+type PluginPackagesMap = LockedMap<string, string[]> & {
   get(K: string): string[];
 };
 
-type PluginConfigMap = WriteOnlyMap<string, string> & {
+type PluginConfigMap = LockedMap<string, string> & {
   get(K: string): string;
 }
