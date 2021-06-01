@@ -21,7 +21,7 @@ const userDefaultsPath = path.join(os.homedir(), ".snowpackstart.js");
 const USER_DEFAULTS: PartialOptionSet | null = (
   fse.pathExistsSync(userDefaultsPath) ? require(userDefaultsPath) : null
 );
-const DEFAULT_OPTIONS = USER_DEFAULTS ?? BUILTIN_DEFAULTS;
+const DEFAULT_OPTIONS = USER_DEFAULTS ? USER_DEFAULTS : BUILTIN_DEFAULTS;
 
 function projectDirValidator(projectDir: string): DirValidResult {
   if (!projectDir.trim().length) {
