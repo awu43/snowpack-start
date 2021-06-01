@@ -12,7 +12,7 @@ const styles = require("./styles.ts");
 const { getOptions } = require("./get-options.ts");
 const JS_FRAMEWORKS = require("./js-frameworks.ts");
 const BASE_FILES = require("./dist-files.ts");
-const BASE_TEMPLATES = require("../dist-templates");
+const BASE_TEMPLATES = require("./dist-templates.ts");
 
 interface OptionSet {
   projectDir: string,
