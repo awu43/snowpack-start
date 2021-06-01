@@ -16,41 +16,26 @@ const BASE_TEMPLATES = require("./dist-templates.ts");
 
 const { getOptions } = _getOptions;
 
-interface OptionSet {
-  projectDir: string,
-  jsFramework: string,
-  typescript: boolean,
-  codeFormatters: string[],
-  sass: boolean,
-  cssFramework: string,
-  bundler: string,
-  plugins: string[],
-  license: string,
-  author: string,
-
-  useYarn: boolean,
-  usePnpm: boolean,
-  skipTailwindInit: boolean,
-  skipGitInit: boolean,
-  skipEslintInit: boolean,
-}
-
 // For spacing in template literals
-function s(numSpaces: number) {
+function s(numSpaces: number): string {
   return " ".repeat(numSpaces);
 }
 
-function templateName(options: OptionSet) {
+function templateName(options: FullOptionSet): string {
   return `${options.jsFramework}${options.typescript ? "-typescript" : ""}`;
 }
 
-function fileReadAndReplace(file: string, targetStr: string, replStr: string) {
+function fileReadAndReplace(
+  file: string,
+  targetStr: string,
+  replStr: string,
+): void {
   fse.writeFileSync(
     file, fse.readFileSync(file, "utf8").replace(targetStr, replStr), "utf8"
   );
 }
 
-function generateSvelteConfig(options: OptionSet) {
+function generateSvelteConfig(options: FullOptionSet): void {
   let svelteConfig = fse.readFileSync(
     BASE_FILES.get("svelteConfig"), "utf8"
   );
@@ -74,7 +59,7 @@ function generateSvelteConfig(options: OptionSet) {
   }
 }
 
-async function createBase(options: OptionSet) {
+async function createBase(options: FullOptionSet): Promise<void> {
   console.log(`\n- Creating a new Snowpack app in ${styles.cyanBright(path.resolve(options.projectDir))}`);
   try {
     if (fse.pathExistsSync(options.projectDir)) {
@@ -196,7 +181,7 @@ const DEFAULT_BROWSERSLIST = {
 interface PackageJson {
   [key: string]: any;
 }
-function generatePackageJson(options: OptionSet) {
+function generatePackageJson(options: FullOptionSet): void {
   const appPackageJson: PackageJson = {
     private: true,
     scripts: {
@@ -295,7 +280,7 @@ function packageMajorVersion(version: string) {
   return MAJOR_VERSION_REGEX.exec(version)![1];
 }
 
-function installPackages(options: OptionSet) {
+function installPackages(options: FullOptionSet): void {
   const prodPackages = [];
   const devPackages = ["snowpack"];
 
@@ -439,7 +424,7 @@ ${s(4)}/* ... */
 ${s(2)}},
 `;
 
-function generateSnowpackConfig(options: OptionSet) {
+function generateSnowpackConfig(options: FullOptionSet): void {
   let snowpackConfig = fse.readFileSync(
     BASE_FILES.get("snowpackConfig"), "utf8"
   );
@@ -500,7 +485,7 @@ function generateSnowpackConfig(options: OptionSet) {
   fse.writeFileSync("snowpack.config.js", snowpackConfig);
 }
 
-function initializeTailwind(options: OptionSet) {
+function initializeTailwind(options: FullOptionSet): void {
   if (options.cssFramework === "tailwindcss") {
     if (options.skipTailwindInit) {
       console.log(styles.warningMsg("\n- Skipping TailwindCSS init.\n"));
@@ -517,7 +502,7 @@ function initializeTailwind(options: OptionSet) {
   }
 }
 
-function initializeEslint(options: OptionSet) {
+function initializeEslint(options: FullOptionSet): void {
   if ((options.codeFormatters || []).includes("eslint")) {
     if (!options.skipEslintInit) {
       try {
@@ -533,7 +518,7 @@ function initializeEslint(options: OptionSet) {
   }
 }
 
-function initializeGit(options: OptionSet) {
+function initializeGit(options: FullOptionSet): void {
   if (!options.skipGitInit) {
     console.log(styles.cyanBright("\n- Initializing git repo.\n"));
     try {
@@ -553,11 +538,11 @@ function initializeGit(options: OptionSet) {
 }
 
 // From create-snowpack-app
-function formatCommand(command: string, description: string) {
+function formatCommand(command: string, description: string): string {
   return `${s(2)}${command.padEnd(17)}${description}`;
 }
 
-function displayQuickstart(options: OptionSet, startDir: string) {
+function displayQuickstart(options: FullOptionSet, startDir: string): void {
   let installer;
   if (options.useYarn) {
     installer = "yarn";
@@ -590,7 +575,7 @@ function displayQuickstart(options: OptionSet, startDir: string) {
   console.log("");
 }
 
-function nodeVersionCheck() {
+function nodeVersionCheck(): void {
   const currentMajorVersion = parseInt(process.versions.node.split(".")[0], 10);
   const minimumMajorVersion = 10;
   if (currentMajorVersion < minimumMajorVersion) {
@@ -604,7 +589,7 @@ function nodeVersionCheck() {
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   nodeVersionCheck();
 
   const startDir = process.cwd();
