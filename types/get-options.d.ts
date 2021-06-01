@@ -105,11 +105,12 @@ type PromptsMap = WriteOnlyMap<OptionKey, AnyPrompt> & {
   get(K: ArrayOptionKey): ArrayOptionPrompt;
 
   get(K: OptionKey): AnyPrompt;
-}
+};
 
-type OptionTypesMap = WriteOnlyMap & {
-  get(K: OptionKey): "string" | "boolean" | "array"
-}
+type OptionTypeString = "string" | "boolean" | "array";
+type OptionTypesMap = WriteOnlyMap<OptionKey, OptionTypeString> & {
+  get(K: OptionKey): OptionTypeString;
+};
 
 type OptionTypeChecksMap = WriteOnlyMap & {
   get(K: OptionKey): boolean;

@@ -148,7 +148,7 @@ const PROMPTS = new Map(Object.entries({
   },
 })) as PromptsMap;
 
-const OPTION_TYPES: OptionTypesMap = new Map(Object.entries({
+const OPTION_TYPES = new Map(Object.entries({
   projectDir: "string",
   jsFramework: "string",
   typescript: "boolean",
@@ -165,7 +165,7 @@ const OPTION_TYPES: OptionTypesMap = new Map(Object.entries({
   skipTailwindInit: "boolean",
   skipEslintInit: "boolean",
   skipGitInit: "boolean",
-}));
+})) as OptionTypesMap;
 
 function isString(opt: unknown): opt is string {
   return typeof opt === "string";
@@ -243,7 +243,7 @@ function packageManagerInstalled(packageManager: PackageManager): boolean {
 
 function validateOptions(options: PartialOptionSet): void {
   for (const [optName, optValue] of Object.entries(options)) {
-    if (!OPTION_TYPES.has(optName)) {
+    if (!OPTION_TYPES.has(optName as OptionKey)) {
       throw new OptionNameError(optName as OptionKey);
     }
 
