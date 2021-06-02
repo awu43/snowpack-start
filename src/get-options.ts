@@ -23,7 +23,7 @@ const USER_DEFAULTS: PartialOptionSet | null = (
 const DEFAULT_OPTIONS = USER_DEFAULTS ? USER_DEFAULTS : BUILTIN_DEFAULTS;
 
 function projectDirValidator(projectDir: string): DirValidResult {
-  if (!projectDir.trim().length) {
+  if (!projectDir.trim()) {
     return "No directory provided";
   } else if (fse.pathExistsSync(projectDir)) {
     return "Project directory already exists";
