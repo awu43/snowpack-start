@@ -8,12 +8,7 @@ The problem: manually customizing templates from [`create-snowpack-app`](https:/
 
 The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-start` installs your packages and generates boilerplate so you can get to developing faster.
 
-## New in 1.0.0-beta.7
-
-### 🔧 Fixes
-`5ff6b8e` — Changed TypeScript from dependency to dev dependency
-
-## New in 1.0.0-beta.6
+## Upcoming in 1.0.0-beta.8
 
 ### 🚨 Breaking Changes
 None
@@ -22,15 +17,10 @@ None
 None
 
 ### 🔧 Fixes
-`a0c8b28` — Added file extensions to `package.json` ESLint scripts<br>
-`ae20c41` — Fixed file extensions for Vue+Svelte `package.json` ESLint/Prettier scripts
+`_` — Removed mocha from `tsconfig.json` when not using WTR for `react-typescript`, `svelte-typescript`, and `preact-typescript` templates
 
 ### 🏔️ Snowpack Template Changes
-`c6920af` — Added `types` to `tsconfig.json` in `react-typescript` template<br>
-`eea75d3` — Removed `tsx` components from `vue-typescript` template<br>
-`535175e` — Added `@tsconfig/svelte` as dev dependency and changed `tsconfig.json` for `svelte-typescript` template<br>
-`55caeb9` — Added `types` to `tsconfig.json` and added `@types/mocha` as dev dependency for `preact-typescript` template<br>
-`0612c77` — Added `types` to `tsconfig.json` in `lit-element-typescript` template
+None
 
 <br>
 

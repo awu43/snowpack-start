@@ -59,7 +59,6 @@ function generateSvelteConfig(options: FullOptionSet): void {
   }
 }
 
-// TODO: Edit tsconfig to remove mocha type if not using WTR
 async function createBase(options: FullOptionSet): Promise<void> {
   const projectDir = styles.cyanBright(path.resolve(options.projectDir));
   console.log(`\n- Creating a new Snowpack app in ${projectDir}`);
@@ -108,6 +107,10 @@ async function createBase(options: FullOptionSet): Promise<void> {
     fse.copyFileSync(
       path.join(targetTemplateDir, "tsconfig.json"), "tsconfig.json"
     );
+    if (!(options.plugins || []).includes("wtr")
+        && ["react", "svelte", "preact"].includes(options.jsFramework)) {
+      fileReadAndReplace("tsconfig.json", "\"mocha\", ", "");
+    }
   }
 
   // Optional .? chaining requires Node 14+

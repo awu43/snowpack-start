@@ -9,6 +9,7 @@ const path = require("path");
 
 const execa = require("execa");
 const fse = require("fs-extra");
+const JSON5 = require("json5");
 const tmp = require("tmp");
 
 const chai = require("chai");
@@ -180,6 +181,21 @@ describe("createBase", () => {
     expect(file("tsconfig.json")).to.equal(
       file(path.join(BASE_TEMPLATES.get("blank-typescript"), "tsconfig.json"))
     );
+  });
+  it("Removes mocha from tsconfig.json for react-typescript template", () => {
+    newTempBase({ jsFramework: "react", typescript: true });
+    const tsConfig = JSON5.parse(fse.readFileSync("tsconfig.json"));
+    expect(tsConfig.compilerOptions.types).to.eql(["snowpack-env"]);
+  });
+  it("Removes mocha from tsconfig.json for svelte-typescript template", () => {
+    newTempBase({ jsFramework: "svelte", typescript: true });
+    const tsConfig = JSON5.parse(fse.readFileSync("tsconfig.json"));
+    expect(tsConfig.compilerOptions.types).to.eql(["snowpack-env"]);
+  });
+  it("Removes mocha from tsconfig.json for preact-typescript template", () => {
+    newTempBase({ jsFramework: "preact", typescript: true });
+    const tsConfig = JSON5.parse(fse.readFileSync("tsconfig.json"));
+    expect(tsConfig.compilerOptions.types).to.eql(["snowpack-env"]);
   });
   it("Copies .prettierrc", () => {
     newTempBase({ ...BLANK_CONFIG, codeFormatters: ["prettier"] });
