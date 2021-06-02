@@ -359,7 +359,7 @@ function getCliOptions(): PartialPreprocessOptionSet {
     cliOptions = { projectDir, ...cliOptions };
   }
 
-  for (const optKey of ["codeFormatters", "plugins"]) {
+  for (const optKey of ["codeFormatters", "plugins"] as const) {
     if (cliOptions[optKey] && cliOptions[optKey].includes("none")) {
       cliOptions[optKey] = [];
     }
@@ -462,17 +462,15 @@ async function getOptions(): Promise<FullOptionSet> {
 
     console.log(styles.cyanBright("\n-- Default options --"));
     for (const [optName, optValue] of Object.entries(options)) {
-      let optMessage = styles.whiteBold(
+      const optStatus = (
+        overwrittenLater(optName as OptionKey, [cliOptions, ...loadedOptions])
+          ? styles.errorMsg("×")
+          : styles.successMsg("√")
+      );
+      const optMessage = styles.whiteBold(
         PROMPTS.get(optName as OptionKey).message
       );
-      if (overwrittenLater(
-        optName as OptionKey, [cliOptions, ...loadedOptions]
-      )) {
-        optMessage = `${styles.errorMsg("×")} ${optMessage}`;
-      } else {
-        optMessage = `${styles.successMsg("√")} ${optMessage}`;
-      }
-      console.log(`${optMessage} ${optValue}`);
+      console.log(`${optStatus} ${optMessage} ${optValue}`);
     }
   }
 
@@ -493,17 +491,17 @@ async function getOptions(): Promise<FullOptionSet> {
 
       console.log(styles.cyanBright(`\n-- ${fileName} --`));
       for (const [optName, optValue] of Object.entries(opts)) {
-        let optMessage = styles.whiteBold(
+        const optStatus = (
+          overwrittenLater(
+            optName as OptionKey, [cliOptions, ...arr.slice(i + 1)]
+          )
+            ? styles.errorMsg("×")
+            : styles.successMsg("√")
+        );
+        const optMessage = styles.whiteBold(
           PROMPTS.get(optName as OptionKey).message
         );
-        if (overwrittenLater(
-          optName as OptionKey, [cliOptions, ...arr.slice(i + 1)]
-        )) {
-          optMessage = `${styles.errorMsg("×")} ${optMessage}`;
-        } else {
-          optMessage = `${styles.successMsg("√")} ${optMessage}`;
-        }
-        console.log(`${optMessage} ${optValue}`);
+        console.log(`${optStatus} ${optMessage} ${optValue}`);
       }
       Object.assign(options, opts);
     });
@@ -523,9 +521,9 @@ async function getOptions(): Promise<FullOptionSet> {
     }
     for (const [optName, optValue] of Object.entries(cliOptions)) {
       const optMessage = styles.whiteBold(
-        `${PROMPTS.get(optName as OptionKey).message}: `
+        `${PROMPTS.get(optName as OptionKey).message}:`
       );
-      console.log(`${styles.successMsg("√")} ${optMessage}${optValue}`);
+      console.log(`${styles.successMsg("√")} ${optMessage} ${optValue}`);
     }
     Object.assign(options, cliOptions);
   }
