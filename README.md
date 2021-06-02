@@ -17,7 +17,7 @@ None
 None
 
 ### 🔧 Fixes
-`_` — Removed mocha from `tsconfig.json` when not using WTR for `react-typescript`, `svelte-typescript`, and `preact-typescript` templates
+`20168dc` — Removed mocha from `tsconfig.json` when not using WTR for `react-typescript`, `svelte-typescript`, and `preact-typescript` templates
 
 ### 🏔️ Snowpack Template Changes
 None

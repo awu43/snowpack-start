@@ -120,22 +120,22 @@ type OptionValueType = string | boolean | string[];
 type PackageManager = "npm" | "yarn" | "pnpm";
 
 interface PartialOptionSet {
-  projectDir?: string,
-  jsFramework?: string,
-  typescript?: boolean,
-  codeFormatters?: string[],
-  sass?: boolean,
-  cssFramework?: string,
-  bundler?: string,
-  plugins?: string[],
-  license?: string,
-  author?: string,
+  projectDir?: string;
+  jsFramework?: string;
+  typescript?: boolean;
+  codeFormatters?: string[];
+  sass?: boolean;
+  cssFramework?: string;
+  bundler?: string;
+  plugins?: string[];
+  license?: string;
+  author?: string;
 
-  useYarn?: boolean,
-  usePnpm?: boolean,
-  skipTailwindInit?: boolean,
-  skipGitInit?: boolean,
-  skipEslintInit?: boolean,
+  useYarn?: boolean;
+  usePnpm?: boolean;
+  skipTailwindInit?: boolean;
+  skipGitInit?: boolean;
+  skipEslintInit?: boolean;
 }
 
 // Before defaults are applied and files loaded
@@ -144,4 +144,7 @@ interface PartialPreprocessOptionSet extends PartialOptionSet {
   load?: string[];
 }
 
-type FullOptionSet = Required<PartialOptionSet>;
+type FullOptionSet = Readonly<Required<Omit<PartialOptionSet, ArrayOptionKey>>> & {
+  readonly codeFormatters: readonly string[];
+  readonly plugins: readonly string[];
+};
