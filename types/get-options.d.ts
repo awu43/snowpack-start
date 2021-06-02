@@ -144,10 +144,4 @@ interface PartialPreprocessOptionSet extends PartialOptionSet {
   load?: string[];
 }
 
-type NullableOptionKey = "cssFramework" | "bundler" | "license";
-
-type NonNullOptionSet = Required<Omit<PartialOptionSet, NullableOptionKey>>;
-
-type NullableOptionSet = Record<NullableOptionKey, string | null>;
-
-type FullOptionSet = NonNullOptionSet & NullableOptionSet;
+type FullOptionSet = Required<PartialOptionSet>;

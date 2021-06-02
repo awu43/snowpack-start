@@ -20,7 +20,7 @@ const userDefaultsPath = path.join(os.homedir(), ".snowpackstart.js");
 const USER_DEFAULTS: PartialOptionSet | null = (
   fse.pathExistsSync(userDefaultsPath) ? require(userDefaultsPath) : null
 );
-const DEFAULT_OPTIONS = USER_DEFAULTS ? USER_DEFAULTS : BUILTIN_DEFAULTS;
+const DEFAULT_OPTIONS = USER_DEFAULTS || BUILTIN_DEFAULTS;
 
 function projectDirValidator(projectDir: string): DirValidResult {
   if (!projectDir.trim()) {
@@ -298,9 +298,12 @@ function choicesLine(optName: SelectPromptKey): string {
 }
 
 function choicesList(optName: MultiSelectPromptKey): string {
-  const optMessage = `${(PROMPTS.get(optName)).message} (<${styles.cyanBright("none")}> for none)`;
-  const values = PROMPTS.get(optName).choices
-    .map(c => `<${styles.cyanBright(c.value)}> (${c.title})`).join("\n");
+  const optMessage = `${PROMPTS.get(optName).message} (<${styles.cyanBright("none")}> for none)`;
+  const values = (
+    PROMPTS.get(optName).choices
+      .map(c => `<${styles.cyanBright(c.value)}> (${c.title})`)
+      .join("\n")
+  );
   return [optMessage, "-".repeat(10), values, "-".repeat(10)].join("\n");
 }
 
@@ -568,11 +571,9 @@ async function getOptions(): Promise<FullOptionSet> {
     options.jsFramework = "blank";
   }
 
-  // TODO: Switch to empty string for none
-  const nullableOptionKeys = ["cssFramework", "bundler", "license"];
-  for (const optKey of nullableOptionKeys as NullableOptionKey[]) {
+  for (const optKey of ["cssFramework", "bundler", "license"] as const) {
     if (options[optKey] === "none") {
-      (options as FullOptionSet)[optKey] = null;
+      (options)[optKey] = "";
     }
   }
 

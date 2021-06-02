@@ -59,6 +59,7 @@ function generateSvelteConfig(options: FullOptionSet): void {
   }
 }
 
+// TODO: Edit tsconfig to remove mocha type if not using WTR
 async function createBase(options: FullOptionSet): Promise<void> {
   const projectDir = styles.cyanBright(path.resolve(options.projectDir));
   console.log(`\n- Creating a new Snowpack app in ${projectDir}`);
@@ -279,7 +280,7 @@ function packageMajorVersion(version: string) {
 }
 
 function installPackages(options: FullOptionSet): void {
-  const prodPackages = [];
+  const prodPackages: string[] = [];
   const devPackages = ["snowpack"];
 
   const jsFramework = JS_FRAMEWORKS.get(options.jsFramework);
@@ -329,7 +330,7 @@ function installPackages(options: FullOptionSet): void {
   }
 
   for (const plugin of options.plugins || []) {
-    devPackages.push(...(PLUGIN_PACKAGES.get(plugin) as string[]));
+    devPackages.push(...PLUGIN_PACKAGES.get(plugin));
   }
   if ((options.plugins || []).includes("postcss")) {
     if (options.bundler !== "snowpack") {
@@ -452,9 +453,9 @@ function generateSnowpackConfig(options: FullOptionSet): void {
     configPluginsList.push("'@snowpack/plugin-sass'");
   }
 
-  if (SNOWPACK_CONFIG_PLUGINS.has(options.bundler as string)) {
+  if (SNOWPACK_CONFIG_PLUGINS.has(options.bundler)) {
     configPluginsList.push(
-      SNOWPACK_CONFIG_PLUGINS.get(options.bundler as string)
+      SNOWPACK_CONFIG_PLUGINS.get(options.bundler)
     );
   } else if (options.bundler === "snowpack") {
     const builtinSettings = (

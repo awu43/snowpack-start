@@ -54,9 +54,7 @@ const {
 const BASE_FILES = require("../src/dist-files.ts");
 const BASE_TEMPLATES = require("../src/dist-templates.ts");
 
-const BLANK_CONFIG = {
-  jsFramework: "blank", cssFramework: null, bundler: null
-};
+const BLANK_CONFIG = { jsFramework: "blank" };
 
 describe("stripPackageVersions", () => {
   it("Strips 3 from vue@3", () => {
@@ -321,7 +319,7 @@ describe("createBase", () => {
     expect(file("LICENSE")).to.equal(file(BASE_FILES.get("apache")));
   });
   it("Copies no license", () => {
-    newTempBase({ ...BLANK_CONFIG, license: null });
+    newTempBase({ ...BLANK_CONFIG, license: "" });
     expect(file("LICENSE")).to.not.exist;
   });
 });
@@ -467,7 +465,7 @@ describe("installPackages", () => {
   });
   it("Installs no CSS framework", () => {
     const devPackages = ["snowpack"];
-    installPackages({ ...BLANK_CONFIG, cssFramework: null });
+    installPackages({ ...BLANK_CONFIG, cssFramework: "" });
     expect(execa.sync).to.have.been.calledOnce;
     expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
   });
