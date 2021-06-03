@@ -14,7 +14,7 @@ The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-st
 None
 
 ### ⚠️ Non-breaking Changes
-`_` — Changed PostCSS config to minimize processing in dev
+`2ac6989` — Changed PostCSS config to minimize processing in dev
 
 ### 🔧 Fixes
 `20168dc` — Removed mocha from `tsconfig.json` when not using WTR for `react-typescript`, `svelte-typescript`, and `preact-typescript` templates

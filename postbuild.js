@@ -6,7 +6,4 @@ function fileReadAndReplace(file, targetStr, replStr) {
   );
 }
 
-fileReadAndReplace(
-  "dist/get-options.js", /(require\(".+?\.)ts("\))/g, "$1js$2"
-);
-fileReadAndReplace("dist/index.js", /(require\(".+?\.)ts("\))/g, "$1js$2");
+fileReadAndReplace("dist/get-options.js", "defaults.ts", "defaults.js");
