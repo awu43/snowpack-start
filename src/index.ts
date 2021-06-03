@@ -141,22 +141,28 @@ async function createBase(options: FullOptionSet): Promise<void> {
     let postcssConfig = fse.readFileSync(
       BASE_FILES.get("postcssConfig"), "utf8"
     );
+
     if (options.bundler === "snowpack") {
-      postcssConfig = postcssConfig.replace(
-        /\s+process.env.NODE_ENV === 'production' \? require\('cssnano'\).+/,
-        ""
-      );
+      postcssConfig = postcssConfig.replace(/.+require\('cssnano'\).+/, "");
     }
-    if (options.cssFramework !== "tailwindcss") {
+
+    // At least one plugin is required in dev to stop Snowpack from complaining
+    if (options.cssFramework === "tailwindcss") {
+      postcssConfig = postcssConfig.replace("// : null", ": null");
+    } else {
       postcssConfig = postcssConfig.replace(
         /require\('tailwindcss'\),\s+/, ""
       );
+      postcssConfig = postcssConfig.replace("// : require", ": require");
     }
+
     fse.writeFileSync("postcss.config.js", postcssConfig);
   }
+
   if ((options.plugins || []).includes("wtr")) {
     fse.copyFileSync(BASE_FILES.get("wtrConfig"), "web-test-runner.config.js");
   }
+
   if (options.license) {
     fse.copyFileSync(BASE_FILES.get(options.license), "LICENSE");
     if (options.license === "mit") {
