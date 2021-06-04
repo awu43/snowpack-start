@@ -48,7 +48,7 @@ describe("createBase", () => {
     const tempDir = tmp.dirSync();
     process.chdir(tempDir.name);
     generateSvelteConfig({
-      typescript: true, cssFramework: null, bundler: null, plugins: []
+      typescript: true, cssFramework: "", bundler: "", plugins: []
     });
     const generatedSvelteConfig = path.join(tempDir.name, "svelte.config.js");
 
