@@ -431,7 +431,7 @@ ${s(2)}alias: {
 ${s(4)}/* ... */
 ${s(2)}},
 `;
-
+// TODO: Change from .js to .mjs
 function generateSnowpackConfig(options: FullOptionSet): void {
   let snowpackConfig = fse.readFileSync(
     BASE_FILES.get("snowpackConfig"), "utf8"
