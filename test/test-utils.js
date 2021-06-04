@@ -63,7 +63,6 @@ function newTempConfigGenerator(generateFunc, fileName) {
     process.chdir(tempDir.name);
     generateFunc(options);
     const configPath = path.join(tempDir.name, fileName);
-    //
     return require(configPath);
   };
 }
@@ -72,9 +71,27 @@ const newTempPackageJson = newTempConfigGenerator(
   generatePackageJson, "package.json"
 );
 
-const newTempSnowpackConfig = newTempConfigGenerator(
-  generateSnowpackConfig, "snowpack.config.js"
-);
+// const newTempSnowpackConfig = newTempConfigGenerator(
+//   generateSnowpackConfig, "snowpack.config.ms"
+// );
+function revertSnowpackConfig(configPath, output = "snowpack.config.js") {
+  fse.writeFileSync(
+    output,
+    (fse
+      .readFileSync(configPath, "utf8")
+      .replace("export default", "module.exports =")
+    ),
+    "utf8"
+  );
+}
+function newTempSnowpackConfig(options) {
+  const tempDir = tmp.dirSync();
+  process.chdir(tempDir.name);
+  generateSnowpackConfig(options);
+  const configPath = path.join(tempDir.name, "snowpack.config.mjs");
+  revertSnowpackConfig(configPath);
+  return require(path.join(tempDir.name, "snowpack.config.js"));
+}
 
 function parseExecaProdArgs(execaArgs) {
   return stripPackageVersions(execaArgs.slice(1));
@@ -90,6 +107,7 @@ module.exports = {
   testDirectoryContentsEqual,
   newTempPackageJson,
   newTempSnowpackConfig,
+  revertSnowpackConfig,
   parseExecaProdArgs,
   parseExecaDevArgs,
 };

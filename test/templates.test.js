@@ -22,14 +22,15 @@ const { SOURCE_PATHS, SOURCE_CONFIGS } = require("../src-templates");
 
 const {
   installPackages,
-  generateSvelteConfig
+  generateSvelteConfig,
+  generateSnowpackConfig,
 } = require("../src/index.ts")._testing;
 
 const {
   newTempBase,
   // testDirectoryContentsEqual,
   newTempPackageJson,
-  newTempSnowpackConfig,
+  revertSnowpackConfig,
   parseExecaProdArgs,
   parseExecaDevArgs,
 } = require("./test-utils.js");
@@ -210,50 +211,60 @@ describe("installPackages", () => {
 });
 
 function testSnowpackConfigsEqual(template) {
-  const tempSnowpackConfig = newTempSnowpackConfig(
-    SOURCE_CONFIGS.get(template)
+  const tempDir = tmp.dirSync();
+  process.chdir(tempDir.name);
+  generateSnowpackConfig(SOURCE_CONFIGS.get(template));
+  const tempConfigPath = path.join(tempDir.name, "snowpack.config.mjs");
+  revertSnowpackConfig(tempConfigPath, "temp.config.js");
+  const tempSnowpackConfig = require(
+    path.join(tempDir.name, "temp.config.js")
   );
+
+  const baseSnowpackConfigPath = (
+    path.join(SOURCE_PATHS.get(template), "snowpack.config.mjs")
+  );
+  revertSnowpackConfig(baseSnowpackConfigPath, "base.config.js");
   const baseSnowpackConfig = require(
-    path.join(SOURCE_PATHS.get(template), "snowpack.config.js")
+    path.join(tempDir.name, "base.config.js")
   );
   expect(tempSnowpackConfig).to.eql(baseSnowpackConfig);
 }
 
 describe("generateSnowpackConfig", () => {
-  it("Generates snowpack.config.js for blank template", () => {
+  it("Generates snowpack.config.mjs for blank template", () => {
     testSnowpackConfigsEqual("blank");
   });
-  it("Generates snowpack.config.js for blank-typescript template", () => {
+  it("Generates snowpack.config.mjs for blank-typescript template", () => {
     testSnowpackConfigsEqual("blank-typescript");
   });
-  it("Generates snowpack.config.js for react template", () => {
+  it("Generates snowpack.config.mjs for react template", () => {
     testSnowpackConfigsEqual("react");
   });
-  it("Generates snowpack.config.js for react-typescript template", () => {
+  it("Generates snowpack.config.mjs for react-typescript template", () => {
     testSnowpackConfigsEqual("react-typescript");
   });
-  it("Generates snowpack.config.js for vue template", () => {
+  it("Generates snowpack.config.mjs for vue template", () => {
     testSnowpackConfigsEqual("vue");
   });
-  it("Generates snowpack.config.js for vue-typescript template", () => {
+  it("Generates snowpack.config.mjs for vue-typescript template", () => {
     testSnowpackConfigsEqual("vue-typescript");
   });
-  it("Generates snowpack.config.js for svelte template", () => {
+  it("Generates snowpack.config.mjs for svelte template", () => {
     testSnowpackConfigsEqual("svelte");
   });
-  it("Generates snowpack.config.js for svelte-typescript template", () => {
+  it("Generates snowpack.config.mjs for svelte-typescript template", () => {
     testSnowpackConfigsEqual("svelte-typescript");
   });
-  it("Generates snowpack.config.js for preact template", () => {
+  it("Generates snowpack.config.mjs for preact template", () => {
     testSnowpackConfigsEqual("preact");
   });
-  it("Generates snowpack.config.js for preact-typescript template", () => {
+  it("Generates snowpack.config.mjs for preact-typescript template", () => {
     testSnowpackConfigsEqual("preact-typescript");
   });
-  it("Generates snowpack.config.js for lit-element template", () => {
+  it("Generates snowpack.config.mjs for lit-element template", () => {
     testSnowpackConfigsEqual("lit-element");
   });
-  it("Generates snowpack.config.js for lit-element-typescript template", () => {
+  it("Generates snowpack.config.mjs for lit-element-typescript template", () => {
     testSnowpackConfigsEqual("lit-element-typescript");
   });
 });

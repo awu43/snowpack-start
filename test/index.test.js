@@ -583,11 +583,11 @@ describe("installPackages", () => {
 });
 
 describe("generateSnowpackConfig", () => {
-  it("Generates a snowpack.config.js file", () => {
+  it("Generates a snowpack.config.mjs file", () => {
     const tempDir = tmp.dirSync();
     process.chdir(tempDir.name);
     generateSnowpackConfig(BLANK_CONFIG);
-    expect(file("snowpack.config.js")).to.exist;
+    expect(file("snowpack.config.mjs")).to.exist;
   });
   it("Generates a base Snowpack configuration", () => {
     const snowpackConfig = newTempSnowpackConfig(BLANK_CONFIG);

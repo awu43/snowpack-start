@@ -11,7 +11,7 @@ The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-st
 ## Upcoming in 1.0.0-beta.8
 
 ### 🚨 Breaking Changes
-`_` — Split options into active and passive
+`457a0e4` — Split options into active and passive
 
 ### ⚠️ Non-breaking Changes
 `2ac6989` — Changed PostCSS config to minimize processing in dev
@@ -20,7 +20,7 @@ The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-st
 `20168dc` — Removed mocha from `tsconfig.json` when not using WTR for `react-typescript`, `svelte-typescript`, and `preact-typescript` templates
 
 ### 🏔️ Snowpack Template Changes
-None
+`_` — Changed Snowpack config file type from `.js` to `.mjs`
 
 <br>
 

@@ -431,7 +431,7 @@ ${s(2)}alias: {
 ${s(4)}/* ... */
 ${s(2)}},
 `;
-// TODO: Change from .js to .mjs
+
 function generateSnowpackConfig(options: FullOptionSet): void {
   let snowpackConfig = fse.readFileSync(
     BASE_FILES.get("snowpackConfig"), "utf8"
@@ -492,7 +492,7 @@ function generateSnowpackConfig(options: FullOptionSet): void {
     );
   }
 
-  fse.writeFileSync("snowpack.config.js", snowpackConfig);
+  fse.writeFileSync("snowpack.config.mjs", snowpackConfig);
 }
 
 function initializeTailwind(options: FullOptionSet): void {
