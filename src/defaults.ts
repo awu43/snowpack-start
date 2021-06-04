@@ -1,4 +1,5 @@
 module.exports = {
+  /* ACTIVE */
   // projectDir: "new-snowpack-app",
   jsFramework: "none",
   typescript: false,
@@ -18,9 +19,10 @@ module.exports = {
   license: "mit",
   // author: "",
 
+  /* PASSIVE */
   // useYarn: true,
   // usePnpm: true,
   // skipTailwindInit: true,
-  // skipGitInit: true,
   // skipEslintInit: true,
+  // skipGitInit: true,
 };

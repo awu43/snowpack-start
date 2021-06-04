@@ -19,6 +19,7 @@ module.exports = {
     "max-classes-per-file": "off",
     "no-underscore-dangle": "off",
     "no-unneeded-ternary": "off", // Node doesn't support nullish operator
+    "no-continue": "off",
   },
   overrides: [{
     files: ["**/*.ts"],

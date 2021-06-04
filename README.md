@@ -6,12 +6,12 @@
 
 The problem: manually customizing templates from [`create-snowpack-app`](https://github.com/snowpackjs/snowpack/tree/main/create-snowpack-app/cli) was annoying.
 
-The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-start` installs your packages and generates boilerplate so you can get to developing faster.
+The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-start` installs packages and generates configuration boilerplate so you can get to developing faster.
 
 ## Upcoming in 1.0.0-beta.8
 
 ### 🚨 Breaking Changes
-None
+`_` — Split options into active and passive
 
 ### ⚠️ Non-breaking Changes
 `2ac6989` — Changed PostCSS config to minimize processing in dev
@@ -53,6 +53,11 @@ Using all CLI options and skipping prompts entirely is also possible.
 <br>
 
 ### CLI Options
+
+#### Active
+
+Prompts will be displayed for active options not otherwise provided on the command line.
+
 | Syntax                                    | Description                  |
 |-------------------------------------------|------------------------------|
 | `-d, --defaults`                          | Use default options          |
@@ -67,12 +72,7 @@ Using all CLI options and skipping prompts entirely is also possible.
 | `-b, --bundler <bundler>`                 | Bundler                      |
 | `-p, --plugins <plugins...>`              | Other plugins                |
 | `-l, --license <license>`                 | License                      |
-| `-a, --author <author>`                   | Author                       |
-| `--use-yarn`                              | Use Yarn (no prompt)         |
-| `--use-pnpm`                              | Use pnpm (no prompt)         |
-| `--skip-tailwind-init`                    | Skip TailwindCSS init (no prompt) |
-| `--skip-eslint-init`                      | Skip ESLint init (no prompt) |
-| `--skip-git-init`                         | Skip git init (no prompt)    |
+| `-a, --author <author>`                   | Author (for MIT license)     |
 
 <br/>
 
@@ -96,12 +96,35 @@ Using all CLI options and skipping prompts entirely is also possible.
 
 <br>
 
+#### Passive
+
+Passive options do not have prompts.
+
+| Syntax                                    | Description                  |
+|-------------------------------------------|------------------------------|
+| `--use-yarn`                              | Use Yarn                     |
+| `--no-use-yarn`                           | Don't use Yarn               |
+| `--use-pnpm`                              | Use pnpm                     |
+| `--no-use-pnpm`                           | Don't use pnpm               |
+| `--skip-tailwind-init`                    | Skip TailwindCSS init        |
+| `--no-skip-tailwind-init`                 | Don't skip TailwindCSS init  |
+| `--skip-eslint-init`                      | Skip ESLint init             |
+| `--no-skip-eslint-init`                   | Don't skip ESLint init       |
+| `--skip-git-init`                         | Skip git init                |
+| `--no-skip-git-init`                      | Don't skip git init          |
+
+<br>
+
 ### Default Options
-On startup, `snowpack-start` will look for a `.snowpackstart.js` file in the home directory. If it exists, then those options are loaded and applied as the initial selections/values of the prompts. Otherwise, the [built-in default options](https://github.com/awu43/snowpack-start/blob/master/src/defaults.ts) are used.
+On startup, `snowpack-start` will look for a `.snowpackstart.js` file in the home directory. If it exists, then the options in that file are loaded as default options. Otherwise, the [built-in default options](https://github.com/awu43/snowpack-start/blob/master/src/defaults.ts) are used.
+
+Passive defaults will always be used regardless of whether the defaults flag has been passed on the command line. Active defaults will only be used if `-d` or `--defaults` has been passed.
 
 <div>
     <img src="https://github.com/awu43/snowpack-start/raw/master/media/default-app.png" alt="Using default options">
 </div>
+
+After CLI processing, the loaded defaults are applied as the initial selections/values of their corresponding prompts.
 
 <br>
 

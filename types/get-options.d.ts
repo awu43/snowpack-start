@@ -144,7 +144,17 @@ interface PartialPreprocessOptionSet extends PartialOptionSet {
   load?: string[];
 }
 
-type FullOptionSet = Readonly<Required<Omit<PartialOptionSet, ArrayOptionKey>>> & {
+type FullOptionSet = Readonly<
+  Required<
+    Omit<PartialOptionSet, ArrayOptionKey | NonPromptKey>
+  >
+> & {
   readonly codeFormatters: readonly string[];
   readonly plugins: readonly string[];
+
+  readonly useYarn?: boolean;
+  readonly usePnpm?: boolean;
+  readonly skipTailwindInit?: boolean;
+  readonly skipGitInit?: boolean;
+  readonly skipEslintInit?: boolean;
 };

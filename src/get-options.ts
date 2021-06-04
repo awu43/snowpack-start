@@ -21,6 +21,9 @@ const USER_DEFAULTS: PartialOptionSet | null = (
   fse.pathExistsSync(userDefaultsPath) ? require(userDefaultsPath) : null
 );
 const DEFAULT_OPTIONS = USER_DEFAULTS || BUILTIN_DEFAULTS;
+const PASSIVE_KEYS: readonly NonPromptKey[] = [
+  "useYarn", "usePnpm", "skipTailwindInit", "skipGitInit", "skipEslintInit"
+];
 
 function projectDirValidator(projectDir: string): DirValidResult {
   if (!projectDir.trim()) {
@@ -298,7 +301,9 @@ function choicesLine(optName: SelectPromptKey): string {
 }
 
 function choicesList(optName: MultiSelectPromptKey): string {
-  const optMessage = `${PROMPTS.get(optName).message} (<${styles.cyanBright("none")}> for none)`;
+  const optMessage = (
+    `${PROMPTS.get(optName).message} (<${styles.cyanBright("none")}> for none)`
+  );
   const values = (
     PROMPTS.get(optName).choices
       .map(c => `<${styles.cyanBright(c.value)}> (${c.title})`)
@@ -308,7 +313,7 @@ function choicesList(optName: MultiSelectPromptKey): string {
 }
 
 function displayDefaults(): void {
-  console.log(styles.cyanBright("\n  Default options"));
+  console.log(styles.cyanBright("\n\n  Default options"));
 
   for (const [optName, optValue] of Object.entries(DEFAULT_OPTIONS)) {
     console.log(`    ${styles.whiteBold(optName)} ${optValue}`);
@@ -348,12 +353,17 @@ function getCliOptions(): PartialPreprocessOptionSet {
     .option("-b, --bundler <bundler>", `Bundler <${choicesLine("bundler")}>`)
     .option("-p, --plugins <plugins...>", choicesList("plugins"))
     .option("-l, --license <license>", `License <${choicesLine("license")}>`)
-    .option("-a, --author <author>", "Author")
+    .option("-a, --author <author>", "Author\n\n")
     .option("--use-yarn", "Use Yarn")
+    .option("--no-use-yarn", "Don't use Yarn")
     .option("--use-pnpm", "Use pnpm")
+    .option("--no-use-pnpm", "Don't use pnpm")
     .option("--skip-tailwind-init", "Skip TailwindCSS init")
+    .option("--no-skip-tailwind-init", "Don't skip TailwindCSS init")
     .option("--skip-eslint-init", "Skip ESLint init")
+    .option("--no-skip-eslint-init", "Don't skip ESLint init")
     .option("--skip-git-init", "Skip git init")
+    .option("--no-skip-git-init", "Don't skip git init\n\n")
     .on("-h", displayDefaults)
     .on("--help", displayDefaults)
     .parse(process.argv)
@@ -409,6 +419,10 @@ function overwrittenLater(
 
 function applyDefaultsToPrompts(): void {
   for (const [optName, optValue] of Object.entries(DEFAULT_OPTIONS)) {
+    if (PASSIVE_KEYS.includes(optName as NonPromptKey)) {
+      continue;
+    }
+
     if (typeof optValue === "string") {
       const targetPrompt = PROMPTS.get(optName as StringOptionKey);
       if (targetPrompt.type === "text" || targetPrompt.name === "author") {
@@ -476,6 +490,21 @@ async function getOptions(): Promise<FullOptionSet> {
       );
       console.log(`${optStatus} ${optMessage} ${optValue}`);
     }
+  } else if (USER_DEFAULTS && PASSIVE_KEYS.some(key => key in USER_DEFAULTS)) {
+    console.log(styles.cyanBright("\n-- Default options --"));
+    for (const optName of PASSIVE_KEYS) {
+      if (optName in USER_DEFAULTS) {
+        const optValue = USER_DEFAULTS[optName];
+        options[optName] = optValue as boolean;
+        const optStatus = (
+          overwrittenLater(optName, [cliOptions, ...loadedOptions])
+            ? styles.errorMsg("×")
+            : styles.successMsg("√")
+        );
+        const optMessage = styles.whiteBold(PROMPTS.get(optName).message);
+        console.log(`${optStatus} ${optMessage} ${optValue}`);
+      }
+    }
   }
 
   if (loadedOptions.length) {
@@ -534,7 +563,7 @@ async function getOptions(): Promise<FullOptionSet> {
 
   const remainingPrompts = (
     [...PROMPTS.keys()]
-      .filter(k => (PROMPTS.get(k)).type !== null) // Doesn't catch author
+      .filter(k => PROMPTS.get(k).type !== null) // Doesn't catch author
       .filter(k => !(k in options))
       .map(k => PROMPTS.get(k))
   );
