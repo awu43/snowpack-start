@@ -269,7 +269,6 @@ function generatePackageJson(options: FullOptionSet): void {
 const PLUGIN_PACKAGES = new Map(Object.entries({
   postcss: [
     "postcss",
-    "postcss-cli",
     "postcss-preset-env",
     // "cssnano", // Added later conditionally
     "@snowpack/plugin-postcss",

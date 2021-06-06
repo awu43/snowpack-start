@@ -495,7 +495,6 @@ describe("installPackages", () => {
     const devPackages = [
       "snowpack",
       "postcss",
-      "postcss-cli",
       "postcss-preset-env",
       "@snowpack/plugin-postcss",
       "cssnano",
@@ -508,7 +507,6 @@ describe("installPackages", () => {
     const devPackages = [
       "snowpack",
       "postcss",
-      "postcss-cli",
       "postcss-preset-env",
       "@snowpack/plugin-postcss",
     ];
@@ -525,7 +523,6 @@ describe("installPackages", () => {
       "@snowpack/plugin-dotenv",
       "tailwindcss",
       "postcss",
-      "postcss-cli",
       "postcss-preset-env",
       "@snowpack/plugin-postcss",
       "cssnano",
@@ -554,7 +551,6 @@ describe("installPackages", () => {
     const devPackages = [
       "snowpack",
       "postcss",
-      "postcss-cli",
       "postcss-preset-env",
       "@snowpack/plugin-postcss",
       "@web/test-runner",

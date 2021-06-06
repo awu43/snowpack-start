@@ -17,10 +17,11 @@ The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-st
 `2ac6989` — Changed PostCSS config to minimize processing in dev
 
 ### 🔧 Fixes
-`20168dc` — Removed mocha from `tsconfig.json` when not using WTR for `react-typescript`, `svelte-typescript`, and `preact-typescript` templates
+`20168dc` — Removed mocha from `tsconfig.json` when not using WTR for `react-typescript`, `svelte-typescript`, and `preact-typescript` templates<br>
+`_` — Removed unnecessary `postcss-cli` dev dependency ([#3412](https://github.com/snowpackjs/snowpack/pull/3412))
 
 ### 🏔️ Snowpack Template Changes
-`_` — Changed Snowpack config file type from `.js` to `.mjs`
+`907fcf1` — Changed Snowpack config file type from `.js` to `.mjs`
 
 <br>
 
