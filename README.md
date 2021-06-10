@@ -8,7 +8,7 @@ The problem: manually customizing templates from [`create-snowpack-app`](https:/
 
 The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-start` installs packages and generates configuration boilerplate so you can get to developing faster.
 
-## Upcoming in 1.0.0-beta.8
+## New in 1.0.0
 
 ### 🚨 Breaking Changes
 `457a0e4` — Split options into active and passive
@@ -18,7 +18,7 @@ The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-st
 
 ### 🔧 Fixes
 `20168dc` — Removed mocha from `tsconfig.json` when not using WTR for `react-typescript`, `svelte-typescript`, and `preact-typescript` templates<br>
-`_` — Removed unnecessary `postcss-cli` dev dependency ([#3412](https://github.com/snowpackjs/snowpack/pull/3412))
+`cf17db2` — Removed unnecessary `postcss-cli` dev dependency ([#3412](https://github.com/snowpackjs/snowpack/pull/3412))
 
 ### 🏔️ Snowpack Template Changes
 `907fcf1` — Changed Snowpack config file type from `.js` to `.mjs`
@@ -97,6 +97,10 @@ Prompts will be displayed for active options not otherwise provided on the comma
 
 <br>
 
+⚠️ Don't install `@snowpack/plugin-run-script` or `@snowpack/plugin-build-script` unless you have a reason to! They're not required to run Snowpack and are for additional processing that isn't already handled by existing plugins.
+
+<br>
+
 #### Passive
 
 Passive options do not have prompts.
@@ -153,8 +157,9 @@ Later options overwrite earlier ones:
 
 ## Issues
 ### Known
-* `@snowpack/web-test-runner-plugin` has not been verified to work with Vue or LitElement.
-* ESLint init only supports React and Vue, additional setup required for using ESLint with Svelte, Preact, and LitElement.
+* Starting with Snowpack v3.1 and as of June 10, 2021 (v3.5.6), image/JSON imports break builds using the built-in bundler ([#3109](https://github.com/snowpackjs/snowpack/issues/3109)). Workaround [here](https://github.com/snowpackjs/snowpack/issues/3109#issuecomment-821514740) (copy to a JS file, then add `./<your-js-file>.js` to `plugins` in `snowpack.config.mjs`).
+* `eslint --init` only supports React and Vue, additional setup required for Svelte, Preact, and LitElement.
+* `eslint --init` only installs packages with npm, no option to use Yarn or pnpm.
 
 ### Reporting
 Please report any other issues [here](https://github.com/awu43/snowpack-start/issues).
