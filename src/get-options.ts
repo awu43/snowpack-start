@@ -248,16 +248,16 @@ function packageManagerInstalled(packageManager: PackageManager): boolean {
 }
 
 function validateOptions(options: PartialOptionSet): void {
-  for (const [optName, optValue] of Object.entries(options)) {
-    if (!OPTION_TYPES.has(optName as OptionKey)) {
-      throw new OptionNameError(optName as OptionKey);
+  for (const [optName, optValue] of Object.entries(options) as OptionEntries) {
+    if (!OPTION_TYPES.has(optName)) {
+      throw new OptionNameError(optName);
     }
 
-    if (!OPTION_TYPE_CHECKS.get(optName as OptionKey)(optValue)) {
-      throw new OptionTypeError(optName as OptionKey, optValue);
+    if (!OPTION_TYPE_CHECKS.get(optName)(optValue)) {
+      throw new OptionTypeError(optName, optValue);
     }
 
-    const promptType = PROMPTS.get(optName as OptionKey).type;
+    const promptType = PROMPTS.get(optName).type;
     if (["select", "multiselect"].includes(promptType as string)) {
       // Function type of author prompt and null type of non-prompts
       // are not assignable to string
@@ -265,16 +265,15 @@ function validateOptions(options: PartialOptionSet): void {
         PROMPTS.get(optName as SelectPromptKey).choices.map(c => c.value)
       );
       const invalidSingleSelect = (
-        promptType === "select" && !promptChoiceValues.includes(optValue)
+        promptType === "select"
+        && !promptChoiceValues.includes(optValue as string)
       );
       const invalidMultiselect = (
         promptType === "multiselect"
         && !(optValue as string[]).every(v => promptChoiceValues.includes(v))
       );
       if (invalidSingleSelect || invalidMultiselect) {
-        throw new OptionValueError(
-          optName as OptionKey, optValue, promptChoiceValues
-        );
+        throw new OptionValueError(optName, optValue, promptChoiceValues);
       }
     }
 
@@ -315,7 +314,8 @@ function choicesList(optName: MultiSelectPromptKey): string {
 function displayDefaults(): void {
   console.log(styles.cyanBright("\n\n  Default options"));
 
-  for (const [optName, optValue] of Object.entries(DEFAULT_OPTIONS)) {
+  for (const [optName, optValue] of
+      Object.entries(DEFAULT_OPTIONS) as OptionEntries) {
     console.log(`    ${styles.whiteBold(optName)} ${optValue}`);
   }
   console.log("");
@@ -418,7 +418,8 @@ function overwrittenLater(
 }
 
 function applyDefaultsToPrompts(): void {
-  for (const [optName, optValue] of Object.entries(DEFAULT_OPTIONS)) {
+  for (const [optName, optValue] of
+      Object.entries(DEFAULT_OPTIONS) as OptionEntries) {
     if (PASSIVE_KEYS.includes(optName as NonPromptKey)) {
       continue;
     }
@@ -446,9 +447,7 @@ function applyDefaultsToPrompts(): void {
       console.error(
         styles.fatalError("Error while processing default options")
       );
-      throw new OptionTypeError(
-        optName as OptionKey, optValue as OptionValueType
-      );
+      throw new OptionTypeError(optName, optValue);
     }
   }
 }
@@ -479,15 +478,14 @@ async function getOptions(): Promise<FullOptionSet> {
     delete cliOptions.defaults;
 
     console.log(styles.cyanBright("\n-- Default options --"));
-    for (const [optName, optValue] of Object.entries(options)) {
+    for (const [optName, optValue] of
+        Object.entries(options) as OptionEntries) {
       const optStatus = (
-        overwrittenLater(optName as OptionKey, [cliOptions, ...loadedOptions])
+        overwrittenLater(optName, [cliOptions, ...loadedOptions])
           ? styles.errorMsg("×")
           : styles.successMsg("√")
       );
-      const optMessage = styles.whiteBold(
-        PROMPTS.get(optName as OptionKey).message
-      );
+      const optMessage = styles.whiteBold(PROMPTS.get(optName).message);
       console.log(`${optStatus} ${optMessage} ${optValue}`);
     }
   } else if (USER_DEFAULTS && PASSIVE_KEYS.some(key => key in USER_DEFAULTS)) {
@@ -523,17 +521,13 @@ async function getOptions(): Promise<FullOptionSet> {
       }
 
       console.log(styles.cyanBright(`\n-- ${fileName} --`));
-      for (const [optName, optValue] of Object.entries(opts)) {
+      for (const [optName, optValue] of Object.entries(opts) as OptionEntries) {
         const optStatus = (
-          overwrittenLater(
-            optName as OptionKey, [cliOptions, ...arr.slice(i + 1)]
-          )
+          overwrittenLater(optName, [cliOptions, ...arr.slice(i + 1)])
             ? styles.errorMsg("×")
             : styles.successMsg("√")
         );
-        const optMessage = styles.whiteBold(
-          PROMPTS.get(optName as OptionKey).message
-        );
+        const optMessage = styles.whiteBold(PROMPTS.get(optName).message);
         console.log(`${optStatus} ${optMessage} ${optValue}`);
       }
       Object.assign(options, opts);
@@ -552,10 +546,9 @@ async function getOptions(): Promise<FullOptionSet> {
       console.error(error.message);
       process.exit(1);
     }
-    for (const [optName, optValue] of Object.entries(cliOptions)) {
-      const optMessage = styles.whiteBold(
-        `${PROMPTS.get(optName as OptionKey).message}:`
-      );
+    for (const [optName, optValue] of
+        Object.entries(cliOptions) as OptionEntries) {
+      const optMessage = styles.whiteBold(`${PROMPTS.get(optName).message}:`);
       console.log(`${styles.successMsg("√")} ${optMessage} ${optValue}`);
     }
     Object.assign(options, cliOptions);

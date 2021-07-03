@@ -117,6 +117,8 @@ type OptionTypeCheckMap = LockedMap<OptionKey, OptionTypeCheckFunc> & {
 
 type OptionValueType = string | boolean | string[];
 
+type OptionEntries = [OptionKey, OptionValueType][];
+
 type PackageManager = "npm" | "yarn" | "pnpm";
 
 interface PartialOptionSet {
