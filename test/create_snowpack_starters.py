@@ -94,6 +94,8 @@ def create_starter(config_item):
             "--no-sass",
             "--css-framework none",
             "--bundler none",
+            "--other-prod-deps none",
+            "--other-dev-deps none",
             "--license none",
             "--skip-git-init",
         ])

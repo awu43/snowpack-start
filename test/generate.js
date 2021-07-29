@@ -1,7 +1,7 @@
 const execa = require("execa");
 const fse = require("fs-extra");
 
-const { installPackages } = require("../src/index.ts")._testing;
+const { installPackages } = require("../dist/index")._testing;
 const { SOURCE_CONFIGS } = require("../src-templates");
 
 function createSnowpackApps() {
