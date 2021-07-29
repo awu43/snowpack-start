@@ -1,5 +1,3 @@
-/* eslint-disable no-undef */
-
 const { SOURCE_PATHS } = require("../src-templates");
 const CREATED_SNOWPACK_APPS = require("../created-snowpack-apps");
 

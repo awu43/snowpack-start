@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 const execa = require("execa");
 const fse = require("fs-extra");
 

@@ -1,6 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable no-unused-expressions */
-/* eslint-disable no-undef */
 const execa = require("execa");
 const fse = require("fs-extra");
 const tmp = require("tmp");

@@ -20,5 +20,8 @@ module.exports = {
     "max-classes-per-file": 0,
     "no-underscore-dangle": 0,
     "no-continue": 0,
+    "import/no-dynamic-require": 0,
+    "global-require": 0,
+    "no-console": 0,
   },
 }

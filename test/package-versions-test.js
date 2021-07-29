@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 const path = require("path");
 const { expect } = require("chai");
 
@@ -6,7 +5,6 @@ const { SOURCE_PATHS } = require("../src-templates");
 const SNOWPACK_STARTERS = require("../snowpack-starters");
 
 function getPackageMajorVersions(targetDir, deleteEmpty = true) {
-  // eslint-disable-next-line import/no-dynamic-require, global-require
   const packageJson = require(path.join(targetDir, "package.json"));
   const packageVersions = { dependencies: {}, devDependencies: {} };
   for (const [name, version] of Object.entries(packageJson.dependencies || {})) {

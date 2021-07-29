@@ -1,7 +1,3 @@
-/* eslint-disable global-require */
-/* eslint-disable import/no-dynamic-require */
-/* eslint-disable no-console */
-
 import os = require("os");
 import path = require("path");
 

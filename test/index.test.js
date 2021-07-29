@@ -1,10 +1,5 @@
 /* eslint-disable quotes */
 /* eslint-disable no-useless-escape */
-/* eslint-disable no-console */
-/* eslint-disable no-unused-expressions */
-/* eslint-disable no-undef */
-/* eslint-disable import/no-dynamic-require */
-/* eslint-disable global-require */
 const path = require("path");
 
 const execa = require("execa");

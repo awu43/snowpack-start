@@ -1,8 +1,5 @@
 #!/usr/bin/env node
 /* eslint-disable no-useless-escape */
-/* eslint-disable no-console */
-/* eslint-disable import/no-dynamic-require */
-/* eslint-disable global-require */
 import path = require("path");
 
 import execa = require("execa");
