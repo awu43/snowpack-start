@@ -15,7 +15,7 @@ import styles = require("./styles");
 const PACKAGE_JSON: { name: string, version: string } = require("../package.json");
 
 // eslint-disable-next-line import/newline-after-import
-const BUILTIN_DEFAULTS: PartialOptionSet = require("./defaults.ts");
+const BUILTIN_DEFAULTS: PartialOptionSet = require("./defaults.js");
 const userDefaultsPath = path.join(os.homedir(), ".snowpackstart.js");
 const USER_DEFAULTS: PartialOptionSet | null = (
   fse.pathExistsSync(userDefaultsPath) ? require(userDefaultsPath) : null

@@ -28,7 +28,6 @@
   },
   "scripts": {
     "build": "tsc",
-    "postbuild": "node postbuild.js",
     "generate": "ts-node --files test/generate.js",
     "gen-test": "ts-mocha \"test/src-templates-test.js\" && ts-mocha \"test/package-versions-test.js\"",
     "test": "ts-mocha \"test/*.test.js\"",

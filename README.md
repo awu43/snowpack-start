@@ -121,7 +121,7 @@ Passive options do not have prompts.
 <br>
 
 ### Default Options
-On startup, `snowpack-start` will look for a `.snowpackstart.js` file in the home directory. If it exists, then the options in that file are loaded as default options. Otherwise, the [built-in default options](https://github.com/awu43/snowpack-start/blob/master/src/defaults.ts) are used.
+On startup, `snowpack-start` will look for a `.snowpackstart.js` file in the home directory. If it exists, then the options in that file are loaded as default options. Otherwise, the [built-in default options](https://github.com/awu43/snowpack-start/blob/master/src/defaults.js) are used.
 
 Passive defaults will always be used regardless of whether the defaults flag has been passed on the command line. Active defaults will only be used if `-d` or `--defaults` has been passed.
 
