@@ -111,9 +111,6 @@ type OptionTypesMap = LockedMap<OptionKey, OptionTypeString> & {
 };
 
 type OptionTypeCheckFunc = (opt: unknown) => boolean;
-type OptionTypeCheckMap = LockedMap<OptionKey, OptionTypeCheckFunc> & {
-  get(K: OptionKey): OptionTypeCheckFunc;
-}
 
 type OptionValueType = string | boolean | string[];
 

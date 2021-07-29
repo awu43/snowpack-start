@@ -178,24 +178,18 @@ function isBoolean(opt: unknown): opt is boolean {
 function isArray(opt: unknown): opt is Array<string> {
   return Array.isArray(opt);
 }
-const OPTION_TYPE_CHECKS = new Map(Object.entries({
-  projectDir: isString,
-  jsFramework: isString,
-  typescript: isBoolean,
-  codeFormatters: isArray,
-  sass: isBoolean,
-  cssFramework: isString,
-  bundler: isString,
-  plugins: isArray,
-  license: isString,
-  author: isString,
-
-  useYarn: isBoolean,
-  usePnpm: isBoolean,
-  skipTailwindInit: isBoolean,
-  skipGitInit: isBoolean,
-  skipEslintInit: isBoolean,
-})) as OptionTypeCheckMap;
+function optionTypeCheck(optName: OptionKey): OptionTypeCheckFunc {
+  switch (OPTION_TYPES.get(optName)) {
+    case "string":
+      return isString;
+    case "boolean":
+      return isBoolean;
+    case "array":
+      return isArray;
+    default:
+      throw new Error("Invalid option name");
+  }
+}
 
 class OptionNameError extends Error {
   constructor(optName: string) {
@@ -249,7 +243,7 @@ function validateOptions(options: PartialOptionSet): void {
       throw new OptionNameError(optName);
     }
 
-    if (!OPTION_TYPE_CHECKS.get(optName)(optValue)) {
+    if (!optionTypeCheck(optName)(optValue)) {
       throw new OptionTypeError(optName, optValue);
     }
 
