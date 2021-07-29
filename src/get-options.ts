@@ -20,7 +20,7 @@ const userDefaultsPath = path.join(os.homedir(), ".snowpackstart.js");
 const USER_DEFAULTS: PartialOptionSet | null = (
   fse.pathExistsSync(userDefaultsPath) ? require(userDefaultsPath) : null
 );
-const DEFAULT_OPTIONS = USER_DEFAULTS || BUILTIN_DEFAULTS;
+const DEFAULT_OPTIONS = USER_DEFAULTS ?? BUILTIN_DEFAULTS;
 const PASSIVE_KEYS: readonly NonPromptKey[] = [
   "useYarn", "usePnpm", "skipTailwindInit", "skipGitInit", "skipEslintInit"
 ];

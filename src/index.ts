@@ -45,16 +45,16 @@ function generateSvelteConfig(options: FullOptionSet): void {
   if (options.cssFramework !== "tailwindcss") {
     svelteConfig = svelteConfig.replace(/require\('tailwindcss'\),\s+/, "");
   }
-  if ((options.plugins || []).includes("postcss")
+  if (options.plugins?.includes("postcss")
       && options.bundler === "snowpack") {
     svelteConfig = svelteConfig.replace(/\s+require\('cssnano'\),/, "");
   }
-  if (!(options.plugins || []).includes("postcss")) {
+  if (!options.plugins?.includes("postcss")) {
     svelteConfig = svelteConfig.replace(
       new RegExp(`${s(4)}postcss.+?${s(4)}},\n`, "s"), ""
     );
   }
-  if (options.typescript || (options.plugins || []).includes("postcss")) {
+  if (options.typescript || options.plugins?.includes("postcss")) {
     fse.writeFileSync("svelte.config.js", svelteConfig);
   }
 }
@@ -107,14 +107,13 @@ async function createBase(options: FullOptionSet): Promise<void> {
     fse.copyFileSync(
       path.join(targetTemplateDir, "tsconfig.json"), "tsconfig.json"
     );
-    if (!(options.plugins || []).includes("wtr")
+    if (!options.plugins?.includes("wtr")
         && ["react", "svelte", "preact"].includes(options.jsFramework)) {
       fileReadAndReplace("tsconfig.json", "\"mocha\", ", "");
     }
   }
 
-  // Optional .? chaining requires Node 14+
-  if ((options.codeFormatters || []).includes("prettier")) {
+  if (options.codeFormatters?.includes("prettier")) {
     fse.copyFileSync(BASE_FILES.get("prettierConfig"), ".prettierrc");
   }
 
@@ -137,7 +136,7 @@ async function createBase(options: FullOptionSet): Promise<void> {
     }
   }
 
-  if ((options.plugins || []).includes("postcss")) {
+  if (options.plugins?.includes("postcss")) {
     let postcssConfig = fse.readFileSync(
       BASE_FILES.get("postcssConfig"), "utf8"
     );
@@ -159,7 +158,7 @@ async function createBase(options: FullOptionSet): Promise<void> {
     fse.writeFileSync("postcss.config.js", postcssConfig);
   }
 
-  if ((options.plugins || []).includes("wtr")) {
+  if (options.plugins?.includes("wtr")) {
     fse.copyFileSync(BASE_FILES.get("wtrConfig"), "web-test-runner.config.js");
   }
 
@@ -229,8 +228,8 @@ function generatePackageJson(options: FullOptionSet): void {
   const prettierFormat = `prettier --write \"src/**/*.${fmtExts}\"`;
   const prettierLint = `prettier --check \"src/**/*.${fmtExts}\"`;
 
-  const useEslint = (options.codeFormatters || []).includes("eslint");
-  const usePrettier = (options.codeFormatters || []).includes("prettier");
+  const useEslint = options.codeFormatters?.includes("eslint");
+  const usePrettier = options.codeFormatters?.includes("prettier");
   if (useEslint && !usePrettier) {
     appPackageJson.scripts.format = eslintFormat;
     appPackageJson.scripts.lint = eslintLint;
@@ -248,13 +247,12 @@ function generatePackageJson(options: FullOptionSet): void {
     appPackageJson.scripts["type-check"] = "tsc";
   }
 
-  if (options.bundler === "webpack"
-      || (options.plugins || []).includes("postcss")) {
+  if (options.bundler === "webpack" || options.plugins?.includes("postcss")) {
     appPackageJson.browserslist = DEFAULT_BROWSERSLIST;
   }
 
   // No example tests for Vue/LitElement
-  if ((options.plugins || []).includes("wtr")
+  if (options.plugins?.includes("wtr")
       && !["vue", "lit-element"].includes(options.jsFramework)) {
     let jsTestExt = options.typescript ? "ts" : "js";
     if (["react", "preact"].includes(options.jsFramework)) {
@@ -297,12 +295,12 @@ function installPackages(options: FullOptionSet): void {
   if (options.typescript) {
     devPackages.push(...jsFramework.tsPackages);
   }
-  if ((options.plugins || []).includes("wtr")) {
+  if (options.plugins?.includes("wtr")) {
     devPackages.push(...jsFramework.wtrPackages);
   }
 
   if (["react", "svelte", "preact"].includes(options.jsFramework)
-      && options.typescript && (options.plugins || []).includes("wtr")) {
+      && options.typescript && options.plugins?.includes("wtr")) {
     devPackages.push("@types/mocha");
   }
 
@@ -323,7 +321,7 @@ function installPackages(options: FullOptionSet): void {
     }
   }
 
-  devPackages.push(...(options.codeFormatters || []));
+  devPackages.push(...(options.codeFormatters ?? []));
 
   if (options.sass) {
     devPackages.push("@snowpack/plugin-sass");
@@ -337,10 +335,10 @@ function installPackages(options: FullOptionSet): void {
     devPackages.push("@snowpack/plugin-webpack");
   }
 
-  for (const plugin of options.plugins || []) {
+  for (const plugin of options.plugins ?? []) {
     devPackages.push(...PLUGIN_PACKAGES.get(plugin));
   }
-  if ((options.plugins || []).includes("postcss")) {
+  if (options.plugins?.includes("postcss")) {
     if (options.bundler !== "snowpack") {
       devPackages.push("cssnano");
     }
@@ -476,7 +474,7 @@ function generateSnowpackConfig(options: FullOptionSet): void {
     // /* ... */ -> content
   }
 
-  for (const plugin of options.plugins || []) {
+  for (const plugin of options.plugins ?? []) {
     if (SNOWPACK_CONFIG_PLUGINS.has(plugin)) {
       configPluginsList.push(SNOWPACK_CONFIG_PLUGINS.get(plugin));
     }
@@ -512,7 +510,7 @@ function initializeTailwind(options: FullOptionSet): void {
 }
 
 function initializeEslint(options: FullOptionSet): void {
-  if ((options.codeFormatters || []).includes("eslint")) {
+  if (options.codeFormatters?.includes("eslint")) {
     if (!options.skipEslintInit) {
       try {
         console.log(styles.cyanBright("\n- Initializing ESLint.\n"));

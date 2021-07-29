@@ -19,7 +19,6 @@ module.exports = {
     "no-else-return": 0,
     "max-classes-per-file": 0,
     "no-underscore-dangle": 0,
-    "no-unneeded-ternary": 0, // Node doesn't support nullish operator
     "no-continue": 0,
   },
 }
