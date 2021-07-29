@@ -557,6 +557,33 @@ describe("installPackages", () => {
     expect(execa.sync).to.have.been.calledOnce;
     expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
   });
+  it("Installs other prod dependencies", () => {
+    installPackages({ ...BLANK_CONFIG, otherProdDeps: ["foo"] });
+    expect(execa.sync).to.have.been.calledTwice;
+    expect(parseExecaProdArgs(execa.sync.args[0][1])).to.eql(["foo"]);
+    expect(parseExecaDevArgs(execa.sync.args[1][1])).to.eql(["snowpack"]);
+  });
+  it("Does not install duplicate prod dependencies", () => {
+    installPackages({ jsFramework: "vue", otherProdDeps: ["vue"] });
+    expect(execa.sync).to.have.been.calledTwice;
+    expect(parseExecaProdArgs(execa.sync.args[0][1])).to.eql(["vue"]);
+    expect(parseExecaDevArgs(execa.sync.args[1][1]))
+      .to.eql(["snowpack", "@snowpack/plugin-vue", "@snowpack/plugin-dotenv"]);
+  });
+  it("Installs other dev dependencies", () => {
+    installPackages({ ...BLANK_CONFIG, otherDevDeps: ["foo"] });
+    expect(execa.sync).to.have.been.calledOnce;
+    expect(parseExecaDevArgs(execa.sync.args[0][1]))
+      .to.eql(["snowpack", "foo"]);
+  });
+  it("Does not install duplicate dev dependencies", () => {
+    installPackages({
+      ...BLANK_CONFIG, codeFormatters: ["eslint"], otherDevDeps: ["eslint"]
+    });
+    expect(execa.sync).to.have.been.calledOnce;
+    expect(parseExecaDevArgs(execa.sync.args[0][1]))
+      .to.eql(["snowpack", "eslint"]);
+  });
   it("Installs packages using Yarn", () => {
     installPackages({ ...BLANK_CONFIG, useYarn: true });
     expect(execa.sync).to.have.been.calledOnce;

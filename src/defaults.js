@@ -16,6 +16,8 @@ module.exports = {
     // "srs",
     // "sbs",
   ],
+  otherProdDeps: [],
+  otherDevDeps: [],
   license: "mit",
   // author: "",
 

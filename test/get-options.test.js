@@ -19,6 +19,7 @@ const {
   validateOptions,
   loadFiles,
   overwrittenLater,
+  addDeps,
 } = require("../src/get-options.ts")._testing;
 
 describe("validateOptions", () => {
@@ -57,6 +58,16 @@ describe("validateOptions", () => {
     expect(() => validateOptions(invalidOptions)).to.throw(OptionValueError);
     expect(() => validateOptions(invalidOptions))
       .to.throw(styles.errorMsg(`Invalid value ${styles.cyanBright(invalidOptions.codeFormatters)} for ${styles.cyanBright("codeFormatters")}\nValid values: ${["eslint", "prettier"].map(c => styles.cyanBright(c)).join("/")}`));
+  });
+  it("Throws Error if otherProdDeps contains a non-string", () => {
+    const invalidOptions = { otherProdDeps: [null] };
+    expect(() => validateOptions(invalidOptions))
+      .to.throw(styles.errorMsg("otherProdDeps must be an array of strings"));
+  });
+  it("Throws Error if otherDevDeps contains a non-string", () => {
+    const invalidOptions = { otherDevDeps: [null] };
+    expect(() => validateOptions(invalidOptions))
+      .to.throw(styles.errorMsg("otherDevDeps must be an array of strings"));
   });
   it("Throws Error if useYarn and usePnpm are both passed", () => {
     expect(() => validateOptions({ useYarn: true, usePnpm: true }))
@@ -137,13 +148,55 @@ describe("loadFiles", () => {
 });
 
 describe("overwrittenLater", () => {
-  it("Returns true", () => {
+  it("Returns true if otherProdDeps is cleared", () => {
+    const expected = overwrittenLater(
+      "otherProdDeps", [{ otherProdDeps: ["none", "foo"] }]
+    );
+    expect(expected).to.be.true;
+  });
+  it("Returns false if otherProdDeps is not cleared", () => {
+    const expected = overwrittenLater(
+      "otherProdDeps", [{ otherProdDeps: ["bar"] }]
+    );
+    expect(expected).to.be.false;
+  });
+  it("Returns true if otherDevDeps is cleared", () => {
+    const expected = overwrittenLater(
+      "otherDevDeps", [{ otherDevDeps: ["none", "foo"] }]
+    );
+    expect(expected).to.be.true;
+  });
+  it("Returns false if otherDevDeps is not cleared", () => {
+    const expected = overwrittenLater(
+      "otherDevDeps", [{ otherDevDeps: ["bar"] }]
+    );
+    expect(expected).to.be.false;
+  });
+  it("Returns true if a non-additive option is overwritten", () => {
     const expected = overwrittenLater(
       "typescript", [{}, { sass: true }, { typescript: true }]
     );
     expect(expected).to.be.true;
   });
-  it("Returns false", () => {
-    expect(overwrittenLater("typescript", [])).to.be.false;
+  it("Returns false if a non-additive option is not overwritten", () => {
+    expect(overwrittenLater("typescript", [{ sass: true }])).to.be.false;
+  });
+});
+
+describe("addDeps", () => {
+  it("Adds dependencies", () => {
+    const deplist = ["foo"];
+    addDeps(deplist, ["bar"]);
+    expect(deplist).to.eql(["foo", "bar"]);
+  });
+  it("Clears prior dependencies", () => {
+    const deplist = ["foo"];
+    addDeps(deplist, ["none", "bar"]);
+    expect(deplist).to.eql(["bar"]);
+  });
+  it("Does not add duplicate dependencies", () => {
+    const deplist = ["foo"];
+    addDeps(deplist, ["bar", "foo", "baz"]);
+    expect(deplist).to.eql(["foo", "bar", "baz"]);
   });
 });

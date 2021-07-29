@@ -105,6 +105,18 @@ const PROMPTS = new Map(Object.entries({
       { title: "Snowpack Build Script", value: "sbs" },
     ],
   },
+  otherProdDeps: {
+    type: "list",
+    name: "otherProdDeps",
+    message: "Other prodDeps",
+    separator: " ",
+  },
+  otherDevDeps: {
+    type: "list",
+    name: "otherDevDeps",
+    message: "Other devDeps",
+    separator: " ",
+  },
   license: {
     type: "select",
     name: "license",
@@ -159,6 +171,8 @@ const OPTION_TYPES = new Map(Object.entries({
   cssFramework: "string",
   bundler: "string",
   plugins: "array",
+  otherProdDeps: "array",
+  otherDevDeps: "array",
   license: "string",
   author: "string",
 
@@ -248,23 +262,34 @@ function validateOptions(options: PartialOptionSet): void {
     }
 
     const promptType = PROMPTS.get(optName).type;
-    if (["select", "multiselect"].includes(promptType as string)) {
-      // Function type of author prompt and null type of non-prompts
-      // are not assignable to string
-      const promptChoiceValues = (
-        PROMPTS.get(optName as SelectPromptKey).choices.map(c => c.value)
-      );
-      const invalidSingleSelect = (
-        promptType === "select"
-        && !promptChoiceValues.includes(optValue as string)
-      );
-      const invalidMultiselect = (
-        promptType === "multiselect"
-        && !(optValue as string[]).every(v => promptChoiceValues.includes(v))
-      );
-      if (invalidSingleSelect || invalidMultiselect) {
-        throw new OptionValueError(optName, optValue, promptChoiceValues);
+    switch (promptType) {
+      case "select":
+      case "multiselect": {
+        const promptChoiceValues = (
+          PROMPTS.get(optName as SelectPromptKey).choices.map(c => c.value)
+        );
+        const invalidSingleSelect = (
+          promptType === "select"
+          && !promptChoiceValues.includes(optValue as string)
+        );
+        const invalidMultiselect = (
+          promptType === "multiselect"
+          && !(optValue as string[]).every(v => promptChoiceValues.includes(v))
+        );
+        if (invalidSingleSelect || invalidMultiselect) {
+          throw new OptionValueError(optName, optValue, promptChoiceValues);
+        }
       }
+        break;
+      case "list":
+        if (!(optValue as unknown[]).every(isString)) {
+          throw new Error(
+            styles.errorMsg(`${optName} must be an array of strings`)
+          );
+        }
+        break;
+      default:
+        break;
     }
 
     if (options.useYarn && options.usePnpm) {
@@ -342,6 +367,14 @@ function getCliOptions(): PartialPreprocessOptionSet {
     )
     .option("-b, --bundler <bundler>", `Bundler <${choicesLine("bundler")}>`)
     .option("-p, --plugins <plugins...>", choicesList("plugins"))
+    .option(
+      "-opd, --other-prod-deps <dependencies...>",
+      `Other prod dependencies (<${styles.cyanBright("none")}> to clear preceeding)`
+    )
+    .option(
+      "-odd, --other-dev-deps <dependencies...>",
+      `Other dev dependencies (<${styles.cyanBright("none")}> to clear preceeding)`
+    )
     .option("-l, --license <license>", `License <${choicesLine("license")}>`)
     .option("-a, --author <author>", "Author\n\n")
     .option("--use-yarn", "Use Yarn")
@@ -404,9 +437,17 @@ function overwrittenLater(
   optName: OptionKey,
   laterOptions: PartialOptionSet[],
 ): boolean {
-  return laterOptions.some(opts => optName in opts);
+  // Other deps are additive
+  if (optName === "otherProdDeps") {
+    return laterOptions.some(opts => opts?.otherProdDeps?.includes("none"));
+  } else if (optName === "otherDevDeps") {
+    return laterOptions.some(opts => opts?.otherDevDeps?.includes("none"));
+  } else {
+    return laterOptions.some(opts => optName in opts);
+  }
 }
 
+// Defaults have already been validated when this is called
 function applyDefaultsToPrompts(): void {
   for (const [optName, optValue] of
       Object.entries(DEFAULT_OPTIONS) as OptionEntries) {
@@ -425,13 +466,32 @@ function applyDefaultsToPrompts(): void {
           targetPrompt.choices.findIndex(c => c.value === optValue)
         );
       }
-    } else if (typeof optValue === "boolean") { // TypeScript, Sass
+    } else if (typeof optValue === "boolean") {
+      // TypeScript, Sass
       PROMPTS.get(optName as BooleanOptionKey).initial = optValue;
-    } else if (Array.isArray(optValue)) { // Code formatters, plugins
-      for (const choice of PROMPTS.get(optName as ArrayOptionKey).choices) {
-        if (optValue.includes(choice.value)) {
-          choice.selected = true;
+    } else if (Array.isArray(optValue)) {
+      // Code formatters, plugins, otherProdDeps, otherDevDeps
+      switch (optName) {
+        case "codeFormatters":
+        case "plugins": {
+          for (
+            const choice of
+            PROMPTS.get(optName as MultiSelectOptionKey).choices
+          ) {
+            if (optValue.includes(choice.value)) {
+              choice.selected = true;
+            }
+          }
+          break;
         }
+        case "otherProdDeps":
+        case "otherDevDeps":
+          PROMPTS.get(optName as ListPromptKey).initial = (
+            optValue.length ? optValue.join(" ") : ""
+          );
+          break;
+        default:
+          break;
       }
     } else {
       console.error(
@@ -445,6 +505,37 @@ function applyDefaultsToPrompts(): void {
 function onCancel(): void {
   console.log(styles.fatalError("\nKeyboard exit\n"));
   process.exit(1);
+}
+
+function addDeps(deplist: string[], deps: string[]): void {
+  for (const dep of deps) {
+    if (dep === "none") {
+      deplist.splice(0, deplist.length);
+    } else if (!deplist.includes(dep)) {
+      deplist.push(dep);
+    }
+  }
+}
+
+const otherProdDeps: string[] = [];
+const otherDevDeps: string[] = [];
+
+function addOtherProdDeps(
+  currentOpts: PartialOptionSet,
+  laterOpts: PartialOptionSet[],
+): void {
+  if (!overwrittenLater("otherProdDeps", laterOpts)) {
+    addDeps(otherProdDeps, currentOpts?.otherProdDeps ?? []);
+  }
+}
+
+function addOtherDevDeps(
+  currentOpts: PartialOptionSet,
+  laterOpts: PartialOptionSet[],
+): void {
+  if (!overwrittenLater("otherDevDeps", laterOpts)) {
+    addDeps(otherDevDeps, currentOpts?.otherDevDeps ?? []);
+  }
 }
 
 async function getOptions(): Promise<FullOptionSet> {
@@ -468,24 +559,28 @@ async function getOptions(): Promise<FullOptionSet> {
     delete cliOptions.defaults;
 
     console.log(styles.cyanBright("\n-- Default options --"));
+    const laterOptions = [...loadedOptions, cliOptions];
     for (const [optName, optValue] of
         Object.entries(options) as OptionEntries) {
       const optStatus = (
-        overwrittenLater(optName, [cliOptions, ...loadedOptions])
+        overwrittenLater(optName, laterOptions)
           ? styles.errorMsg("×")
           : styles.successMsg("√")
       );
       const optMessage = styles.whiteBold(PROMPTS.get(optName).message);
       console.log(`${optStatus} ${optMessage} ${optValue}`);
     }
+    addOtherProdDeps(DEFAULT_OPTIONS, laterOptions);
+    addOtherDevDeps(DEFAULT_OPTIONS, laterOptions);
   } else if (USER_DEFAULTS && PASSIVE_KEYS.some(key => key in USER_DEFAULTS)) {
     console.log(styles.cyanBright("\n-- Default options --"));
+    const laterOptions = [...loadedOptions, cliOptions];
     for (const optName of PASSIVE_KEYS) {
       if (optName in USER_DEFAULTS) {
         const optValue = USER_DEFAULTS[optName];
         options[optName] = optValue as boolean;
         const optStatus = (
-          overwrittenLater(optName, [cliOptions, ...loadedOptions])
+          overwrittenLater(optName, laterOptions)
             ? styles.errorMsg("×")
             : styles.successMsg("√")
         );
@@ -511,9 +606,10 @@ async function getOptions(): Promise<FullOptionSet> {
       }
 
       console.log(styles.cyanBright(`\n-- ${fileName} --`));
+      const laterOptions = [...arr.slice(i + 1), cliOptions];
       for (const [optName, optValue] of Object.entries(opts) as OptionEntries) {
         const optStatus = (
-          overwrittenLater(optName, [cliOptions, ...arr.slice(i + 1)])
+          overwrittenLater(optName, laterOptions)
             ? styles.errorMsg("×")
             : styles.successMsg("√")
         );
@@ -521,6 +617,8 @@ async function getOptions(): Promise<FullOptionSet> {
         console.log(`${optStatus} ${optMessage} ${optValue}`);
       }
       Object.assign(options, opts);
+      addOtherProdDeps(opts, laterOptions);
+      addOtherDevDeps(opts, laterOptions);
     });
     delete cliOptions.load;
   }
@@ -542,6 +640,8 @@ async function getOptions(): Promise<FullOptionSet> {
       console.log(`${styles.successMsg("√")} ${optMessage} ${optValue}`);
     }
     Object.assign(options, cliOptions);
+    addOtherProdDeps(cliOptions, []);
+    addOtherDevDeps(cliOptions, []);
   }
 
   const remainingPrompts = (
@@ -570,6 +670,9 @@ async function getOptions(): Promise<FullOptionSet> {
       options,
       await prompts(remainingPrompts as prompts.PromptObject[], { onCancel })
     );
+
+    addOtherProdDeps(options, []);
+    addOtherDevDeps(options, []);
   }
 
   if (options.license === "mit" && !("author" in options)) {
@@ -580,6 +683,10 @@ async function getOptions(): Promise<FullOptionSet> {
       )
     );
   }
+
+  options.otherProdDeps = otherProdDeps.filter(Boolean);
+  options.otherDevDeps = otherDevDeps.filter(Boolean);
+  // Filter empty strings
 
   if (options.jsFramework === "none") {
     options.jsFramework = "blank";
@@ -606,5 +713,6 @@ export = {
     validateOptions,
     loadFiles,
     overwrittenLater,
+    addDeps,
   },
 };

@@ -6,6 +6,7 @@ type ProjectDirPromptKey = "projectDir";
 type SelectPromptKey = "jsFramework" | "cssFramework" | "bundler" | "license";
 type TogglePromptKey = "typescript" | "sass";
 type MultiSelectPromptKey = "codeFormatters" | "plugins";
+type ListPromptKey = "otherProdDeps" | "otherDevDeps";
 type AuthorPromptKey = "author";
 type NonPromptKey = (
   "useYarn" | "usePnpm" | "skipTailwindInit" | "skipEslintInit" | "skipGitInit"
@@ -15,6 +16,7 @@ type OptionKey = (
   | SelectPromptKey
   | TogglePromptKey
   | MultiSelectPromptKey
+  | ListPromptKey
   | AuthorPromptKey
   | NonPromptKey
 );
@@ -48,6 +50,11 @@ interface MultiSelectPrompt extends BasePrompt {
   type: "multiselect";
   choices: Choice[];
 }
+interface ListPrompt extends BasePrompt {
+  type: "list";
+  initial?: string;
+  separator: string;
+}
 interface AuthorPrompt extends BasePrompt {
   type: (prev: string, values: { license ?: string }) => "text" | null;
   initial?: string;
@@ -55,12 +62,14 @@ interface AuthorPrompt extends BasePrompt {
 interface NonPrompt {
   type: null;
   message: string;
+  initial?: never;
 }
 type AnyPrompt = (
   ProjectDirPrompt
   | SelectPrompt
   | TogglePrompt
   | MultiSelectPrompt
+  | ListPrompt
   | AuthorPrompt
   | NonPrompt
 );
@@ -82,12 +91,11 @@ type StringOptionPrompt = Extract<
   AnyPrompt, ProjectDirPrompt | SelectPrompt | AuthorPrompt
 >;
 type BooleanOptionKey = Extract<OptionKey, TogglePromptKey | NonPromptKey>;
-type BooleanOptionPrompt = Extract<
-  OptionPrompt,
-  TogglePromptPrompt | NonPromptPrompt
->;
-type ArrayOptionKey = Extract<OptionKey, MultiSelectPromptKey>;
-type ArrayOptionPrompt = Extract<OptionPrompt, MultiSelectPromptPrompt>;
+type BooleanOptionPrompt = Extract<AnyPrompt, TogglePrompt | NonPrompt>;
+type MultiSelectOptionKey = Extract<OptionKey, MultiSelectPromptKey>;
+type MultiSelectOptionPrompt = Extract<AnyPrompt, MultiSelectPrompt>;
+type ListOptionKey = Extract<OptionKey, ListPromptKey>;
+type ListOptionPrompt = Extract<AnyPrompt, ListPrompt>;
 
 type PromptsMap = LockedMap<OptionKey, AnyPrompt> & {
   // Can't quite figure out how to replace this with keyof
@@ -95,12 +103,14 @@ type PromptsMap = LockedMap<OptionKey, AnyPrompt> & {
   get(K: SelectPromptKey): SelectPrompt;
   get(K: TogglePromptKey): TogglePrompt;
   get(K: MultiSelectPromptKey): MultiSelectPrompt;
+  get(K: ListPromptKey): ListPrompt;
   get(K: AuthorPromptKey): AuthorPrompt;
   get(K: NonPromptKey): NonPrompt;
 
   get(K: StringOptionKey): StringOptionPrompt;
   get(K: BooleanOptionKey): BooleanOptionPrompt;
-  get(K: ArrayOptionKey): ArrayOptionPrompt;
+  get(K: MultiSelectOptionKey): MultiSelectOptionPrompt;
+  get(K: ListOptionKey): ListOptionPrompt;
 
   get(K: OptionKey): AnyPrompt;
 };
@@ -127,6 +137,8 @@ interface PartialOptionSet {
   cssFramework?: string;
   bundler?: string;
   plugins?: string[];
+  otherProdDeps?: string[];
+  otherDevDeps?: string[];
   license?: string;
   author?: string;
 
@@ -145,11 +157,13 @@ interface PartialPreprocessOptionSet extends PartialOptionSet {
 
 type FullOptionSet = Readonly<
   Required<
-    Omit<PartialOptionSet, ArrayOptionKey | NonPromptKey>
+    Omit<PartialOptionSet, MultiSelectOptionKey| ListPromptKey | NonPromptKey>
   >
 > & {
   readonly codeFormatters: readonly string[];
   readonly plugins: readonly string[];
+  readonly otherProdDeps: readonly string[]
+  readonly otherDevDeps: readonly string[]
 
   readonly useYarn?: boolean;
   readonly usePnpm?: boolean;

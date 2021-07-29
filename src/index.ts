@@ -345,6 +345,13 @@ function installPackages(options: FullOptionSet): void {
     }
   }
 
+  prodPackages.push(...(
+    options.otherProdDeps?.filter(d => !prodPackages.includes(d)) ?? []
+  ));
+  devPackages.push(...(
+    options.otherDevDeps?.filter(d => !devPackages.includes(d)) ?? []
+  ));
+
   const basePackageJson = require(
     path.join(BASE_TEMPLATES.get(templateName(options)), "package.json")
   );
