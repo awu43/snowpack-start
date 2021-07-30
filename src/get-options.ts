@@ -396,6 +396,13 @@ function getCliOptions(): PartialPreprocessOptionSet {
     cliOptions = { projectDir, ...cliOptions };
   }
 
+  cliOptions?.load?.forEach((file: string, i: number, arr: string[]) => {
+    if (!file.endsWith(".js")) {
+      // eslint-disable-next-line no-param-reassign
+      arr[i] = `${file}.js`;
+    }
+  });
+
   for (const optKey of ["codeFormatters", "plugins"] as const) {
     if (cliOptions[optKey] && cliOptions[optKey].includes("none")) {
       cliOptions[optKey] = [];
@@ -413,10 +420,6 @@ function loadFiles(cliOptions: { load?: string[] }): PartialOptionSet[] {
       try {
         if (!fse.pathExistsSync(file)) {
           throw new Error(styles.fatalError("File does not exist"));
-        } else if (path.extname(fullPath) !== ".js") {
-          throw new Error(
-            styles.fatalError(`Invalid file type ${path.extname(fullPath)}, expected .js`)
-          );
         } else {
           loadedOptions.push(require(fullPath) as PartialOptionSet);
         }

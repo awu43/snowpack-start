@@ -1,5 +1,4 @@
 const execa = require("execa");
-const fse = require("fs-extra");
 const tmp = require("tmp");
 
 const chai = require("chai");
@@ -132,16 +131,6 @@ describe("loadFiles", () => {
     loadFiles({ load: [tempFile.name] });
     expect(console.error).to.have.been.calledWith(
       styles.fatalError("File does not exist")
-    );
-    expect(process.exit).to.have.been.calledWith(1);
-  });
-  it("Exits with code 1 if file is not .js file", () => {
-    const tempFile = tmp.dirSync();
-    process.chdir(tempFile.name);
-    fse.writeFileSync("notajsfile.txt", "");
-    loadFiles({ load: ["notajsfile.txt"] });
-    expect(console.error).to.have.been.calledWith(
-      styles.fatalError("Invalid file type .txt, expected .js")
     );
     expect(process.exit).to.have.been.calledWith(1);
   });
