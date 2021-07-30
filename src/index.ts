@@ -13,6 +13,8 @@ import DIST_TEMPLATES = require("./dist-templates");
 
 const { getOptions } = _getOptions;
 
+const REACT_TEMPLATES = ["react", "react-redux", "preact"];
+
 // For spacing in template literals
 function s(numSpaces: number): string {
   return " ".repeat(numSpaces);
@@ -105,7 +107,7 @@ async function createBase(options: FullOptionSet): Promise<void> {
       path.join(targetTemplateDir, "tsconfig.json"), "tsconfig.json"
     );
     if (!options.plugins?.includes("wtr")
-        && ["react", "svelte", "preact"].includes(options.baseTemplate)) {
+        && [...REACT_TEMPLATES, "svelte"].includes(options.baseTemplate)) {
       fileReadAndReplace("tsconfig.json", "\"mocha\", ", "");
     }
   }
@@ -127,6 +129,21 @@ async function createBase(options: FullOptionSet): Promise<void> {
         fse.renameSync("src/index.css", "src/index.scss");
         fileReadAndReplace(`src/App.${jsExt}x`, "App.css", "App.scss");
         fileReadAndReplace(`src/index.${jsExt}x`, "index.css", "index.scss");
+        break;
+      case "react-redux":
+        fse.renameSync("src/App.css", "src/App.scss");
+        fse.renameSync("src/index.css", "src/index.scss");
+        fse.renameSync(
+          "src/features/counter/Counter.module.css",
+          "src/features/counter/Counter.module.scss",
+        );
+        fileReadAndReplace(`src/App.${jsExt}x`, "App.css", "App.scss");
+        fileReadAndReplace(`src/index.${jsExt}x`, "index.css", "index.scss");
+        fileReadAndReplace(
+          `src/features/counter/Counter.${jsExt}x`,
+          "Counter.module.css",
+          "Counter.module.scss",
+        );
         break;
       default:
         // Vue/Svelte templates have no CSS files
@@ -198,7 +215,7 @@ function generatePackageJson(options: FullOptionSet): void {
   };
 
   const jsExts = ["js"];
-  if (["react", "preact"].includes(options.baseTemplate)) {
+  if (REACT_TEMPLATES.includes(options.baseTemplate)) {
     jsExts.push("jsx");
   } else if (options.baseTemplate === "vue") {
     jsExts.unshift("vue");
@@ -211,7 +228,7 @@ function generatePackageJson(options: FullOptionSet): void {
     } else {
       jsExts.push("ts");
     }
-    if (["react", "preact"].includes(options.baseTemplate)) {
+    if (REACT_TEMPLATES.includes(options.baseTemplate)) {
       jsExts.push("tsx");
     } else if (options.baseTemplate === "lit-element") {
       jsExts.shift();
@@ -253,10 +270,15 @@ function generatePackageJson(options: FullOptionSet): void {
   if (options.plugins?.includes("wtr")
       && !["vue", "lit-element"].includes(options.baseTemplate)) {
     let jsTestExt = options.typescript ? "ts" : "js";
-    if (["react", "preact"].includes(options.baseTemplate)) {
+    if (REACT_TEMPLATES.includes(options.baseTemplate)) {
       jsTestExt = `${jsTestExt}x`;
+      if (options.baseTemplate === "react-redux") {
+        jsTestExt = `{${jsTestExt},${jsTestExt.slice(0, 2)}}`;
+      }
     }
-    appPackageJson.scripts.test = `web-test-runner \"src/**/*.test.${jsTestExt}\"`;
+    appPackageJson.scripts.test = (
+      `web-test-runner \"src/**/*.test.${jsTestExt}\"`
+    );
   }
 
   fse.writeFileSync("package.json", JSON.stringify(appPackageJson, null, 2));
@@ -297,7 +319,7 @@ function installPackages(options: FullOptionSet): void {
     devPackages.push(...baseTemplate.wtrPackages);
   }
 
-  if (["react", "svelte", "preact"].includes(options.baseTemplate)
+  if ([...REACT_TEMPLATES, "svelte"].includes(options.baseTemplate)
       && options.typescript && options.plugins?.includes("wtr")) {
     devPackages.push("@types/mocha");
   }
@@ -314,7 +336,7 @@ function installPackages(options: FullOptionSet): void {
     } else if (options.baseTemplate === "preact") {
       devPackages.pop(); // Remove @types/snowpack-env
     }
-    if ((options.plugins || []).includes("wtr")) {
+    if (options.plugins?.includes("wtr")) {
       devPackages.push("@types/chai");
     }
   }

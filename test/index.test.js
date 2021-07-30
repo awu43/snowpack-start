@@ -182,6 +182,11 @@ describe("createBase", () => {
     const tsConfig = JSON5.parse(fse.readFileSync("tsconfig.json"));
     expect(tsConfig.compilerOptions.types).to.eql(["snowpack-env"]);
   });
+  it("Removes mocha from tsconfig.json for react-redux-typescript template", () => {
+    newTempBase({ baseTemplate: "react-redux", typescript: true });
+    const tsConfig = JSON5.parse(fse.readFileSync("tsconfig.json"));
+    expect(tsConfig.compilerOptions.types).to.eql(["snowpack-env"]);
+  });
   it("Removes mocha from tsconfig.json for svelte-typescript template", () => {
     newTempBase({ baseTemplate: "svelte", typescript: true });
     const tsConfig = JSON5.parse(fse.readFileSync("tsconfig.json"));
@@ -233,6 +238,46 @@ describe("createBase", () => {
     expect(file("src/App.tsx")).to.contain("App.scss");
     expect(file("src/index.tsx")).to.not.contain("index.css");
     expect(file("src/index.tsx")).to.contain("index.scss");
+  });
+  it("Renames CSS files to SCSS for react-redux template", () => {
+    newTempBase({ baseTemplate: "react-redux", sass: true });
+    expect(file("src/App.css")).to.not.exist;
+    expect(file("src/App.scss")).to.exist;
+    expect(file("src/index.css")).to.not.exist;
+    expect(file("src/index.scss")).to.exist;
+    expect(file("src/features/counter/Counter.module.css")).to.not.exist;
+    expect(file("src/features/counter/Counter.module.scss")).to.exist;
+  });
+  it("Changes CSS imports to SCSS for react-redux template", () => {
+    newTempBase({ baseTemplate: "react-redux", sass: true });
+    expect(file("src/App.jsx")).to.not.contain("App.css");
+    expect(file("src/App.jsx")).to.contain("App.scss");
+    expect(file("src/index.jsx")).to.not.contain("index.css");
+    expect(file("src/index.jsx")).to.contain("index.scss");
+    expect(file("src/features/counter/Counter.jsx"))
+      .to.not.contain("Counter.module.css");
+    expect(file("src/features/counter/Counter.jsx"))
+      .to.contain("Counter.module.scss");
+  });
+  it("Renames CSS files to SCSS for react-redux-typescript template", () => {
+    newTempBase({ baseTemplate: "react-redux", typescript: true, sass: true });
+    expect(file("src/App.css")).to.not.exist;
+    expect(file("src/App.scss")).to.exist;
+    expect(file("src/index.css")).to.not.exist;
+    expect(file("src/index.scss")).to.exist;
+    expect(file("src/features/counter/Counter.module.css")).to.not.exist;
+    expect(file("src/features/counter/Counter.module.scss")).to.exist;
+  });
+  it("Changes CSS imports to SCSS for react-redux-typescript template", () => {
+    newTempBase({ baseTemplate: "react-redux", typescript: true, sass: true });
+    expect(file("src/App.tsx")).to.not.contain("App.css");
+    expect(file("src/App.tsx")).to.contain("App.scss");
+    expect(file("src/index.tsx")).to.not.contain("index.css");
+    expect(file("src/index.tsx")).to.contain("index.scss");
+    expect(file("src/features/counter/Counter.tsx"))
+      .to.not.contain("Counter.module.css");
+    expect(file("src/features/counter/Counter.tsx"))
+      .to.contain("Counter.module.scss");
   });
   it("Does not rename any CSS files for vue template", () => {
     sinon.stub(fse, "renameSync");

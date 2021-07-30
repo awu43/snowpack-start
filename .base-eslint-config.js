@@ -13,7 +13,9 @@ module.exports = {
   },
   rules: {
     quotes: [2, "double"],
-    "no-restricted-syntax": [2, "ForInStatement", "LabeledStatement", "WithStatement"],
+    "no-restricted-syntax": [
+      2, "ForInStatement", "LabeledStatement", "WithStatement"
+    ],
     "comma-dangle": [2, "only-multiline"],
     "arrow-parens": [2, "as-needed"],
     "no-else-return": 0,

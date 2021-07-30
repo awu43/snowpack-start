@@ -23,6 +23,28 @@ export = new Map(Object.entries({
       "'@snowpack/plugin-dotenv'",
     ],
   },
+  "react-redux": {
+    prodPackages: [
+      "react",
+      "react-dom",
+      "@reduxjs/toolkit",
+      "react-redux",
+    ],
+    devPackages: [
+      "@snowpack/plugin-react-refresh",
+      "@snowpack/plugin-dotenv",
+    ],
+    tsPackages: [
+      "@types/react",
+      "@types/react-dom",
+      "@types/react-redux",
+    ],
+    wtrPackages: ["@testing-library/react"],
+    plugins: [
+      "'@snowpack/plugin-react-refresh'",
+      "'@snowpack/plugin-dotenv'",
+    ],
+  },
   vue: {
     prodPackages: ["vue"],
     devPackages: [

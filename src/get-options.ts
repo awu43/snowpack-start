@@ -45,6 +45,7 @@ const PROMPTS = new Map(Object.entries({
     choices: [
       { title: "Blank", value: "blank" },
       { title: "React", value: "react" },
+      { title: "React-Redux", value: "react-redux" },
       { title: "Vue", value: "vue" },
       { title: "Svelte", value: "svelte" },
       { title: "Preact", value: "preact" },
