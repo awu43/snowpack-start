@@ -7,9 +7,9 @@ import fse = require("fs-extra");
 
 import styles = require("./styles");
 import _getOptions = require("./get-options");
-import JS_FRAMEWORKS = require("./js-frameworks");
-import BASE_FILES = require("./dist-files");
-import BASE_TEMPLATES = require("./dist-templates");
+import BASE_TEMPLATES = require("./base-templates");
+import DIST_FILES = require("./dist-files");
+import DIST_TEMPLATES = require("./dist-templates");
 
 const { getOptions } = _getOptions;
 
@@ -19,7 +19,7 @@ function s(numSpaces: number): string {
 }
 
 function templateName(options: FullOptionSet): string {
-  return `${options.jsFramework}${options.typescript ? "-typescript" : ""}`;
+  return `${options.baseTemplate}${options.typescript ? "-typescript" : ""}`;
 }
 
 function fileReadAndReplace(
@@ -34,7 +34,7 @@ function fileReadAndReplace(
 
 function generateSvelteConfig(options: FullOptionSet): void {
   let svelteConfig = fse.readFileSync(
-    BASE_FILES.get("svelteConfig"), "utf8"
+    DIST_FILES.get("svelteConfig"), "utf8"
   );
   if (!options.typescript) {
     svelteConfig = svelteConfig.replace(/defaults.+?},\s+/s, "");
@@ -73,9 +73,9 @@ async function createBase(options: FullOptionSet): Promise<void> {
   }
   process.chdir(options.projectDir);
 
-  fse.copyFileSync(BASE_FILES.get("gitignore"), ".gitignore");
+  fse.copyFileSync(DIST_FILES.get("gitignore"), ".gitignore");
 
-  const targetTemplateDir = BASE_TEMPLATES.get(templateName(options));
+  const targetTemplateDir = DIST_TEMPLATES.get(templateName(options));
   let readme = fse.readFileSync(
     path.join(targetTemplateDir, "README.md"), "utf8"
   );
@@ -90,10 +90,10 @@ async function createBase(options: FullOptionSet): Promise<void> {
   fse.copySync(path.join(targetTemplateDir, "public"), "public");
   fse.copySync(path.join(targetTemplateDir, "src"), "src");
 
-  if (options.jsFramework === "svelte") {
+  if (options.baseTemplate === "svelte") {
     generateSvelteConfig(options);
   }
-  if (options.jsFramework === "lit-element") {
+  if (options.baseTemplate === "lit-element") {
     fse.copyFileSync(
       path.join(targetTemplateDir, "babel.config.json"), "babel.config.json"
     );
@@ -105,18 +105,18 @@ async function createBase(options: FullOptionSet): Promise<void> {
       path.join(targetTemplateDir, "tsconfig.json"), "tsconfig.json"
     );
     if (!options.plugins?.includes("wtr")
-        && ["react", "svelte", "preact"].includes(options.jsFramework)) {
+        && ["react", "svelte", "preact"].includes(options.baseTemplate)) {
       fileReadAndReplace("tsconfig.json", "\"mocha\", ", "");
     }
   }
 
   if (options.codeFormatters?.includes("prettier")) {
-    fse.copyFileSync(BASE_FILES.get("prettierConfig"), ".prettierrc");
+    fse.copyFileSync(DIST_FILES.get("prettierConfig"), ".prettierrc");
   }
 
   if (options.sass) {
     const jsExt = options.typescript ? "ts" : "js";
-    switch (options.jsFramework) {
+    switch (options.baseTemplate) {
       case "blank":
       case "lit-element":
         fse.renameSync("src/index.css", "src/index.scss");
@@ -128,14 +128,15 @@ async function createBase(options: FullOptionSet): Promise<void> {
         fileReadAndReplace(`src/App.${jsExt}x`, "App.css", "App.scss");
         fileReadAndReplace(`src/index.${jsExt}x`, "index.css", "index.scss");
         break;
-      default: // Vue/Svelte templates have no CSS files
+      default:
+        // Vue/Svelte templates have no CSS files
         break;
     }
   }
 
   if (options.plugins?.includes("postcss")) {
     let postcssConfig = fse.readFileSync(
-      BASE_FILES.get("postcssConfig"), "utf8"
+      DIST_FILES.get("postcssConfig"), "utf8"
     );
 
     if (options.bundler === "snowpack") {
@@ -156,11 +157,11 @@ async function createBase(options: FullOptionSet): Promise<void> {
   }
 
   if (options.plugins?.includes("wtr")) {
-    fse.copyFileSync(BASE_FILES.get("wtrConfig"), "web-test-runner.config.js");
+    fse.copyFileSync(DIST_FILES.get("wtrConfig"), "web-test-runner.config.js");
   }
 
   if (options.license) {
-    fse.copyFileSync(BASE_FILES.get(options.license), "LICENSE");
+    fse.copyFileSync(DIST_FILES.get(options.license), "LICENSE");
     if (options.license === "mit") {
       fileReadAndReplace(
         "LICENSE",
@@ -197,22 +198,22 @@ function generatePackageJson(options: FullOptionSet): void {
   };
 
   const jsExts = ["js"];
-  if (["react", "preact"].includes(options.jsFramework)) {
+  if (["react", "preact"].includes(options.baseTemplate)) {
     jsExts.push("jsx");
-  } else if (options.jsFramework === "vue") {
+  } else if (options.baseTemplate === "vue") {
     jsExts.unshift("vue");
-  } else if (options.jsFramework === "svelte") {
+  } else if (options.baseTemplate === "svelte") {
     jsExts.unshift("svelte");
   }
   if (options.typescript) {
-    if (options.jsFramework === "blank") {
+    if (options.baseTemplate === "blank") {
       jsExts.unshift("ts");
     } else {
       jsExts.push("ts");
     }
-    if (["react", "preact"].includes(options.jsFramework)) {
+    if (["react", "preact"].includes(options.baseTemplate)) {
       jsExts.push("tsx");
-    } else if (options.jsFramework === "lit-element") {
+    } else if (options.baseTemplate === "lit-element") {
       jsExts.shift();
     }
   }
@@ -240,7 +241,7 @@ function generatePackageJson(options: FullOptionSet): void {
     appPackageJson.scripts.pcheck = prettierLint;
   }
 
-  if (options.jsFramework === "vue" && options.typescript) {
+  if (options.baseTemplate === "vue" && options.typescript) {
     appPackageJson.scripts["type-check"] = "tsc";
   }
 
@@ -250,9 +251,9 @@ function generatePackageJson(options: FullOptionSet): void {
 
   // No example tests for Vue/LitElement
   if (options.plugins?.includes("wtr")
-      && !["vue", "lit-element"].includes(options.jsFramework)) {
+      && !["vue", "lit-element"].includes(options.baseTemplate)) {
     let jsTestExt = options.typescript ? "ts" : "js";
-    if (["react", "preact"].includes(options.jsFramework)) {
+    if (["react", "preact"].includes(options.baseTemplate)) {
       jsTestExt = `${jsTestExt}x`;
     }
     appPackageJson.scripts.test = `web-test-runner \"src/**/*.test.${jsTestExt}\"`;
@@ -286,17 +287,17 @@ function installPackages(options: FullOptionSet): void {
   const prodPackages: string[] = [];
   const devPackages = ["snowpack"];
 
-  const jsFramework = JS_FRAMEWORKS.get(options.jsFramework);
-  prodPackages.push(...jsFramework.prodPackages);
-  devPackages.push(...jsFramework.devPackages);
+  const baseTemplate = BASE_TEMPLATES.get(options.baseTemplate);
+  prodPackages.push(...baseTemplate.prodPackages);
+  devPackages.push(...baseTemplate.devPackages);
   if (options.typescript) {
-    devPackages.push(...jsFramework.tsPackages);
+    devPackages.push(...baseTemplate.tsPackages);
   }
   if (options.plugins?.includes("wtr")) {
-    devPackages.push(...jsFramework.wtrPackages);
+    devPackages.push(...baseTemplate.wtrPackages);
   }
 
-  if (["react", "svelte", "preact"].includes(options.jsFramework)
+  if (["react", "svelte", "preact"].includes(options.baseTemplate)
       && options.typescript && options.plugins?.includes("wtr")) {
     devPackages.push("@types/mocha");
   }
@@ -307,10 +308,10 @@ function installPackages(options: FullOptionSet): void {
       "@snowpack/plugin-typescript",
       "@types/snowpack-env",
     ]);
-    if (options.jsFramework === "vue") {
+    if (options.baseTemplate === "vue") {
       devPackages.pop(); // Remove @types/snowpack-env
       devPackages.pop(); // Remove @snowpack/plugin-typescript
-    } else if (options.jsFramework === "preact") {
+    } else if (options.baseTemplate === "preact") {
       devPackages.pop(); // Remove @types/snowpack-env
     }
     if ((options.plugins || []).includes("wtr")) {
@@ -339,7 +340,7 @@ function installPackages(options: FullOptionSet): void {
     if (options.bundler !== "snowpack") {
       devPackages.push("cssnano");
     }
-    if (options.jsFramework === "svelte"
+    if (options.baseTemplate === "svelte"
         && options.cssFramework === "tailwindcss") {
       devPackages.push("svelte-preprocess");
     }
@@ -353,7 +354,7 @@ function installPackages(options: FullOptionSet): void {
   ));
 
   const basePackageJson = require(
-    path.join(BASE_TEMPLATES.get(templateName(options)), "package.json")
+    path.join(DIST_TEMPLATES.get(templateName(options)), "package.json")
   );
   if (prodPackages.length && basePackageJson.dependencies) {
     prodPackages.forEach((pkg, i) => {
@@ -435,22 +436,24 @@ ${s(2)}},
 
 function generateSnowpackConfig(options: FullOptionSet): void {
   let snowpackConfig = fse.readFileSync(
-    BASE_FILES.get("snowpackConfig"), "utf8"
+    DIST_FILES.get("snowpackConfig"), "utf8"
   );
 
-  const configPluginsList = [...JS_FRAMEWORKS.get(options.jsFramework).plugins];
-  if (options.jsFramework === "preact" && options.typescript) {
+  const configPluginsList = [
+    ...BASE_TEMPLATES.get(options.baseTemplate).plugins
+  ];
+  if (options.baseTemplate === "preact" && options.typescript) {
     configPluginsList.reverse();
   }
 
-  if (options.jsFramework === "preact" && !options.typescript) {
+  if (options.baseTemplate === "preact" && !options.typescript) {
     snowpackConfig = snowpackConfig.replace(
       /(buildOptions.+},\n)/s, `$1${PREACT_ALIAS}`
     );
   }
 
   if (options.typescript) {
-    if (options.jsFramework === "vue") {
+    if (options.baseTemplate === "vue") {
       configPluginsList.splice(
         1, 0, "'@snowpack/plugin-vue/plugin-tsx-jsx.js'"
       );

@@ -1,7 +1,7 @@
 module.exports = {
   /* ACTIVE */
   // projectDir: "new-snowpack-app",
-  jsFramework: "none",
+  baseTemplate: "blank",
   typescript: false,
   codeFormatters: [
     "eslint",

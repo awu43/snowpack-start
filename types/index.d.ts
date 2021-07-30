@@ -1,7 +1,7 @@
 type LockedMap<K, V> = Omit<Map<K, V>, "get" | "set">;
 
 // js-frameworks
-interface JsFrameworkData {
+interface BaseTemplateData {
   readonly prodPackages: readonly string[];
   readonly devPackages: readonly string[];
   readonly tsPackages: readonly string[];
@@ -9,8 +9,8 @@ interface JsFrameworkData {
   readonly plugins: readonly string[];
 }
 
-type JsFrameworkMap = LockedMap<string, JsFrameworkData> & {
-  get(K: string): JsFrameworkData;
+type BaseTemplateMap = LockedMap<string, BaseTemplateData> & {
+  get(K: string): BaseTemplateData;
 };
 
 // dist-files and dist-templates

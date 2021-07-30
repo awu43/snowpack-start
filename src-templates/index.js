@@ -19,7 +19,7 @@ for (const template of SOURCE_NAMES) {
 
 const SOURCE_CONFIGS = new Map(Object.entries({
   blank: {
-    jsFramework: "blank",
+    baseTemplate: "blank",
     typescript: false,
     codeFormatters: ["prettier"],
     sass: false,
@@ -29,7 +29,7 @@ const SOURCE_CONFIGS = new Map(Object.entries({
     license: "mit",
   },
   "blank-typescript": {
-    jsFramework: "blank",
+    baseTemplate: "blank",
     typescript: true,
     codeFormatters: ["prettier"],
     sass: false,
@@ -39,7 +39,7 @@ const SOURCE_CONFIGS = new Map(Object.entries({
     license: "mit",
   },
   react: {
-    jsFramework: "react",
+    baseTemplate: "react",
     typescript: false,
     codeFormatters: ["prettier"],
     sass: false,
@@ -49,7 +49,7 @@ const SOURCE_CONFIGS = new Map(Object.entries({
     license: "mit",
   },
   "react-typescript": {
-    jsFramework: "react",
+    baseTemplate: "react",
     typescript: true,
     codeFormatters: ["prettier"],
     sass: false,
@@ -59,7 +59,7 @@ const SOURCE_CONFIGS = new Map(Object.entries({
     license: "mit",
   },
   vue: {
-    jsFramework: "vue",
+    baseTemplate: "vue",
     typescript: false,
     codeFormatters: [],
     sass: false,
@@ -69,7 +69,7 @@ const SOURCE_CONFIGS = new Map(Object.entries({
     license: "mit",
   },
   "vue-typescript": {
-    jsFramework: "vue",
+    baseTemplate: "vue",
     typescript: true,
     codeFormatters: [],
     sass: false,
@@ -79,7 +79,7 @@ const SOURCE_CONFIGS = new Map(Object.entries({
     license: "mit",
   },
   svelte: {
-    jsFramework: "svelte",
+    baseTemplate: "svelte",
     typescript: false,
     codeFormatters: [],
     sass: false,
@@ -89,7 +89,7 @@ const SOURCE_CONFIGS = new Map(Object.entries({
     license: "mit",
   },
   "svelte-typescript": {
-    jsFramework: "svelte",
+    baseTemplate: "svelte",
     typescript: true,
     codeFormatters: [],
     sass: false,
@@ -99,7 +99,7 @@ const SOURCE_CONFIGS = new Map(Object.entries({
     license: "mit",
   },
   preact: {
-    jsFramework: "preact",
+    baseTemplate: "preact",
     typescript: false,
     codeFormatters: ["prettier"],
     sass: false,
@@ -109,7 +109,7 @@ const SOURCE_CONFIGS = new Map(Object.entries({
     license: "mit",
   },
   "preact-typescript": {
-    jsFramework: "preact",
+    baseTemplate: "preact",
     typescript: true,
     codeFormatters: ["prettier"],
     sass: false,
@@ -119,7 +119,7 @@ const SOURCE_CONFIGS = new Map(Object.entries({
     license: "mit",
   },
   "lit-element": {
-    jsFramework: "lit-element",
+    baseTemplate: "lit-element",
     typescript: false,
     codeFormatters: ["prettier"],
     sass: false,
@@ -129,7 +129,7 @@ const SOURCE_CONFIGS = new Map(Object.entries({
     license: "mit",
   },
   "lit-element-typescript": {
-    jsFramework: "lit-element",
+    baseTemplate: "lit-element",
     typescript: true,
     codeFormatters: ["prettier"],
     sass: false,

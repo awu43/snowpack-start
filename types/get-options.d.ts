@@ -3,7 +3,7 @@ type DirValidResult = (
 );
 
 type ProjectDirPromptKey = "projectDir";
-type SelectPromptKey = "jsFramework" | "cssFramework" | "bundler" | "license";
+type SelectPromptKey = "baseTemplate" | "cssFramework" | "bundler" | "license";
 type TogglePromptKey = "typescript" | "sass";
 type MultiSelectPromptKey = "codeFormatters" | "plugins";
 type ListPromptKey = "otherProdDeps" | "otherDevDeps";
@@ -130,7 +130,7 @@ type PackageManager = "npm" | "yarn" | "pnpm";
 
 interface PartialOptionSet {
   projectDir?: string;
-  jsFramework?: string;
+  baseTemplate?: string;
   typescript?: boolean;
   codeFormatters?: string[];
   sass?: boolean;

@@ -77,4 +77,4 @@ export = new Map(Object.entries({
       "'@snowpack/plugin-dotenv'",
     ],
   },
-})) as JsFrameworkMap;
+})) as BaseTemplateMap;

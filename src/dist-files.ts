@@ -1,6 +1,6 @@
 import path = require("path");
 
-const BASE_FILES = new Map(Object.entries({
+const DIST_FILES = new Map(Object.entries({
   gitignore: "gitignore.txt",
 
   gpl: "license/GPL",
@@ -14,11 +14,11 @@ const BASE_FILES = new Map(Object.entries({
   snowpackConfig: "config/snowpack.config.mjs",
 }));
 
-for (const [baseKey, basePath] of BASE_FILES.entries()) {
+for (const [baseKey, basePath] of DIST_FILES.entries()) {
   const filePath = path.join(
     path.dirname(__dirname), "dist-files", basePath
   );
-  BASE_FILES.set(baseKey, filePath);
+  DIST_FILES.set(baseKey, filePath);
 }
 
-export = BASE_FILES as DistPathMap;
+export = DIST_FILES as DistPathMap;

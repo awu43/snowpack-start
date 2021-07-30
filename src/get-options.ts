@@ -38,12 +38,12 @@ const PROMPTS = new Map(Object.entries({
     message: "Project directory",
     validate: projectDirValidator,
   },
-  jsFramework: {
+  baseTemplate: {
     type: "select",
-    name: "jsFramework",
-    message: "JavaScript framework",
+    name: "baseTemplate",
+    message: "Base template",
     choices: [
-      { title: "None", value: "none" },
+      { title: "Blank", value: "blank" },
       { title: "React", value: "react" },
       { title: "Vue", value: "vue" },
       { title: "Svelte", value: "svelte" },
@@ -164,7 +164,7 @@ const PROMPTS = new Map(Object.entries({
 
 const OPTION_TYPES = new Map(Object.entries({
   projectDir: "string",
-  jsFramework: "string",
+  baseTemplate: "string",
   typescript: "boolean",
   codeFormatters: "array",
   sass: "boolean",
@@ -351,8 +351,8 @@ function getCliOptions(): PartialPreprocessOptionSet {
     .option("-d, --defaults", "Use default options")
     .option("--load <files...>", "Load options from files")
     .option(
-      "-jsf, --js-framework <framework>",
-      `JavaScript framework <${choicesLine("jsFramework")}>`,
+      "-bt, --base-template <template>",
+      `Base template <${choicesLine("baseTemplate")}>`,
     )
     .option(
       "-cdf, --code-formatters <formatters...>", choicesList("codeFormatters")
@@ -461,7 +461,7 @@ function applyDefaultsToPrompts(): void {
         // Project dir, author
         targetPrompt.initial = optValue;
       } else if (targetPrompt.type === "select") {
-        // JS framework, CSS framework, bundler, license
+        // Base template, CSS framework, bundler, license
         targetPrompt.initial = (
           targetPrompt.choices.findIndex(c => c.value === optValue)
         );
@@ -687,10 +687,6 @@ async function getOptions(): Promise<FullOptionSet> {
   options.otherProdDeps = otherProdDeps.filter(Boolean);
   options.otherDevDeps = otherDevDeps.filter(Boolean);
   // Filter empty strings
-
-  if (options.jsFramework === "none") {
-    options.jsFramework = "blank";
-  }
 
   for (const optKey of ["cssFramework", "bundler", "license"] as const) {
     if (options[optKey] === "none") {

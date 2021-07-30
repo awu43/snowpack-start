@@ -47,10 +47,10 @@ const {
   nodeVersionCheck,
 } = require("../src/index.ts")._testing;
 
-const BASE_FILES = require("../src/dist-files.ts");
-const BASE_TEMPLATES = require("../src/dist-templates.ts");
+const DIST_FILES = require("../src/dist-files.ts");
+const DIST_TEMPLATES = require("../src/dist-templates.ts");
 
-const BLANK_CONFIG = { jsFramework: "blank" };
+const BLANK_CONFIG = { baseTemplate: "blank" };
 
 describe("stripPackageVersions", () => {
   it("Strips 3 from vue@3", () => {
@@ -72,7 +72,7 @@ describe("s", () => {
 
 describe("templateName", () => {
   it("Returns the full template name", () => {
-    expect(templateName({ jsFramework: "react", typescript: true }))
+    expect(templateName({ baseTemplate: "react", typescript: true }))
       .to.equal("react-typescript");
   });
 });
@@ -139,7 +139,7 @@ describe("createBase", () => {
   });
   it("Copies .gitignore", () => {
     newTempBase(BLANK_CONFIG);
-    expect(file(".gitignore")).to.equal(file(BASE_FILES.get("gitignore")));
+    expect(file(".gitignore")).to.equal(file(DIST_FILES.get("gitignore")));
   });
   it("Generates README.md for npm", () => {
     newTempBase(BLANK_CONFIG);
@@ -160,41 +160,41 @@ describe("createBase", () => {
     expect(file("README.md")).to.match(/\bpnpm\b/);
   });
   it("Copies public and src folders", () => {
-    newTempBase({ jsFramework: "vue", typescript: true });
+    newTempBase({ baseTemplate: "vue", typescript: true });
     testDirectoryContentsEqual(
-      "public", path.join(BASE_TEMPLATES.get("vue-typescript"), "public")
+      "public", path.join(DIST_TEMPLATES.get("vue-typescript"), "public")
     );
     testDirectoryContentsEqual(
-      "src", path.join(BASE_TEMPLATES.get("vue-typescript"), "src")
+      "src", path.join(DIST_TEMPLATES.get("vue-typescript"), "src")
     );
   });
   it("Copies types folder and tsconfig.json", () => {
     newTempBase({ ...BLANK_CONFIG, typescript: true });
     testDirectoryContentsEqual(
-      "types", path.join(BASE_TEMPLATES.get("blank-typescript"), "types")
+      "types", path.join(DIST_TEMPLATES.get("blank-typescript"), "types")
     );
     expect(file("tsconfig.json")).to.equal(
-      file(path.join(BASE_TEMPLATES.get("blank-typescript"), "tsconfig.json"))
+      file(path.join(DIST_TEMPLATES.get("blank-typescript"), "tsconfig.json"))
     );
   });
   it("Removes mocha from tsconfig.json for react-typescript template", () => {
-    newTempBase({ jsFramework: "react", typescript: true });
+    newTempBase({ baseTemplate: "react", typescript: true });
     const tsConfig = JSON5.parse(fse.readFileSync("tsconfig.json"));
     expect(tsConfig.compilerOptions.types).to.eql(["snowpack-env"]);
   });
   it("Removes mocha from tsconfig.json for svelte-typescript template", () => {
-    newTempBase({ jsFramework: "svelte", typescript: true });
+    newTempBase({ baseTemplate: "svelte", typescript: true });
     const tsConfig = JSON5.parse(fse.readFileSync("tsconfig.json"));
     expect(tsConfig.compilerOptions.types).to.eql(["snowpack-env"]);
   });
   it("Removes mocha from tsconfig.json for preact-typescript template", () => {
-    newTempBase({ jsFramework: "preact", typescript: true });
+    newTempBase({ baseTemplate: "preact", typescript: true });
     const tsConfig = JSON5.parse(fse.readFileSync("tsconfig.json"));
     expect(tsConfig.compilerOptions.types).to.eql(["snowpack-env"]);
   });
   it("Copies .prettierrc", () => {
     newTempBase({ ...BLANK_CONFIG, codeFormatters: ["prettier"] });
-    expect(file(".prettierrc")).to.equal(file(BASE_FILES.get("prettierConfig")));
+    expect(file(".prettierrc")).to.equal(file(DIST_FILES.get("prettierConfig")));
   });
   it("Renames CSS files to SCSS for blank template", () => {
     newTempBase({ ...BLANK_CONFIG, sass: true });
@@ -207,28 +207,28 @@ describe("createBase", () => {
     expect(file("src/index.scss")).to.exist;
   });
   it("Renames CSS files to SCSS for react template", () => {
-    newTempBase({ jsFramework: "react", sass: true });
+    newTempBase({ baseTemplate: "react", sass: true });
     expect(file("src/App.css")).to.not.exist;
     expect(file("src/App.scss")).to.exist;
     expect(file("src/index.css")).to.not.exist;
     expect(file("src/index.scss")).to.exist;
   });
   it("Changes CSS imports to SCSS for react template", () => {
-    newTempBase({ jsFramework: "react", sass: true });
+    newTempBase({ baseTemplate: "react", sass: true });
     expect(file("src/App.jsx")).to.not.contain("App.css");
     expect(file("src/App.jsx")).to.contain("App.scss");
     expect(file("src/index.jsx")).to.not.contain("index.css");
     expect(file("src/index.jsx")).to.contain("index.scss");
   });
   it("Renames CSS files to SCSS for react-typescript template", () => {
-    newTempBase({ jsFramework: "react", typescript: true, sass: true });
+    newTempBase({ baseTemplate: "react", typescript: true, sass: true });
     expect(file("src/App.css")).to.not.exist;
     expect(file("src/App.scss")).to.exist;
     expect(file("src/index.css")).to.not.exist;
     expect(file("src/index.scss")).to.exist;
   });
   it("Changes CSS imports to SCSS for react-typescript template", () => {
-    newTempBase({ jsFramework: "react", typescript: true, sass: true });
+    newTempBase({ baseTemplate: "react", typescript: true, sass: true });
     expect(file("src/App.tsx")).to.not.contain("App.css");
     expect(file("src/App.tsx")).to.contain("App.scss");
     expect(file("src/index.tsx")).to.not.contain("index.css");
@@ -236,63 +236,63 @@ describe("createBase", () => {
   });
   it("Does not rename any CSS files for vue template", () => {
     sinon.stub(fse, "renameSync");
-    newTempBase({ jsFramework: "vue", sass: true });
+    newTempBase({ baseTemplate: "vue", sass: true });
     expect(fse.renameSync).to.not.have.been.called;
     fse.renameSync.restore();
   });
   it("Does not rename any CSS files for vue-typescript template", () => {
     sinon.stub(fse, "renameSync");
-    newTempBase({ jsFramework: "vue", typescript: true, sass: true });
+    newTempBase({ baseTemplate: "vue", typescript: true, sass: true });
     expect(fse.renameSync).to.not.have.been.called;
     fse.renameSync.restore();
   });
   it("Does not rename any CSS files for svelte template", () => {
     sinon.stub(fse, "renameSync");
-    newTempBase({ jsFramework: "svelte", sass: true });
+    newTempBase({ baseTemplate: "svelte", sass: true });
     expect(fse.renameSync).to.not.have.been.called;
     fse.renameSync.restore();
   });
   it("Does not rename any CSS files for svelte-typescript template", () => {
     sinon.stub(fse, "renameSync");
-    newTempBase({ jsFramework: "svelte", typescript: true, sass: true });
+    newTempBase({ baseTemplate: "svelte", typescript: true, sass: true });
     expect(fse.renameSync).to.not.have.been.called;
     fse.renameSync.restore();
   });
   it("Renames CSS files to SCSS for preact template", () => {
-    newTempBase({ jsFramework: "preact", sass: true });
+    newTempBase({ baseTemplate: "preact", sass: true });
     expect(file("src/App.css")).to.not.exist;
     expect(file("src/App.scss")).to.exist;
     expect(file("src/index.css")).to.not.exist;
     expect(file("src/index.scss")).to.exist;
   });
   it("Changes CSS imports to SCSS for preact template", () => {
-    newTempBase({ jsFramework: "preact", sass: true });
+    newTempBase({ baseTemplate: "preact", sass: true });
     expect(file("src/App.jsx")).to.not.contain("App.css");
     expect(file("src/App.jsx")).to.contain("App.scss");
     expect(file("src/index.jsx")).to.not.contain("index.css");
     expect(file("src/index.jsx")).to.contain("index.scss");
   });
   it("Renames CSS files to SCSS for preact-typescript template", () => {
-    newTempBase({ jsFramework: "preact", typescript: true, sass: true });
+    newTempBase({ baseTemplate: "preact", typescript: true, sass: true });
     expect(file("src/App.css")).to.not.exist;
     expect(file("src/App.scss")).to.exist;
     expect(file("src/index.css")).to.not.exist;
     expect(file("src/index.scss")).to.exist;
   });
   it("Changes CSS imports to SCSS for preact-typescript template", () => {
-    newTempBase({ jsFramework: "preact", typescript: true, sass: true });
+    newTempBase({ baseTemplate: "preact", typescript: true, sass: true });
     expect(file("src/App.tsx")).to.not.contain("App.css");
     expect(file("src/App.tsx")).to.contain("App.scss");
     expect(file("src/index.tsx")).to.not.contain("index.css");
     expect(file("src/index.tsx")).to.contain("index.scss");
   });
   it("Renames CSS files to SCSS for lit-element template", () => {
-    newTempBase({ jsFramework: "lit-element", sass: true });
+    newTempBase({ baseTemplate: "lit-element", sass: true });
     expect(file("src/index.css")).to.not.exist;
     expect(file("src/index.scss")).to.exist;
   });
   it("Renames CSS files to SCSS for lit-element-typescript template", () => {
-    newTempBase({ jsFramework: "lit-element", typescript: true, sass: true });
+    newTempBase({ baseTemplate: "lit-element", typescript: true, sass: true });
     expect(file("src/index.css")).to.not.exist;
     expect(file("src/index.scss")).to.exist;
   });
@@ -309,25 +309,25 @@ describe("createBase", () => {
     expect(file("postcss.config.js")).to.not.contain("require('cssnano')");
   });
   it("Copies web-test-runner.config.js", () => {
-    newTempBase({ jsFramework: "blank", plugins: ["wtr"] });
+    newTempBase({ baseTemplate: "blank", plugins: ["wtr"] });
     expect(file("web-test-runner.config.js"))
-      .to.equal(file(BASE_FILES.get("wtrConfig")));
+      .to.equal(file(DIST_FILES.get("wtrConfig")));
   });
   it("Copies and modifies MIT license", () => {
     newTempBase({ ...BLANK_CONFIG, license: "mit", author: "Jane Doe" });
     const expectedContents = (
-      fse.readFileSync(BASE_FILES.get("mit"), "utf8")
+      fse.readFileSync(DIST_FILES.get("mit"), "utf8")
         .replace("YYYY Author", `${new Date().getFullYear()} Jane Doe`)
     );
     expect(file("LICENSE")).to.equal(expectedContents);
   });
   it("Copies GPL license", () => {
     newTempBase({ ...BLANK_CONFIG, license: "gpl" });
-    expect(file("LICENSE")).to.equal(file(BASE_FILES.get("gpl")));
+    expect(file("LICENSE")).to.equal(file(DIST_FILES.get("gpl")));
   });
   it("Copies Apache license", () => {
     newTempBase({ ...BLANK_CONFIG, license: "apache" });
-    expect(file("LICENSE")).to.equal(file(BASE_FILES.get("apache")));
+    expect(file("LICENSE")).to.equal(file(DIST_FILES.get("apache")));
   });
   it("Copies no license", () => {
     newTempBase({ ...BLANK_CONFIG, license: "" });
@@ -524,7 +524,7 @@ describe("installPackages", () => {
       "svelte-preprocess",
     ];
     installPackages({
-      jsFramework: "svelte", cssFramework: "tailwindcss", plugins: ["postcss"]
+      baseTemplate: "svelte", cssFramework: "tailwindcss", plugins: ["postcss"]
     });
     expect(execa.sync).to.have.been.calledTwice;
     expect(parseExecaProdArgs(execa.sync.args[0][1])).to.eql(["svelte"]);
@@ -564,7 +564,7 @@ describe("installPackages", () => {
     expect(parseExecaDevArgs(execa.sync.args[1][1])).to.eql(["snowpack"]);
   });
   it("Does not install duplicate prod dependencies", () => {
-    installPackages({ jsFramework: "vue", otherProdDeps: ["vue"] });
+    installPackages({ baseTemplate: "vue", otherProdDeps: ["vue"] });
     expect(execa.sync).to.have.been.calledTwice;
     expect(parseExecaProdArgs(execa.sync.args[0][1])).to.eql(["vue"]);
     expect(parseExecaDevArgs(execa.sync.args[1][1]))
