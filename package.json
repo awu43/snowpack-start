@@ -32,7 +32,7 @@
     "gen-test": "ts-mocha \"test/src-templates-test.js\" && ts-mocha \"test/package-versions-test.js\"",
     "test": "ts-mocha \"test/*.test.js\"",
     "coverage": "nyc --reporter=html --reporter=text mocha \"test/*.test.js\"",
-    "lint": "eslint \"{src,test}/**/*.{js,ts}\""
+    "lint": "eslint \"src/**/*.{js,ts}\" && eslint \"test/**/*.js\""
   },
   "devDependencies": {
     "@types/chai": "^4.2.18",

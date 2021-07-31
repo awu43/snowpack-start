@@ -369,11 +369,11 @@ function getCliOptions(): PartialPreprocessOptionSet {
     .option("-b, --bundler <bundler>", `Bundler <${choicesLine("bundler")}>`)
     .option("-p, --plugins <plugins...>", choicesList("plugins"))
     .option(
-      "-opd, --other-prod-deps <dependencies...>",
+      "-opd, --other-prod-deps <deps...>",
       `Other prod dependencies (<${styles.cyanBright("none")}> to clear preceeding)`
     )
     .option(
-      "-odd, --other-dev-deps <dependencies...>",
+      "-odd, --other-dev-deps <deps...>",
       `Other dev dependencies (<${styles.cyanBright("none")}> to clear preceeding)`
     )
     .option("-l, --license <license>", `License <${choicesLine("license")}>`)

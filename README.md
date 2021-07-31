@@ -8,20 +8,22 @@ The problem: manually customizing templates from [`create-snowpack-app`](https:/
 
 The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-start` installs packages and generates configuration boilerplate so you can get to developing faster.
 
-## New in 1.0.0
+## New in v2.0.0
 
 ### 🚨 Breaking Changes
-`457a0e4` — Split options into active and passive
+`c1391e3` — New other deps options<br>
+`a3ce4e0` — JS framework option renamed to base template
 
 ### ⚠️ Non-breaking Changes
-`2ac6989` — Changed PostCSS config to minimize processing in dev
+`b67f64f` — Loading files no longer requires file extensions<br>
+`56ae0c4` — New React-Redux templates<br>
+`e50d511` — Changed base `.prettierrc` to be empty
 
 ### 🔧 Fixes
-`20168dc` — Removed mocha from `tsconfig.json` when not using WTR for `react-typescript`, `svelte-typescript`, and `preact-typescript` templates<br>
-`cf17db2` — Removed unnecessary `postcss-cli` dev dependency ([#3412](https://github.com/snowpackjs/snowpack/pull/3412))
+`69d7d50` — Workaround for import bug is now automatically added if required
 
 ### 🏔️ Snowpack Template Changes
-`907fcf1` — Changed Snowpack config file type from `.js` to `.mjs`
+`2b52a7f` — Updated `App.svelte` in `svelte-typescript` template
 
 <br>
 
@@ -63,7 +65,7 @@ Prompts will be displayed for active options not otherwise provided on the comma
 |-------------------------------------------|------------------------------|
 | `-d, --defaults`                          | Use default options          |
 | `--load <files...>`                       | Load options from files      |
-| `-jsf, --js-framework <framework>`        | JavaScript framework         |
+| `-bt, --base-template <template>`         | Base template                |
 | `-cdf, --code-formatters <formatters...>` | Code formatters              |
 | `-ts, --typescript`                       | Use TypeScript               |
 | `-nts, --no-typescript`                   | Don't use TypeScript         |
@@ -72,6 +74,8 @@ Prompts will be displayed for active options not otherwise provided on the comma
 | `-cssf, --css-framework <framework>`      | CSS framework                |
 | `-b, --bundler <bundler>`                 | Bundler                      |
 | `-p, --plugins <plugins...>`              | Other plugins                |
+| `-opd, --other-prod-deps <deps...>`       | Other prod dependencies      |
+| `-odd, --other-dev-deps <deps...>`        | Other dev dependencies       |
 | `-l, --license <license>`                 | License                      |
 | `-a, --author <author>`                   | Author (for MIT license)     |
 
@@ -79,7 +83,7 @@ Prompts will be displayed for active options not otherwise provided on the comma
 
 | Option               | Valid Values                                         |
 |----------------------|------------------------------------------------------|
-| JavaScript framework | `none`/`react`/`vue`/`svelte`/`preact`/`lit-element` |
+| JavaScript framework | `blank`/`react`/`react-redux`/`vue`/`svelte`/`preact`/`lit-element` |
 | Code formatters      | `none`, `eslint`, `prettier`                         |
 | CSS framework        | `none`/`tailwindcss`/`bootstrap`                     |
 | Bundler              | `webpack`/`snowpack`/`none`                          |
@@ -134,7 +138,7 @@ After CLI processing, the loaded defaults are applied as the initial selections/
 <br>
 
 ### Loading Options From Files
-Specify paths to files, and options will be loaded from them:
+Specify paths to files (extension optional), and options will be loaded from them:
 
 <div>
     <img src="https://github.com/awu43/snowpack-start/raw/master/media/loading-files.png" alt="Loading options from files">
@@ -147,17 +151,19 @@ Specify paths to files, and options will be loaded from them:
 Defaults >> Files >> CLI >> Prompts
 ```
 
-Later options overwrite earlier ones:
+Later options overwrite earlier ones, with the exception of other deps:
 
 <div>
     <img src="https://github.com/awu43/snowpack-start/raw/master/media/overwriting-options.png" alt="Overwriting previous options">
 </div>
 
+The other deps options are instead additive, so later deps will be added to the existing deps. To clear previous deps, use `none` in files or CLI:
+
 <br>
 
 ## Issues
 ### Known
-* Starting with Snowpack v3.1 and as of June 10, 2021 (v3.5.6), image/JSON imports break builds using the built-in bundler ([#3109](https://github.com/snowpackjs/snowpack/issues/3109)). Workaround [here](https://github.com/snowpackjs/snowpack/issues/3109#issuecomment-821514740) (copy to a JS file, then add `./<your-js-file>.js` to `plugins` in `snowpack.config.mjs`).
+* Starting with Snowpack v3.1 and as of v3.8.3 (checked July 30, 2021), image/JSON imports break builds using the built-in bundler ([#3109](https://github.com/snowpackjs/snowpack/issues/3109)). A [workaround](https://github.com/snowpackjs/snowpack/issues/3109#issuecomment-821514740) is automatically added if `snowpack` is selected as the bundler.
 * `eslint --init` only supports React and Vue, additional setup required for Svelte, Preact, and LitElement.
 * `eslint --init` only installs packages with npm, no option to use Yarn or pnpm.
 
@@ -170,6 +176,8 @@ Please report any other issues [here](https://github.com/awu43/snowpack-start/is
 Portions of code have been adapted from [create-snowpack-app](https://github.com/snowpackjs/snowpack/tree/main/create-snowpack-app/cli) and [create-react-app](https://github.com/facebook/create-react-app/tree/master/packages/create-react-app).
 
 Official app templates from `create-snowpack-app`, with configurations from community templates used.
+
+React-Redux templates adapted from `create-react-app`.
 
 ## License
 MIT
