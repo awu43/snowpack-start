@@ -151,6 +151,13 @@ async function createBase(options: FullOptionSet): Promise<void> {
     }
   }
 
+  if (options.bundler === "snowpack") {
+    fse.copyFileSync(
+      DIST_FILES.get("resolveProxyImports"),
+      "resolveProxyImports-plugin.js",
+    );
+  }
+
   if (options.plugins?.includes("postcss")) {
     let postcssConfig = fse.readFileSync(
       DIST_FILES.get("postcssConfig"), "utf8"
@@ -507,6 +514,10 @@ function generateSnowpackConfig(options: FullOptionSet): void {
     if (SNOWPACK_CONFIG_PLUGINS.has(plugin)) {
       configPluginsList.push(SNOWPACK_CONFIG_PLUGINS.get(plugin));
     }
+  }
+
+  if (options.bundler === "snowpack") {
+    configPluginsList.push("'./resolveProxyImports-plugin.js'");
   }
 
   if (configPluginsList.length) {

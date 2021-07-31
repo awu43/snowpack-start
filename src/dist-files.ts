@@ -2,6 +2,7 @@ import path = require("path");
 
 const DIST_FILES = new Map(Object.entries({
   gitignore: "gitignore.txt",
+  resolveProxyImports: "resolveProxyImports-plugin.js",
 
   gpl: "license/GPL",
   mit: "license/MIT",

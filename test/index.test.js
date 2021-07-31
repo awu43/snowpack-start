@@ -341,6 +341,11 @@ describe("createBase", () => {
     expect(file("src/index.css")).to.not.exist;
     expect(file("src/index.scss")).to.exist;
   });
+  it("Copies resolveProxyImports-plugin.js when using Snowpack bundler", () => {
+    newTempBase({ baseTemplate: "blank", bundler: "snowpack" });
+    expect(file("resolveProxyImports-plugin.js"))
+      .to.equal(file(DIST_FILES.get("resolveProxyImports")));
+  });
   it("Generates postcss.config.js", () => {
     newTempBase({ ...BLANK_CONFIG, plugins: ["postcss"] });
     expect(file("postcss.config.js")).to.exist;
@@ -711,6 +716,12 @@ describe("generateSnowpackConfig", () => {
         cmd: 'echo \"build command.\"',
       }],
     ]);
+  });
+  it("Adds resolveProxyImports-plugin.js when using Snowpack bundler", () => {
+    const snowpackConfig = newTempSnowpackConfig(
+      { ...BLANK_CONFIG, bundler: "snowpack" }
+    );
+    expect(snowpackConfig.plugins).to.eql(["./resolveProxyImports-plugin.js"]);
   });
 });
 
