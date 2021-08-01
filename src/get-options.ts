@@ -110,7 +110,6 @@ const PROMPTS = new Map(Object.entries({
     name: "plugins",
     message: "Other plugins",
     choices: [
-      { title: "Web Test Runner", value: "wtr" },
       { title: "PostCSS", value: "postcss" },
       { title: "Snowpack Run Script", value: "srs" },
       { title: "Snowpack Build Script", value: "sbs" },

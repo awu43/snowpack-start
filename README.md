@@ -14,7 +14,7 @@ The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-st
 `c1391e3` — New other deps options<br>
 `a3ce4e0` — JS framework option renamed to base template<br>
 `93419b4` — Updated CLI shorthands for file loading and license<br>
-_ — New testing option
+`3d1bb17` — New testing option
 
 ### ⚠️ Non-breaking Changes
 `b67f64f` — Loading files no longer requires file extensions<br>
