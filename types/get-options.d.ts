@@ -3,7 +3,13 @@ type DirValidResult = (
 );
 
 type ProjectDirPromptKey = "projectDir";
-type SelectPromptKey = "baseTemplate" | "cssFramework" | "bundler" | "license";
+type SelectPromptKey = (
+  "baseTemplate"
+  | "testing"
+  | "cssFramework"
+  | "bundler"
+  | "license"
+);
 type TogglePromptKey = "typescript" | "sass";
 type MultiSelectPromptKey = "codeFormatters" | "plugins";
 type ListPromptKey = "otherProdDeps" | "otherDevDeps";
@@ -132,6 +138,7 @@ interface PartialOptionSet {
   projectDir?: string;
   baseTemplate?: string;
   typescript?: boolean;
+  testing?: string;
   codeFormatters?: string[];
   sass?: boolean;
   cssFramework?: string;
@@ -147,6 +154,8 @@ interface PartialOptionSet {
   skipTailwindInit?: boolean;
   skipGitInit?: boolean;
   skipEslintInit?: boolean;
+
+  jsFramework?: string;
 }
 
 // Before defaults are applied and files loaded
@@ -160,6 +169,7 @@ type FullOptionSet = Readonly<
     Omit<PartialOptionSet, MultiSelectOptionKey| ListPromptKey | NonPromptKey>
   >
 > & {
+  readonly jsFramework: string;
   readonly codeFormatters: readonly string[];
   readonly plugins: readonly string[];
   readonly otherProdDeps: readonly string[]

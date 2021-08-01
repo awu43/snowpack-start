@@ -26,7 +26,7 @@ function templateName(options: FullOptionSet): string {
 
 function fileReadAndReplace(
   file: string,
-  targetStr: string,
+  targetStr: string | RegExp,
   replStr: string,
 ): void {
   fse.writeFileSync(
@@ -56,6 +56,13 @@ function generateSvelteConfig(options: FullOptionSet): void {
   if (options.typescript || options.plugins?.includes("postcss")) {
     fse.writeFileSync("svelte.config.js", svelteConfig);
   }
+}
+
+function hasJestConfig(options: FullOptionSet): boolean {
+  return (
+    REACT_TEMPLATES.includes(options.baseTemplate)
+    || (options.baseTemplate === "svelte" && !options.typescript)
+  );
 }
 
 async function createBase(options: FullOptionSet): Promise<void> {
@@ -94,8 +101,7 @@ async function createBase(options: FullOptionSet): Promise<void> {
 
   if (options.baseTemplate === "svelte") {
     generateSvelteConfig(options);
-  }
-  if (options.baseTemplate === "lit-element") {
+  } else if (options.baseTemplate === "lit-element") {
     fse.copyFileSync(
       path.join(targetTemplateDir, "babel.config.json"), "babel.config.json"
     );
@@ -106,9 +112,67 @@ async function createBase(options: FullOptionSet): Promise<void> {
     fse.copyFileSync(
       path.join(targetTemplateDir, "tsconfig.json"), "tsconfig.json"
     );
-    if (!options.plugins?.includes("wtr")
-        && [...REACT_TEMPLATES, "svelte"].includes(options.baseTemplate)) {
-      fileReadAndReplace("tsconfig.json", "\"mocha\", ", "");
+    if (REACT_TEMPLATES.includes(options.baseTemplate)) {
+      if (options.testing === "jest") {
+        fileReadAndReplace(
+          "tsconfig.json",
+          "\"mocha\"",
+          "\"jest\", \"@testing-library/jest-dom\""
+        );
+      } else if (!options.testing) {
+        fileReadAndReplace("tsconfig.json", "\"mocha\", ", "");
+      }
+    } else if (options.baseTemplate === "svelte") {
+      if (options.testing === "jest" || !options.testing) {
+        fileReadAndReplace("tsconfig.json", "\"mocha\", ", "");
+      }
+    }
+  }
+  const jsExt = options.typescript ? "ts" : "js";
+
+  if (options.testing === "wtr") {
+    fse.copyFileSync(DIST_FILES.get("wtrConfig"), "web-test-runner.config.js");
+  } else if (options.testing === "jest" && hasJestConfig(options)) {
+    fse.copyFileSync(DIST_FILES.get("jestSetup"), "jest.setup.js");
+    fse.copyFileSync(DIST_FILES.get("jestConfig"), "jest.config.js");
+    fileReadAndReplace("jest.config.js", "$framework", options.jsFramework);
+
+    if (REACT_TEMPLATES.includes(options.baseTemplate)) {
+      fse.copyFileSync(DIST_FILES.get("jestBabel"), "babel.config.json");
+      fileReadAndReplace("babel.config.json", "$framework", options.jsFramework);
+      fileReadAndReplace(
+        `src/App.test.${jsExt}x`,
+        "document.body.contains(linkElement))",
+        "linkElement).toBeInTheDocument()",
+      );
+      fileReadAndReplace(
+        `src/App.test.${jsExt}x`,
+        "import { expect } from 'chai';\n",
+        "",
+      );
+      if (options.baseTemplate === "react-redux") {
+        fileReadAndReplace(
+          `src/features/counter/counterSlice.test.${jsExt}`,
+          /to.eql/g,
+          "toEqual",
+        );
+        fileReadAndReplace(
+          `src/features/counter/counterSlice.test.${jsExt}`,
+          "import { expect } from 'chai';\n",
+          "",
+        );
+      }
+    } else if (options.baseTemplate === "svelte") {
+      fileReadAndReplace(
+        `src/App.test.${jsExt}`,
+        "document.body.contains(linkElement))",
+        "linkElement).toBeInTheDocument()",
+      );
+      fileReadAndReplace(
+        `src/App.test.${jsExt}`,
+        "import {expect} from 'chai';\n",
+        "",
+      );
     }
   }
 
@@ -117,7 +181,6 @@ async function createBase(options: FullOptionSet): Promise<void> {
   }
 
   if (options.sass) {
-    const jsExt = options.typescript ? "ts" : "js";
     switch (options.baseTemplate) {
       case "blank":
       case "lit-element":
@@ -178,10 +241,6 @@ async function createBase(options: FullOptionSet): Promise<void> {
     }
 
     fse.writeFileSync("postcss.config.js", postcssConfig);
-  }
-
-  if (options.plugins?.includes("wtr")) {
-    fse.copyFileSync(DIST_FILES.get("wtrConfig"), "web-test-runner.config.js");
   }
 
   if (options.license) {
@@ -274,7 +333,7 @@ function generatePackageJson(options: FullOptionSet): void {
   }
 
   // No example tests for Vue/LitElement
-  if (options.plugins?.includes("wtr")
+  if (options.testing
       && !["vue", "lit-element"].includes(options.baseTemplate)) {
     let jsTestExt = options.typescript ? "ts" : "js";
     if (REACT_TEMPLATES.includes(options.baseTemplate)) {
@@ -284,7 +343,9 @@ function generatePackageJson(options: FullOptionSet): void {
       }
     }
     appPackageJson.scripts.test = (
-      `web-test-runner \"src/**/*.test.${jsTestExt}\"`
+      options.testing === "wtr"
+        ? `web-test-runner \"src/**/*.test.${jsTestExt}\"`
+        : "jest src"
     );
   }
 
@@ -297,11 +358,6 @@ const PLUGIN_PACKAGES = new Map(Object.entries({
     "postcss-preset-env",
     // "cssnano", // Added later conditionally
     "@snowpack/plugin-postcss",
-  ],
-  wtr: [
-    "@web/test-runner",
-    "chai",
-    "@snowpack/web-test-runner-plugin",
   ],
   srs: ["@snowpack/plugin-run-script"],
   sbs: ["@snowpack/plugin-build-script"],
@@ -319,20 +375,10 @@ function installPackages(options: FullOptionSet): void {
   const baseTemplate = BASE_TEMPLATES.get(options.baseTemplate);
   prodPackages.push(...baseTemplate.prodPackages);
   devPackages.push(...baseTemplate.devPackages);
-  if (options.typescript) {
-    devPackages.push(...baseTemplate.tsPackages);
-  }
-  if (options.plugins?.includes("wtr")) {
-    devPackages.push(...baseTemplate.wtrPackages);
-  }
-
-  if ([...REACT_TEMPLATES, "svelte"].includes(options.baseTemplate)
-      && options.typescript && options.plugins?.includes("wtr")) {
-    devPackages.push("@types/mocha");
-  }
 
   if (options.typescript) {
     devPackages.push(...[
+      ...baseTemplate.tsPackages,
       "typescript",
       "@snowpack/plugin-typescript",
       "@types/snowpack-env",
@@ -343,8 +389,37 @@ function installPackages(options: FullOptionSet): void {
     } else if (options.baseTemplate === "preact") {
       devPackages.pop(); // Remove @types/snowpack-env
     }
-    if (options.plugins?.includes("wtr")) {
+  }
+
+  if (options.testing) {
+    devPackages.push(...baseTemplate.testPackages);
+  }
+  if (options.testing === "wtr") {
+    devPackages.push(...[
+      "@web/test-runner",
+      "chai",
+      "@snowpack/web-test-runner-plugin",
+    ]);
+    if (options.typescript) {
       devPackages.push("@types/chai");
+      if ([...REACT_TEMPLATES, "svelte"].includes(options.baseTemplate)) {
+        devPackages.push("@types/mocha");
+      }
+    }
+  } else if (options.testing === "jest") {
+    if (hasJestConfig(options)) {
+      // https://github.com/snowpackjs/snowpack/issues/3398
+      // Currently (July 31, 2021) restricted by babel-jest dep to v26
+      devPackages.push(...[
+        "jest@26",
+        `@snowpack/app-scripts-${options.jsFramework}@2.0.1`,
+      ]);
+    } else {
+      devPackages.push("jest");
+    }
+    devPackages.push("@testing-library/jest-dom");
+    if (options.typescript) {
+      devPackages.push("@types/jest");
     }
   }
 
@@ -370,7 +445,8 @@ function installPackages(options: FullOptionSet): void {
       devPackages.push("cssnano");
     }
     if (options.baseTemplate === "svelte"
-        && options.cssFramework === "tailwindcss") {
+        && options.cssFramework === "tailwindcss"
+        && !devPackages.includes("svelte-preprocess")) {
       devPackages.push("svelte-preprocess");
     }
   }
@@ -471,14 +547,15 @@ function generateSnowpackConfig(options: FullOptionSet): void {
   const configPluginsList = [
     ...BASE_TEMPLATES.get(options.baseTemplate).plugins
   ];
-  if (options.baseTemplate === "preact" && options.typescript) {
-    configPluginsList.reverse();
-  }
 
-  if (options.baseTemplate === "preact" && !options.typescript) {
-    snowpackConfig = snowpackConfig.replace(
-      /(buildOptions.+},\n)/s, `$1${PREACT_ALIAS}`
-    );
+  if (options.baseTemplate === "preact") {
+    if (options.typescript) {
+      configPluginsList.reverse();
+    } else {
+      snowpackConfig = snowpackConfig.replace(
+        /(buildOptions.+},\n)/s, `$1${PREACT_ALIAS}`
+      );
+    }
   }
 
   if (options.typescript) {
@@ -488,6 +565,15 @@ function generateSnowpackConfig(options: FullOptionSet): void {
       );
     } else {
       configPluginsList.push(TS_PLUGIN_CONFIG);
+    }
+  }
+
+  if (options.testing === "jest"
+      && REACT_TEMPLATES.includes(options.baseTemplate)) {
+    if (options.jsFramework === "react") {
+      configPluginsList.splice(1, 0, "'@snowpack/plugin-babel'");
+    } else if (options.jsFramework === "preact") {
+      configPluginsList.unshift("'@snowpack/plugin-babel'");
     }
   }
 
@@ -659,10 +745,12 @@ if (require.main === module) {
 
 module.exports = {
   _testing: {
+    REACT_TEMPLATES,
     s,
     templateName,
     fileReadAndReplace,
     generateSvelteConfig,
+    hasJestConfig,
     createBase,
     DEFAULT_BROWSERSLIST,
     generatePackageJson,

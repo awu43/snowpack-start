@@ -3,7 +3,7 @@ export = new Map(Object.entries({
     prodPackages: [],
     devPackages: [],
     tsPackages: [],
-    wtrPackages: [],
+    testPackages: [],
     plugins: [],
   },
   // Modified from blank to remove the confetti dependency
@@ -17,7 +17,7 @@ export = new Map(Object.entries({
       "@types/react",
       "@types/react-dom",
     ],
-    wtrPackages: ["@testing-library/react"],
+    testPackages: ["@testing-library/react"],
     plugins: [
       "'@snowpack/plugin-react-refresh'",
       "'@snowpack/plugin-dotenv'",
@@ -39,7 +39,7 @@ export = new Map(Object.entries({
       "@types/react-dom",
       "@types/react-redux",
     ],
-    wtrPackages: ["@testing-library/react"],
+    testPackages: ["@testing-library/react"],
     plugins: [
       "'@snowpack/plugin-react-refresh'",
       "'@snowpack/plugin-dotenv'",
@@ -52,7 +52,7 @@ export = new Map(Object.entries({
       "@snowpack/plugin-dotenv",
     ],
     tsPackages: [],
-    wtrPackages: ["@testing-library/vue"],
+    testPackages: ["@testing-library/vue"],
     plugins: [
       "'@snowpack/plugin-vue'",
       "'@snowpack/plugin-dotenv'",
@@ -65,7 +65,7 @@ export = new Map(Object.entries({
       "@snowpack/plugin-dotenv",
     ],
     tsPackages: ["svelte-preprocess", "@tsconfig/svelte"],
-    wtrPackages: ["@testing-library/svelte"],
+    testPackages: ["@testing-library/svelte"],
     plugins: [
       "'@snowpack/plugin-svelte'",
       "'@snowpack/plugin-dotenv'",
@@ -78,7 +78,7 @@ export = new Map(Object.entries({
       "@snowpack/plugin-dotenv",
     ],
     tsPackages: [],
-    wtrPackages: ["@testing-library/preact"],
+    testPackages: ["@testing-library/preact"],
     plugins: [
       "'@snowpack/plugin-dotenv'",
       "'@prefresh/snowpack'",
@@ -93,7 +93,7 @@ export = new Map(Object.entries({
       "@snowpack/plugin-dotenv",
     ],
     tsPackages: ["@babel/preset-typescript"],
-    wtrPackages: [],
+    testPackages: [],
     plugins: [
       "'@snowpack/plugin-babel'",
       "'@snowpack/plugin-dotenv'",

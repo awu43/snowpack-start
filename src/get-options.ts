@@ -59,6 +59,16 @@ const PROMPTS = new Map(Object.entries({
     active: "Yes",
     inactive: "No",
   },
+  testing: {
+    type: "select",
+    name: "testing",
+    message: "Testing",
+    choices: [
+      { title: "Web Test Runner", value: "wtr" },
+      { title: "Jest", value: "jest" },
+      { title: "None", value: "none" },
+    ],
+  },
   codeFormatters: {
     type: "multiselect",
     name: "codeFormatters",
@@ -167,6 +177,7 @@ const OPTION_TYPES = new Map(Object.entries({
   projectDir: "string",
   baseTemplate: "string",
   typescript: "boolean",
+  testing: "string",
   codeFormatters: "array",
   sass: "boolean",
   cssFramework: "string",
@@ -355,11 +366,12 @@ function getCliOptions(): PartialPreprocessOptionSet {
       "-bt, --base-template <template>",
       `Base template <${choicesLine("baseTemplate")}>`,
     )
+    .option("-ts, --typescript", "Use TypeScript")
+    .option("-nts, --no-typescript", "Don't use TypeScript")
+    .option("-t, --testing <testing>", choicesLine("testing"))
     .option(
       "-cdf, --code-formatters <formatters...>", choicesList("codeFormatters")
     )
-    .option("-ts, --typescript", "Use TypeScript")
-    .option("-nts, --no-typescript", "Don't use TypeScript")
     .option("-s, --sass", "Use Sass")
     .option("-ns, --no-sass", "Don't use Sass")
     .option(
@@ -465,7 +477,7 @@ function applyDefaultsToPrompts(): void {
         // Project dir, author
         targetPrompt.initial = optValue;
       } else if (targetPrompt.type === "select") {
-        // Base template, CSS framework, bundler, license
+        // Base template, testing, CSS framework, bundler, license
         targetPrompt.initial = (
           targetPrompt.choices.findIndex(c => c.value === optValue)
         );
@@ -688,11 +700,21 @@ async function getOptions(): Promise<FullOptionSet> {
     );
   }
 
+  if (options.baseTemplate === "blank") {
+    options.jsFramework = "none";
+  } else if (options.baseTemplate === "react-redux") {
+    options.jsFramework = "react";
+  } else {
+    options.jsFramework = options.baseTemplate;
+  }
+
   options.otherProdDeps = otherProdDeps.filter(Boolean);
   options.otherDevDeps = otherDevDeps.filter(Boolean);
   // Filter empty strings
 
-  for (const optKey of ["cssFramework", "bundler", "license"] as const) {
+  for (const optKey of
+      ["testing", "cssFramework", "bundler", "license"] as const
+  ) {
     if (options[optKey] === "none") {
       (options)[optKey] = "";
     }

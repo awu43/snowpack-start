@@ -22,6 +22,7 @@ const {
   stripPackageVersions,
   newTempBase,
   testDirectoryContentsEqual,
+  checkCssRenamed,
   newTempPackageJson,
   newTempSnowpackConfig,
   parseExecaProdArgs,
@@ -29,10 +30,12 @@ const {
 } = require("./test-utils.js");
 
 const {
+  REACT_TEMPLATES,
   s,
   templateName,
   fileReadAndReplace,
   generateSvelteConfig,
+  hasJestConfig,
   createBase,
   DEFAULT_BROWSERSLIST,
   generatePackageJson,
@@ -116,6 +119,17 @@ describe("generateSvelteConfig", () => {
   });
 });
 
+describe("hasJestConfig", () => {
+  it("Returns whether a Snowpack config for Jest is available", () => {
+    for (const t of REACT_TEMPLATES) {
+      expect(hasJestConfig({ baseTemplate: t })).to.be.true;
+    }
+    expect(hasJestConfig({ baseTemplate: "svelte" })).to.be.true;
+    expect(hasJestConfig({ baseTemplate: "svelte", typescript: true }))
+      .to.be.false;
+  });
+});
+
 describe("createBase", () => {
   before(() => {
     sinon.stub(console, "log");
@@ -177,6 +191,42 @@ describe("createBase", () => {
       file(path.join(DIST_TEMPLATES.get("blank-typescript"), "tsconfig.json"))
     );
   });
+  it("Replaces mocha in tsconfig.json for react-typescript template", () => {
+    newTempBase({ baseTemplate: "react", typescript: true, testing: "jest" });
+    const tsConfig = JSON5.parse(fse.readFileSync("tsconfig.json"));
+    expect(tsConfig.compilerOptions.types).to.eql([
+      "jest",
+      "@testing-library/jest-dom",
+      "snowpack-env",
+    ]);
+  });
+  it("Replaces mocha in tsconfig.json for react-redux-typescript template", () => {
+    newTempBase({ baseTemplate: "react-redux", typescript: true, testing: "jest" });
+    const tsConfig = JSON5.parse(fse.readFileSync("tsconfig.json"));
+    expect(tsConfig.compilerOptions.types).to.eql([
+      "jest",
+      "@testing-library/jest-dom",
+      "snowpack-env",
+    ]);
+  });
+  it("Replaces mocha in tsconfig.json for react-typescript template", () => {
+    newTempBase({ baseTemplate: "react", typescript: true, testing: "jest" });
+    const tsConfig = JSON5.parse(fse.readFileSync("tsconfig.json"));
+    expect(tsConfig.compilerOptions.types).to.eql([
+      "jest",
+      "@testing-library/jest-dom",
+      "snowpack-env",
+    ]);
+  });
+  it("Replaces mocha in tsconfig.json for preact-typescript template", () => {
+    newTempBase({ baseTemplate: "preact", typescript: true, testing: "jest" });
+    const tsConfig = JSON5.parse(fse.readFileSync("tsconfig.json"));
+    expect(tsConfig.compilerOptions.types).to.eql([
+      "jest",
+      "@testing-library/jest-dom",
+      "snowpack-env",
+    ]);
+  });
   it("Removes mocha from tsconfig.json for react-typescript template", () => {
     newTempBase({ baseTemplate: "react", typescript: true });
     const tsConfig = JSON5.parse(fse.readFileSync("tsconfig.json"));
@@ -197,146 +247,206 @@ describe("createBase", () => {
     const tsConfig = JSON5.parse(fse.readFileSync("tsconfig.json"));
     expect(tsConfig.compilerOptions.types).to.eql(["snowpack-env"]);
   });
+  it("Copies web-test-runner.config.js", () => {
+    newTempBase({ baseTemplate: "blank", testing: "wtr" });
+    expect(file("web-test-runner.config.js"))
+      .to.equal(file(DIST_FILES.get("wtrConfig")));
+  });
+  it("Does not set up Jest for blank templates", () => {
+    newTempBase({ baseTemplate: "blank", testing: "jest" });
+    expect(file("jest.setup.js")).to.not.exist;
+    expect(file("jest.config.js")).to.not.exist;
+    expect(file("babel.config.json")).to.not.exist;
+
+    newTempBase({ baseTemplate: "blank", typescript: true, testing: "jest" });
+    expect(file("jest.setup.js")).to.not.exist;
+    expect(file("jest.config.js")).to.not.exist;
+    expect(file("babel.config.json")).to.not.exist;
+  });
+  it("Sets up Jest for react template", () => {
+    newTempBase({
+      baseTemplate: "react",
+      jsFramework: "react",
+      testing: "jest",
+    });
+
+    expect(file("jest.setup.js")).to.equal(file(DIST_FILES.get("jestSetup")));
+    expect(file("jest.config.js")).to.contain("app-scripts-react");
+    expect(file("babel.config.json")).to.contain("app-scripts-react");
+
+    expect(file("src/App.test.jsx")).to.not.contain("document.body.contains");
+    expect(file("src/App.test.jsx")).to.contain("toBeInTheDocument");
+    expect(file("src/App.test.jsx")).to.not.contain("chai");
+  });
+  it("Sets up Jest for react-typescript template", () => {
+    newTempBase({
+      baseTemplate: "react",
+      jsFramework: "react",
+      typescript: true,
+      testing: "jest",
+    });
+    expect(file("jest.setup.js")).to.equal(file(DIST_FILES.get("jestSetup")));
+    expect(file("jest.config.js")).to.contain("app-scripts-react");
+    expect(file("babel.config.json")).to.contain("app-scripts-react");
+
+    expect(file("src/App.test.tsx")).to.not.contain("document.body.contains");
+    expect(file("src/App.test.tsx")).to.contain("toBeInTheDocument");
+    expect(file("src/App.test.tsx")).to.not.contain("chai");
+  });
+  it("Sets up Jest for react-redux template", () => {
+    newTempBase({
+      baseTemplate: "react-redux",
+      jsFramework: "react",
+      testing: "jest",
+    });
+
+    expect(file("jest.setup.js")).to.equal(file(DIST_FILES.get("jestSetup")));
+    expect(file("jest.config.js")).to.contain("app-scripts-react");
+    expect(file("babel.config.json")).to.contain("app-scripts-react");
+
+    expect(file("src/App.test.jsx")).to.not.contain("document.body.contains");
+    expect(file("src/App.test.jsx")).to.contain("toBeInTheDocument");
+    expect(file("src/App.test.jsx")).to.not.contain("chai");
+    expect(file("src/features/counter/counterSlice.test.js"))
+      .to.not.contain("to.eql");
+    expect(file("src/features/counter/counterSlice.test.js"))
+      .to.contain("toEqual");
+  });
+  it("Sets up Jest for react-redux-typescript template", () => {
+    newTempBase({
+      baseTemplate: "react-redux",
+      jsFramework: "react",
+      typescript: true,
+      testing: "jest",
+    });
+    expect(file("jest.setup.js")).to.equal(file(DIST_FILES.get("jestSetup")));
+    expect(file("jest.config.js")).to.contain("app-scripts-react");
+    expect(file("babel.config.json")).to.contain("app-scripts-react");
+
+    expect(file("src/App.test.tsx")).to.not.contain("document.body.contains");
+    expect(file("src/App.test.tsx")).to.contain("toBeInTheDocument");
+    expect(file("src/App.test.tsx")).to.not.contain("chai");
+    expect(file("src/features/counter/counterSlice.test.ts"))
+      .to.not.contain("to.eql");
+    expect(file("src/features/counter/counterSlice.test.ts"))
+      .to.contain("toEqual");
+  });
+  it("Does not set up Jest for vue templates", () => {
+    newTempBase({ baseTemplate: "vue", testing: "jest" });
+    expect(file("jest.setup.js")).to.not.exist;
+    expect(file("jest.config.js")).to.not.exist;
+    expect(file("babel.config.json")).to.not.exist;
+
+    newTempBase({ baseTemplate: "vue", typescript: true, testing: "jest" });
+    expect(file("jest.setup.js")).to.not.exist;
+    expect(file("jest.config.js")).to.not.exist;
+    expect(file("babel.config.json")).to.not.exist;
+  });
+  it("Sets up Jest for svelte template", () => {
+    newTempBase({
+      baseTemplate: "svelte",
+      jsFramework: "svelte",
+      testing: "jest",
+    });
+
+    expect(file("jest.setup.js")).to.equal(file(DIST_FILES.get("jestSetup")));
+    expect(file("jest.config.js")).to.contain("app-scripts-svelte");
+    expect(file("babel.config.json")).to.not.exist;
+
+    expect(file("src/App.test.js")).to.not.contain("document.body.contains");
+    expect(file("src/App.test.js")).to.contain("toBeInTheDocument");
+    expect(file("src/App.test.js")).to.not.contain("chai");
+  });
+  it("Does not set up Jest for svelte-typescript template", () => {
+    newTempBase({ baseTemplate: "svelte", typescript: true, testing: "jest" });
+    expect(file("jest.setup.js")).to.not.exist;
+    expect(file("jest.config.js")).to.not.exist;
+    expect(file("babel.config.json")).to.not.exist;
+  });
+  it("Does not set up Jest for lit-element templates", () => {
+    newTempBase({ baseTemplate: "lit-element", testing: "jest" });
+    expect(file("jest.setup.js")).to.not.exist;
+    expect(file("jest.config.js")).to.not.exist;
+    expect(file("babel.config.json"))
+      .to.not.equal(file(DIST_FILES.get("jestBabel")));
+
+    newTempBase({
+      baseTemplate: "lit-element",
+      typescript: true,
+      testing: "jest",
+    });
+    expect(file("jest.setup.js")).to.not.exist;
+    expect(file("jest.config.js")).to.not.exist;
+    expect(file("babel.config.json"))
+      .to.not.equal(file(DIST_FILES.get("jestBabel")));
+  });
   it("Copies .prettierrc", () => {
     newTempBase({ ...BLANK_CONFIG, codeFormatters: ["prettier"] });
     expect(file(".prettierrc")).to.equal(file(DIST_FILES.get("prettierConfig")));
   });
-  it("Renames CSS files to SCSS for blank template", () => {
+  it("Renames CSS files to SCSS for blank templates", () => {
     newTempBase({ ...BLANK_CONFIG, sass: true });
     expect(file("src/index.css")).to.not.exist;
     expect(file("src/index.scss")).to.exist;
-  });
-  it("Renames CSS files to SCSS for blank-typescript template", () => {
+
     newTempBase({ ...BLANK_CONFIG, typescript: true, sass: true });
     expect(file("src/index.css")).to.not.exist;
     expect(file("src/index.scss")).to.exist;
   });
-  it("Renames CSS files to SCSS for react template", () => {
+  it("Renames CSS to SCSS and updates imports for react templates", () => {
     newTempBase({ baseTemplate: "react", sass: true });
-    expect(file("src/App.css")).to.not.exist;
-    expect(file("src/App.scss")).to.exist;
-    expect(file("src/index.css")).to.not.exist;
-    expect(file("src/index.scss")).to.exist;
-  });
-  it("Changes CSS imports to SCSS for react template", () => {
-    newTempBase({ baseTemplate: "react", sass: true });
-    expect(file("src/App.jsx")).to.not.contain("App.css");
-    expect(file("src/App.jsx")).to.contain("App.scss");
-    expect(file("src/index.jsx")).to.not.contain("index.css");
-    expect(file("src/index.jsx")).to.contain("index.scss");
-  });
-  it("Renames CSS files to SCSS for react-typescript template", () => {
+    checkCssRenamed("src/App.jsx");
+    checkCssRenamed("src/index.jsx");
+
     newTempBase({ baseTemplate: "react", typescript: true, sass: true });
-    expect(file("src/App.css")).to.not.exist;
-    expect(file("src/App.scss")).to.exist;
-    expect(file("src/index.css")).to.not.exist;
-    expect(file("src/index.scss")).to.exist;
+    checkCssRenamed("src/App.tsx");
+    checkCssRenamed("src/index.tsx");
   });
-  it("Changes CSS imports to SCSS for react-typescript template", () => {
-    newTempBase({ baseTemplate: "react", typescript: true, sass: true });
-    expect(file("src/App.tsx")).to.not.contain("App.css");
-    expect(file("src/App.tsx")).to.contain("App.scss");
-    expect(file("src/index.tsx")).to.not.contain("index.css");
-    expect(file("src/index.tsx")).to.contain("index.scss");
-  });
-  it("Renames CSS files to SCSS for react-redux template", () => {
+  it("Renames CSS to SCSS and updates imports for react-redux templates", () => {
     newTempBase({ baseTemplate: "react-redux", sass: true });
-    expect(file("src/App.css")).to.not.exist;
-    expect(file("src/App.scss")).to.exist;
-    expect(file("src/index.css")).to.not.exist;
-    expect(file("src/index.scss")).to.exist;
-    expect(file("src/features/counter/Counter.module.css")).to.not.exist;
-    expect(file("src/features/counter/Counter.module.scss")).to.exist;
-  });
-  it("Changes CSS imports to SCSS for react-redux template", () => {
-    newTempBase({ baseTemplate: "react-redux", sass: true });
-    expect(file("src/App.jsx")).to.not.contain("App.css");
-    expect(file("src/App.jsx")).to.contain("App.scss");
-    expect(file("src/index.jsx")).to.not.contain("index.css");
-    expect(file("src/index.jsx")).to.contain("index.scss");
-    expect(file("src/features/counter/Counter.jsx"))
-      .to.not.contain("Counter.module.css");
-    expect(file("src/features/counter/Counter.jsx"))
-      .to.contain("Counter.module.scss");
-  });
-  it("Renames CSS files to SCSS for react-redux-typescript template", () => {
+    checkCssRenamed("src/App.jsx");
+    checkCssRenamed("src/index.jsx");
+    checkCssRenamed("src/features/counter/Counter.jsx", true);
+
     newTempBase({ baseTemplate: "react-redux", typescript: true, sass: true });
-    expect(file("src/App.css")).to.not.exist;
-    expect(file("src/App.scss")).to.exist;
-    expect(file("src/index.css")).to.not.exist;
-    expect(file("src/index.scss")).to.exist;
-    expect(file("src/features/counter/Counter.module.css")).to.not.exist;
-    expect(file("src/features/counter/Counter.module.scss")).to.exist;
+    checkCssRenamed("src/App.tsx");
+    checkCssRenamed("src/index.tsx");
+    checkCssRenamed("src/features/counter/Counter.tsx", true);
   });
-  it("Changes CSS imports to SCSS for react-redux-typescript template", () => {
-    newTempBase({ baseTemplate: "react-redux", typescript: true, sass: true });
-    expect(file("src/App.tsx")).to.not.contain("App.css");
-    expect(file("src/App.tsx")).to.contain("App.scss");
-    expect(file("src/index.tsx")).to.not.contain("index.css");
-    expect(file("src/index.tsx")).to.contain("index.scss");
-    expect(file("src/features/counter/Counter.tsx"))
-      .to.not.contain("Counter.module.css");
-    expect(file("src/features/counter/Counter.tsx"))
-      .to.contain("Counter.module.scss");
-  });
-  it("Does not rename any CSS files for vue template", () => {
+  it("Does not rename any CSS files for vue templates", () => {
     sinon.stub(fse, "renameSync");
     newTempBase({ baseTemplate: "vue", sass: true });
     expect(fse.renameSync).to.not.have.been.called;
-    fse.renameSync.restore();
-  });
-  it("Does not rename any CSS files for vue-typescript template", () => {
-    sinon.stub(fse, "renameSync");
+    fse.renameSync.resetHistory();
+
     newTempBase({ baseTemplate: "vue", typescript: true, sass: true });
     expect(fse.renameSync).to.not.have.been.called;
     fse.renameSync.restore();
   });
-  it("Does not rename any CSS files for svelte template", () => {
+  it("Does not rename any CSS files for svelte templates", () => {
     sinon.stub(fse, "renameSync");
     newTempBase({ baseTemplate: "svelte", sass: true });
     expect(fse.renameSync).to.not.have.been.called;
-    fse.renameSync.restore();
-  });
-  it("Does not rename any CSS files for svelte-typescript template", () => {
-    sinon.stub(fse, "renameSync");
+    fse.renameSync.resetHistory();
+
     newTempBase({ baseTemplate: "svelte", typescript: true, sass: true });
     expect(fse.renameSync).to.not.have.been.called;
     fse.renameSync.restore();
   });
-  it("Renames CSS files to SCSS for preact template", () => {
+  it("Renames CSS to SCSS and updates imports for preact templates", () => {
     newTempBase({ baseTemplate: "preact", sass: true });
-    expect(file("src/App.css")).to.not.exist;
-    expect(file("src/App.scss")).to.exist;
-    expect(file("src/index.css")).to.not.exist;
-    expect(file("src/index.scss")).to.exist;
-  });
-  it("Changes CSS imports to SCSS for preact template", () => {
-    newTempBase({ baseTemplate: "preact", sass: true });
-    expect(file("src/App.jsx")).to.not.contain("App.css");
-    expect(file("src/App.jsx")).to.contain("App.scss");
-    expect(file("src/index.jsx")).to.not.contain("index.css");
-    expect(file("src/index.jsx")).to.contain("index.scss");
-  });
-  it("Renames CSS files to SCSS for preact-typescript template", () => {
+    checkCssRenamed("src/App.jsx");
+    checkCssRenamed("src/index.jsx");
+
     newTempBase({ baseTemplate: "preact", typescript: true, sass: true });
-    expect(file("src/App.css")).to.not.exist;
-    expect(file("src/App.scss")).to.exist;
-    expect(file("src/index.css")).to.not.exist;
-    expect(file("src/index.scss")).to.exist;
+    checkCssRenamed("src/App.tsx");
+    checkCssRenamed("src/index.tsx");
   });
-  it("Changes CSS imports to SCSS for preact-typescript template", () => {
-    newTempBase({ baseTemplate: "preact", typescript: true, sass: true });
-    expect(file("src/App.tsx")).to.not.contain("App.css");
-    expect(file("src/App.tsx")).to.contain("App.scss");
-    expect(file("src/index.tsx")).to.not.contain("index.css");
-    expect(file("src/index.tsx")).to.contain("index.scss");
-  });
-  it("Renames CSS files to SCSS for lit-element template", () => {
+  it("Renames CSS files to SCSS for lit-element templates", () => {
     newTempBase({ baseTemplate: "lit-element", sass: true });
     expect(file("src/index.css")).to.not.exist;
     expect(file("src/index.scss")).to.exist;
-  });
-  it("Renames CSS files to SCSS for lit-element-typescript template", () => {
+
     newTempBase({ baseTemplate: "lit-element", typescript: true, sass: true });
     expect(file("src/index.css")).to.not.exist;
     expect(file("src/index.scss")).to.exist;
@@ -357,11 +467,6 @@ describe("createBase", () => {
   it("Removes cssnano from postcss.config.js when using Snowpack bundler", () => {
     newTempBase({ ...BLANK_CONFIG, bundler: "snowpack", plugins: ["postcss"] });
     expect(file("postcss.config.js")).to.not.contain("require('cssnano')");
-  });
-  it("Copies web-test-runner.config.js", () => {
-    newTempBase({ baseTemplate: "blank", plugins: ["wtr"] });
-    expect(file("web-test-runner.config.js"))
-      .to.equal(file(DIST_FILES.get("wtrConfig")));
   });
   it("Copies and modifies MIT license", () => {
     newTempBase({ ...BLANK_CONFIG, license: "mit", author: "Jane Doe" });
@@ -436,6 +541,31 @@ describe("generatePackageJson", () => {
       },
     });
   });
+  // WTR scripts are mostly tested by template tests
+  it("Adds a test script for react-redux template with WTR", () => {
+    const packageJson = newTempPackageJson({
+      baseTemplate: "react-redux",
+      testing: "wtr"
+    });
+    expect(packageJson.scripts.test)
+      .to.eql('web-test-runner \"src/**/*.test.{jsx,js}\"');
+  });
+  it("Adds a test script for react-redux-typescript template with WTR", () => {
+    const packageJson = newTempPackageJson({
+      baseTemplate: "react-redux",
+      typescript: true,
+      testing: "wtr"
+    });
+    expect(packageJson.scripts.test)
+      .to.eql('web-test-runner \"src/**/*.test.{tsx,ts}\"');
+  });
+  it("Adds a test script for Jest", () => {
+    const packageJson = newTempPackageJson({
+      baseTemplate: "react",
+      testing: "jest"
+    });
+    expect(packageJson.scripts.test).to.eql("jest src");
+  });
   it("Adds browserlist if using Webpack", () => {
     const packageJson = newTempPackageJson(
       { ...BLANK_CONFIG, bundler: "webpack" },
@@ -462,8 +592,8 @@ describe("installPackages", () => {
     sinon.stub(console, "log");
   });
   beforeEach(() => {
-    execa.sync.reset();
-    console.log.reset();
+    execa.sync.resetHistory();
+    console.log.resetHistory();
   });
   after(() => {
     console.log.restore();
@@ -481,20 +611,88 @@ describe("installPackages", () => {
     expect(execa.sync).to.have.been.calledOnce;
     expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
   });
-  it("Installs @types/chai", () => {
-    const devPackages = [
-      "snowpack",
-      "typescript",
-      "@snowpack/plugin-typescript",
-      "@types/snowpack-env",
-      "@types/chai",
-      "@web/test-runner",
-      "chai",
-      "@snowpack/web-test-runner-plugin",
-    ];
-    installPackages({ ...BLANK_CONFIG, typescript: true, plugins: ["wtr"] });
+  it("Installs @types/chai when using TS+WTR", () => {
+    installPackages({ ...BLANK_CONFIG, typescript: true, testing: "wtr" });
     expect(execa.sync).to.have.been.calledOnce;
-    expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
+    expect(parseExecaDevArgs(execa.sync.args[0][1])).to.include("@types/chai");
+  });
+  it("Installs Snowpack app script for react templates", () => {
+    installPackages({
+      baseTemplate: "react",
+      jsFramework: "react",
+      testing: "jest",
+    });
+    expect(execa.sync).to.have.been.calledTwice;
+    expect(parseExecaDevArgs(execa.sync.args[1][1]))
+      .to.include.members(["jest", "@snowpack/app-scripts-react"]);
+
+    execa.sync.resetHistory();
+    installPackages({
+      baseTemplate: "react",
+      jsFramework: "react",
+      typescript: "true",
+      testing: "jest",
+    });
+    expect(execa.sync).to.have.been.calledTwice;
+    expect(parseExecaDevArgs(execa.sync.args[1][1]))
+      .to.include.members(["jest", "@snowpack/app-scripts-react"]);
+  });
+  it("Installs Snowpack app script for react-redux templates", () => {
+    installPackages({
+      baseTemplate: "react-redux",
+      jsFramework: "react",
+      testing: "jest",
+    });
+    expect(execa.sync).to.have.been.calledTwice;
+    expect(parseExecaDevArgs(execa.sync.args[1][1]))
+      .to.include.members(["jest", "@snowpack/app-scripts-react"]);
+
+    execa.sync.resetHistory();
+    installPackages({
+      baseTemplate: "react-redux",
+      jsFramework: "react",
+      typescript: "true",
+      testing: "jest",
+    });
+    expect(execa.sync).to.have.been.calledTwice;
+    expect(parseExecaDevArgs(execa.sync.args[1][1]))
+      .to.include.members(["jest", "@snowpack/app-scripts-react"]);
+  });
+  it("Installs Snowpack app script for svelte template", () => {
+    installPackages({
+      baseTemplate: "svelte",
+      jsFramework: "svelte",
+      testing: "jest",
+    });
+    expect(execa.sync).to.have.been.calledTwice;
+    expect(parseExecaDevArgs(execa.sync.args[1][1]))
+      .to.include.members(["jest", "@snowpack/app-scripts-svelte"]);
+  });
+  it("Installs Snowpack app script for preact templates", () => {
+    installPackages({
+      baseTemplate: "preact",
+      jsFramework: "preact",
+      testing: "jest",
+    });
+    expect(execa.sync).to.have.been.calledTwice;
+    expect(parseExecaDevArgs(execa.sync.args[1][1]))
+      .to.include.members(["jest", "@snowpack/app-scripts-preact"]);
+
+    execa.sync.resetHistory();
+    installPackages({
+      baseTemplate: "preact",
+      jsFramework: "preact",
+      typescript: "true",
+      testing: "jest",
+    });
+    expect(execa.sync).to.have.been.calledTwice;
+    expect(parseExecaDevArgs(execa.sync.args[1][1]))
+      .to.include.members(["jest", "@snowpack/app-scripts-preact"]);
+  });
+  it("Installs @types/jest when using TS+Jest", () => {
+    installPackages({ ...BLANK_CONFIG, typescript: true, testing: "jest" });
+    expect(execa.sync).to.have.been.calledOnce;
+    expect(parseExecaDevArgs(execa.sync.args[0][1])).to.include("@types/jest");
   });
   it("Installs ESLint", () => {
     const devPackages = ["snowpack", "eslint"];
@@ -592,18 +790,15 @@ describe("installPackages", () => {
     expect(execa.sync).to.have.been.calledOnce;
     expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
   });
-  it("Installs plugins (postcss + wtr)", () => {
+  it("Installs plugins", () => {
     const devPackages = [
       "snowpack",
       "postcss",
       "postcss-preset-env",
       "@snowpack/plugin-postcss",
-      "@web/test-runner",
-      "chai",
-      "@snowpack/web-test-runner-plugin",
       "cssnano",
     ];
-    installPackages({ ...BLANK_CONFIG, plugins: ["postcss", "wtr"] });
+    installPackages({ ...BLANK_CONFIG, plugins: ["postcss"] });
     expect(execa.sync).to.have.been.calledOnce;
     expect(parseExecaDevArgs(execa.sync.args[0][1])).to.eql(devPackages);
   });
@@ -679,6 +874,30 @@ describe("generateSnowpackConfig", () => {
       }]
     ]);
   });
+  it("Adds @snowpack/plugin-babel when using Jest with react template", () => {
+    const snowpackConfig = newTempSnowpackConfig({
+      baseTemplate: "react",
+      jsFramework: "react",
+      testing: "jest",
+    });
+    expect(snowpackConfig.plugins[1]).to.eql("@snowpack/plugin-babel");
+  });
+  it("Adds @snowpack/plugin-babel when using Jest with react-redux template", () => {
+    const snowpackConfig = newTempSnowpackConfig({
+      baseTemplate: "react-redux",
+      jsFramework: "react",
+      testing: "jest",
+    });
+    expect(snowpackConfig.plugins[1]).to.eql("@snowpack/plugin-babel");
+  });
+  it("Adds @snowpack/plugin-babel when using Jest with react template", () => {
+    const snowpackConfig = newTempSnowpackConfig({
+      baseTemplate: "preact",
+      jsFramework: "preact",
+      testing: "jest",
+    });
+    expect(snowpackConfig.plugins[0]).to.eql("@snowpack/plugin-babel");
+  });
   it("Adds @snowpack/plugin-sass", () => {
     const snowpackConfig = newTempSnowpackConfig(
       { ...BLANK_CONFIG, sass: true }
@@ -732,9 +951,9 @@ describe("initializeTailwind", () => {
     sinon.stub(console, "error");
   });
   beforeEach(() => {
-    execa.sync.reset();
-    console.log.reset();
-    console.error.reset();
+    execa.sync.resetHistory();
+    console.log.resetHistory();
+    console.error.resetHistory();
   });
   after(() => {
     console.log.restore();
@@ -781,9 +1000,9 @@ describe("initializeEslint", () => {
     sinon.stub(console, "error");
   });
   beforeEach(() => {
-    execa.sync.reset();
-    console.log.reset();
-    console.error.reset();
+    execa.sync.resetHistory();
+    console.log.resetHistory();
+    console.error.resetHistory();
   });
   after(() => {
     console.error.restore();
@@ -821,9 +1040,9 @@ describe("initializeGit", () => {
     sinon.stub(console, "error");
   });
   beforeEach(() => {
-    execa.sync.reset();
-    console.log.reset();
-    console.error.reset();
+    execa.sync.resetHistory();
+    console.log.resetHistory();
+    console.error.resetHistory();
   });
   after(() => {
     console.error.restore();
@@ -865,7 +1084,7 @@ describe("displayQuickstart", () => {
     sinon.stub(console, "log");
   });
   beforeEach(() => {
-    console.log.reset();
+    console.log.resetHistory();
   });
   after(() => {
     console.log.restore();

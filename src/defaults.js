@@ -3,6 +3,7 @@ module.exports = {
   // projectDir: "new-snowpack-app",
   baseTemplate: "blank",
   typescript: false,
+  testing: "wtr",
   codeFormatters: [
     "eslint",
     // "prettier",
@@ -11,7 +12,6 @@ module.exports = {
   cssFramework: "none",
   bundler: "webpack",
   plugins: [
-    // "wtr",
     // "postcss",
     // "srs",
     // "sbs",

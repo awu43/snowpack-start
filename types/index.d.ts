@@ -5,7 +5,7 @@ interface BaseTemplateData {
   readonly prodPackages: readonly string[];
   readonly devPackages: readonly string[];
   readonly tsPackages: readonly string[];
-  readonly wtrPackages: readonly string[];
+  readonly testPackages: readonly string[];
   readonly plugins: readonly string[];
 }
 

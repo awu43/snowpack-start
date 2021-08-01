@@ -26,7 +26,7 @@ describe("validateOptions", () => {
     sinon.stub(execa, "commandSync");
   });
   beforeEach(() => {
-    execa.commandSync.reset();
+    execa.commandSync.resetHistory();
   });
   after(() => {
     execa.commandSync.restore();
@@ -114,8 +114,8 @@ describe("loadFiles", () => {
     sinon.stub(console, "error");
   });
   beforeEach(() => {
-    process.exit.reset();
-    console.error.reset();
+    process.exit.resetHistory();
+    console.error.resetHistory();
   });
   after(() => {
     console.error.restore();

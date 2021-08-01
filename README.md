@@ -12,7 +12,9 @@ The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-st
 
 ### 🚨 Breaking Changes
 `c1391e3` — New other deps options<br>
-`a3ce4e0` — JS framework option renamed to base template
+`a3ce4e0` — JS framework option renamed to base template<br>
+`93419b4` — Updated CLI shorthands for file loading and license<br>
+_ — New testing option
 
 ### ⚠️ Non-breaking Changes
 `b67f64f` — Loading files no longer requires file extensions<br>
@@ -57,18 +59,25 @@ Using all CLI options and skipping prompts entirely is also possible.
 
 ### CLI Options
 
+#### CLI only
+These can only be used on the command line.
+
+| Syntax                                    | Description                  |
+|-------------------------------------------|------------------------------|
+| `-d, --defaults`                          | Use default options          |
+| `-ld, --load <files...>`                  | Load options from files      |
+
 #### Active
 
 Prompts will be displayed for active options not otherwise provided on the command line.
 
 | Syntax                                    | Description                  |
 |-------------------------------------------|------------------------------|
-| `-d, --defaults`                          | Use default options          |
-| `-ld, --load <files...>`                  | Load options from files      |
 | `-bt, --base-template <template>`         | Base template                |
-| `-cdf, --code-formatters <formatters...>` | Code formatters              |
 | `-ts, --typescript`                       | Use TypeScript               |
 | `-nts, --no-typescript`                   | Don't use TypeScript         |
+| `--t, --testing <testing>`                | Testing                      |
+| `-cdf, --code-formatters <formatters...>` | Code formatters              |
 | `-s, --sass`                              | Use Sass                     |
 | `-ns, --no-sass`                          | Don't use Sass               |
 | `-cssf, --css-framework <framework>`      | CSS framework                |
@@ -81,20 +90,20 @@ Prompts will be displayed for active options not otherwise provided on the comma
 
 <br/>
 
-| Option               | Valid Values                                         |
-|----------------------|------------------------------------------------------|
-| JavaScript framework | `blank`/`react`/`react-redux`/`vue`/`svelte`/`preact`/`lit-element` |
-| Code formatters      | `none`, `eslint`, `prettier`                         |
-| CSS framework        | `none`/`tailwindcss`/`bootstrap`                     |
-| Bundler              | `webpack`/`snowpack`/`none`                          |
-| Other plugins        | `none`, `wtr`, `postcss`, `srs`, `sbs`               |
-| License              | `mit`/`gpl`/`apache`/`none`                          |
+| Option           | Valid Values                                         |
+|------------------|------------------------------------------------------|
+| Base template    | `blank`/`react`/`react-redux`/`vue`/`svelte`/`preact`/`lit-element` |
+| Testing          | `wtr`/`jest`/`none`                                  |
+| Code formatters  | `eslint`, `prettier`, `none`                         |
+| CSS framework    | `none`/`tailwindcss`/`bootstrap`                     |
+| Bundler          | `webpack`/`snowpack`/`none`                          |
+| Other plugins    | `postcss`, `srs`, `sbs`, `none`                      |
+| License          | `mit`/`gpl`/`apache`/`none`                          |
 
 <br>
 
 | Value     | Plugin                             |
 |-----------|------------------------------------|
-| `wtr`     | `@snowpack/web-test-runner-plugin` |
 | `postcss` | `@snowpack/plugin-postcss`         |
 | `srs`     | `@snowpack/plugin-run-script`      |
 | `sbs`     | `@snowpack/plugin-build-script`    |
@@ -163,9 +172,10 @@ The other deps options are instead additive, so later deps will be added to the 
 
 ## Issues
 ### Known
-* Starting with Snowpack v3.1 and as of v3.8.3 (checked July 30, 2021), image/JSON imports break builds using the built-in bundler ([#3109](https://github.com/snowpackjs/snowpack/issues/3109)). A [workaround](https://github.com/snowpackjs/snowpack/issues/3109#issuecomment-821514740) is automatically added if `snowpack` is selected as the bundler.
+* Jest configs for Snowpack are only available for React, Preact (JS+TS) and Svelte (JS only), and do not yet support Jest 27.
 * `eslint --init` only supports React and Vue, additional setup required for Svelte, Preact, and LitElement.
 * `eslint --init` only installs packages with npm, no option to use Yarn or pnpm.
+* Starting with Snowpack v3.1 and as of v3.8.3 (checked July 30, 2021), image/JSON imports break builds using the built-in bundler ([#3109](https://github.com/snowpackjs/snowpack/issues/3109)). A [workaround](https://github.com/snowpackjs/snowpack/issues/3109#issuecomment-821514740) is automatically added if `snowpack` is selected as the bundler.
 
 ### Reporting
 Please report any other issues [here](https://github.com/awu43/snowpack-start/issues).

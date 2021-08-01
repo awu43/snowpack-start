@@ -131,8 +131,8 @@ function testPackagesInstalled(template) {
   installedDevPackages.sort();
   baseProdPackages.sort();
   baseDevPackages.sort();
-  expect(installedProdPackages).to.eql(baseProdPackages);
-  expect(installedDevPackages).to.eql(baseDevPackages);
+  expect(installedProdPackages).to.have.members(baseProdPackages);
+  expect(installedDevPackages).to.have.members(baseDevPackages);
 }
 
 describe("installPackages", () => {
@@ -141,7 +141,7 @@ describe("installPackages", () => {
     sinon.stub(execa, "sync");
   });
   beforeEach(() => {
-    execa.sync.reset();
+    execa.sync.resetHistory();
   });
   after(() => {
     console.log.restore();

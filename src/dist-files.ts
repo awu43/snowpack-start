@@ -12,6 +12,9 @@ const DIST_FILES = new Map(Object.entries({
   prettierConfig: "config/.prettierrc",
   postcssConfig: "config/postcss.config.js",
   wtrConfig: "config/web-test-runner.config.js",
+  jestSetup: "config/jest.setup.js",
+  jestConfig: "config/jest.config.js",
+  jestBabel: "config/babel.config.json",
   snowpackConfig: "config/snowpack.config.mjs",
 }));
 

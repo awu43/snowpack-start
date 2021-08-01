@@ -1,10 +1,16 @@
+/* eslint-disable no-unused-expressions */
 const path = require("path");
 
 const fse = require("fs-extra");
 const JSON5 = require("json5");
 const tmp = require("tmp");
 
-const { expect } = require("chai");
+const chai = require("chai");
+const chaiFiles = require("chai-files");
+
+chai.use(chaiFiles);
+const { expect } = chai;
+const { file } = chaiFiles;
 
 const {
   createBase,
@@ -55,6 +61,18 @@ function testDirectoryContentsEqual(testDir, baseDir) {
   expect(testContents).to.eql(baseContents);
 }
 
+function checkCssRenamed(codeFile, module = false) {
+  const cssFile = codeFile.replace(
+    path.extname(codeFile),
+    `${module ? ".module" : ""}.css`,
+  );
+  const scssFile = cssFile.replace(".css", ".scss");
+  expect(file(cssFile)).to.not.exist;
+  expect(file(scssFile)).to.exist;
+  expect(file(codeFile)).to.not.contain(path.basename(cssFile));
+  expect(file(codeFile)).to.contain(path.basename(scssFile));
+}
+
 function newTempConfigGenerator(generateFunc, fileName) {
   return options => {
     const tempDir = tmp.dirSync();
@@ -103,6 +121,7 @@ module.exports = {
   stripPackageVersions,
   newTempBase,
   testDirectoryContentsEqual,
+  checkCssRenamed,
   newTempPackageJson,
   newTempSnowpackConfig,
   revertSnowpackConfig,
