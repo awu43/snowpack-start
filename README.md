@@ -64,7 +64,7 @@ Prompts will be displayed for active options not otherwise provided on the comma
 | Syntax                                    | Description                  |
 |-------------------------------------------|------------------------------|
 | `-d, --defaults`                          | Use default options          |
-| `--load <files...>`                       | Load options from files      |
+| `-ld, --load <files...>`                  | Load options from files      |
 | `-bt, --base-template <template>`         | Base template                |
 | `-cdf, --code-formatters <formatters...>` | Code formatters              |
 | `-ts, --typescript`                       | Use TypeScript               |
@@ -76,7 +76,7 @@ Prompts will be displayed for active options not otherwise provided on the comma
 | `-p, --plugins <plugins...>`              | Other plugins                |
 | `-opd, --other-prod-deps <deps...>`       | Other prod dependencies      |
 | `-odd, --other-dev-deps <deps...>`        | Other dev dependencies       |
-| `-l, --license <license>`                 | License                      |
+| `-lc, --license <license>`                | License                      |
 | `-a, --author <author>`                   | Author (for MIT license)     |
 
 <br/>

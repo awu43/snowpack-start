@@ -350,7 +350,7 @@ function getCliOptions(): PartialPreprocessOptionSet {
     .action((pd: string) => { projectDir = pd; })
     .description("Start a new custom Snowpack app.")
     .option("-d, --defaults", "Use default options")
-    .option("--load <files...>", "Load options from files")
+    .option("-ld, --load <files...>", "Load options from files")
     .option(
       "-bt, --base-template <template>",
       `Base template <${choicesLine("baseTemplate")}>`,
@@ -376,7 +376,7 @@ function getCliOptions(): PartialPreprocessOptionSet {
       "-odd, --other-dev-deps <deps...>",
       `Other dev dependencies (<${styles.cyanBright("none")}> to clear preceeding)`
     )
-    .option("-l, --license <license>", `License <${choicesLine("license")}>`)
+    .option("-lc, --license <license>", `License <${choicesLine("license")}>`)
     .option("-a, --author <author>", "Author\n\n")
     .option("--use-yarn", "Use Yarn")
     .option("--no-use-yarn", "Don't use Yarn")
