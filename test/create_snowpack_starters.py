@@ -6,75 +6,75 @@ from multiprocessing import Pool
 SOURCE_CONFIGS = {
     "blank": [
         "--base-template blank",
+        "--testing none"
         "--code-formatters prettier",
         "--no-typescript",
-        "--plugins none",
     ],
     "blank-typescript": [
         "--base-template blank",
+        "--testing none"
         "--code-formatters prettier",
         "--typescript",
-        "--plugins none",
     ],
     "react": [
         "--base-template react",
+        "--testing wtr"
         "--code-formatters prettier",
         "--no-typescript",
-        "--plugins wtr",
     ],
     "react-typescript": [
         "--base-template react",
+        "--testing wtr"
         "--code-formatters prettier",
         "--typescript",
-        "--plugins wtr",
     ],
     "vue": [
         "--base-template vue",
+        "--testing none"
         "--code-formatters none",
         "--no-typescript",
-        "--plugins none",
     ],
     "vue-typescript": [
         "--base-template vue",
+        "--testing none"
         "--code-formatters none",
         "--typescript",
-        "--plugins none",
     ],
     "svelte": [
         "--base-template svelte",
+        "--testing wtr"
         "--code-formatters none",
         "--no-typescript",
-        "--plugins wtr",
     ],
     "svelte-typescript": [
         "--base-template svelte",
+        "--testing wtr"
         "--code-formatters none",
         "--typescript",
-        "--plugins wtr",
     ],
     "preact": [
         "--base-template preact",
+        "--testing wtr"
         "--code-formatters prettier",
         "--no-typescript",
-        "--plugins wtr",
     ],
     "preact-typescript": [
         "--base-template preact",
+        "--testing wtr"
         "--code-formatters prettier",
         "--typescript",
-        "--plugins wtr",
     ],
     "lit-element": [
         "--base-template lit-element",
+        "--testing none"
         "--code-formatters prettier",
         "--no-typescript",
-        "--plugins none",
     ],
     "lit-element-typescript": [
         "--base-template lit-element",
+        "--testing none"
         "--code-formatters prettier",
         "--typescript",
-        "--plugins none",
     ],
 }
 
@@ -94,6 +94,7 @@ def create_starter(config_item):
             "--no-sass",
             "--css-framework none",
             "--bundler none",
+            "--plugins none",
             "--other-prod-deps none",
             "--other-dev-deps none",
             "--license none",
