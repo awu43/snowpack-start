@@ -42,6 +42,7 @@ With no CLI options:
 
 <div>
     <img src="https://github.com/awu43/snowpack-start/raw/master/media/no-cli-args.gif" alt="No CLI options">
+    <!-- <img src="./media/no-cli-args.gif"> -->
 </div>
 
 <br>
@@ -50,6 +51,7 @@ With some CLI options:
 
 <div>
     <img src="https://github.com/awu43/snowpack-start/raw/master/media/some-cli-args.gif" alt="Some CLI options">
+    <!-- <img src="./media/some-cli-args.gif"> -->
 </div>
 
 
@@ -136,13 +138,12 @@ Passive options do not have prompts.
 ### Default Options
 On startup, `snowpack-start` will look for a `.snowpackstart.js` file in the home directory. If it exists, then the options in that file are loaded as default options. Otherwise, the [built-in default options](https://github.com/awu43/snowpack-start/blob/master/src/defaults.js) are used.
 
-Passive defaults will always be used regardless of whether the defaults flag has been passed on the command line. Active defaults will only be used if `-d` or `--defaults` has been passed.
+Passive defaults will always be applied regardless of whether the defaults flag has been passed on the command line. Active defaults will only be applied if `-d` or `--defaults` has been passed. If not applied, active defaults will be set as the initial selections/values of their corresponding prompts.
 
 <div>
     <img src="https://github.com/awu43/snowpack-start/raw/master/media/default-app.png" alt="Using default options">
+    <!-- <img src="./media/default-app.png"> -->
 </div>
-
-After CLI processing, the loaded defaults are applied as the initial selections/values of their corresponding prompts.
 
 <br>
 
@@ -151,6 +152,7 @@ Specify paths to files (extension optional), and options will be loaded from the
 
 <div>
     <img src="https://github.com/awu43/snowpack-start/raw/master/media/loading-files.png" alt="Loading options from files">
+    <!-- <img src="./media/loading-files.png"> -->
 </div>
 
 <br>
@@ -160,13 +162,19 @@ Specify paths to files (extension optional), and options will be loaded from the
 Defaults >> Files >> CLI >> Prompts
 ```
 
-Later options overwrite earlier ones, with the exception of other deps:
+Later options overwrite earlier ones, with the exception of the other deps options:
 
 <div>
     <img src="https://github.com/awu43/snowpack-start/raw/master/media/overwriting-options.png" alt="Overwriting previous options">
+    <!-- <img src="./media/overwriting-options.png"> -->
 </div>
 
 The other deps options are instead additive, so later deps will be added to the existing deps. To clear previous deps, use `none` in files or CLI:
+
+<div>
+    <img src="https://github.com/awu43/snowpack-start/raw/master/media/overwriting-other-deps.png" alt="Overwriting previous other deps">
+    <!-- <img src="./media/overwriting-other-deps.png"> -->
+</div>
 
 <br>
 
