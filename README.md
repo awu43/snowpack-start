@@ -8,24 +8,19 @@ The problem: manually customizing templates from [`create-snowpack-app`](https:/
 
 The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-start` installs packages and generates configuration boilerplate so you can get to developing faster.
 
-## New in v2.0.0
+## New in v2.1.0
 
 ### 🚨 Breaking Changes
-`c1391e3` — New other deps options<br>
-`a3ce4e0` — JS framework option renamed to base template<br>
-`93419b4` — Updated CLI shorthands for file loading and license<br>
-`3d1bb17` — New testing option
+None
 
 ### ⚠️ Non-breaking Changes
-`b67f64f` — Loading files no longer requires file extensions<br>
-`56ae0c4` — New React-Redux templates<br>
-`e50d511` — Changed base `.prettierrc` to be empty
+`_` — Removed `AppProps` in `react-typescript` template
 
 ### 🔧 Fixes
-`69d7d50` — Workaround for import bug is now automatically added if required
+None
 
 ### 🏔️ Snowpack Template Changes
-`2b52a7f` — Updated `App.svelte` in `svelte-typescript` template
+None
 
 <br>
 
