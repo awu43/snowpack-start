@@ -14,7 +14,8 @@ The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-st
 None
 
 ### ⚠️ Non-breaking Changes
-`_` — Removed `AppProps` in `react-typescript` template
+`86c32cd` — Removed `AppProps` in `react-typescript` template<br>
+`_` — Removed `.jsx` extension in `react` template
 
 ### 🔧 Fixes
 None
