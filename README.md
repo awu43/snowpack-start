@@ -22,7 +22,7 @@ None
 None
 
 ### 🏔️ Snowpack Template Changes
-`_` — Updated `svelte.config.js` in svelte-typescript template
+`28cb8cd` — Updated `svelte.config.js` in svelte-typescript template
 
 <br>
 
@@ -177,10 +177,10 @@ The other deps options are instead additive, so later deps will be added to the 
 
 ## Issues
 ### Known
-* Jest configs for Snowpack are only available for React, Preact (JS+TS) and Svelte (JS only), and do not yet support Jest 27.
+* Jest configs for Snowpack are only available for React, Preact (JS+TS) and Svelte (JS only), and [do not yet support Jest 27](https://github.com/snowpackjs/snowpack/issues/3398).
 * `eslint --init` only supports React and Vue, additional setup required for Svelte, Preact, and LitElement.
 * `eslint --init` only installs packages with npm, no option to use Yarn or pnpm.
-* Starting with Snowpack v3.1 and as of v3.8.3 (checked July 30, 2021), image/JSON imports break builds using the built-in bundler ([#3109](https://github.com/snowpackjs/snowpack/issues/3109)). A [workaround](https://github.com/snowpackjs/snowpack/issues/3109#issuecomment-821514740) is automatically added if `snowpack` is selected as the bundler.
+* Starting with Snowpack v3.1 and as of v3.8.8, image/JSON imports break builds using the built-in bundler ([#3109](https://github.com/snowpackjs/snowpack/issues/3109)). A [workaround](https://github.com/snowpackjs/snowpack/issues/3109#issuecomment-821514740) is automatically added if `snowpack` is selected as the bundler.
 
 ### Reporting
 Please report any other issues [here](https://github.com/awu43/snowpack-start/issues).

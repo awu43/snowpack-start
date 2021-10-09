@@ -409,7 +409,7 @@ function installPackages(options: FullOptionSet): void {
   } else if (options.testing === "jest") {
     if (hasJestConfig(options)) {
       // https://github.com/snowpackjs/snowpack/issues/3398
-      // Currently (July 31, 2021) restricted by babel-jest dep to v26
+      // Currently (October 9, 2021) restricted by babel-jest dep to v26
       devPackages.push(...[
         "jest@26",
         `@snowpack/app-scripts-${options.jsFramework}@2.0.1`,
