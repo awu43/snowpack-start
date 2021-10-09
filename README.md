@@ -15,7 +15,8 @@ None
 
 ### ⚠️ Non-breaking Changes
 `86c32cd` — Removed `AppProps` in `react-typescript` template<br>
-`_` — Removed `.jsx` extension in `react` template
+`03867a0` — Removed `.jsx` extension in `react` template<br>
+`_` — Removed `.js` extension in `preact` template
 
 ### 🔧 Fixes
 None
