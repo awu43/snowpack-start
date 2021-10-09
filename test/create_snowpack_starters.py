@@ -6,73 +6,73 @@ from multiprocessing import Pool
 SOURCE_CONFIGS = {
     "blank": [
         "--base-template blank",
-        "--testing none"
+        "--testing none",
         "--code-formatters prettier",
         "--no-typescript",
     ],
     "blank-typescript": [
         "--base-template blank",
-        "--testing none"
+        "--testing none",
         "--code-formatters prettier",
         "--typescript",
     ],
     "react": [
         "--base-template react",
-        "--testing wtr"
+        "--testing wtr",
         "--code-formatters prettier",
         "--no-typescript",
     ],
     "react-typescript": [
         "--base-template react",
-        "--testing wtr"
+        "--testing wtr",
         "--code-formatters prettier",
         "--typescript",
     ],
     "vue": [
         "--base-template vue",
-        "--testing none"
+        "--testing none",
         "--code-formatters none",
         "--no-typescript",
     ],
     "vue-typescript": [
         "--base-template vue",
-        "--testing none"
+        "--testing none",
         "--code-formatters none",
         "--typescript",
     ],
     "svelte": [
         "--base-template svelte",
-        "--testing wtr"
+        "--testing wtr",
         "--code-formatters none",
         "--no-typescript",
     ],
     "svelte-typescript": [
         "--base-template svelte",
-        "--testing wtr"
+        "--testing wtr",
         "--code-formatters none",
         "--typescript",
     ],
     "preact": [
         "--base-template preact",
-        "--testing wtr"
+        "--testing wtr",
         "--code-formatters prettier",
         "--no-typescript",
     ],
     "preact-typescript": [
         "--base-template preact",
-        "--testing wtr"
+        "--testing wtr",
         "--code-formatters prettier",
         "--typescript",
     ],
     "lit-element": [
         "--base-template lit-element",
-        "--testing none"
+        "--testing none",
         "--code-formatters prettier",
         "--no-typescript",
     ],
     "lit-element-typescript": [
         "--base-template lit-element",
-        "--testing none"
+        "--testing none",
         "--code-formatters prettier",
         "--typescript",
     ],
