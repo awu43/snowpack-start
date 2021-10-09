@@ -22,7 +22,7 @@ None
 None
 
 ### 🏔️ Snowpack Template Changes
-None
+`_` — Updated `svelte.config.js` in svelte-typescript template
 
 <br>
 
