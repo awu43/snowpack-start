@@ -100,13 +100,11 @@ describe("generateSvelteConfig", () => {
 
   it("Removes postcss property", () => {
     generateSvelteConfig({ typescript: true });
-    expect(file("svelte.config.js")).to.contain("defaults");
     expect(file("svelte.config.js")).to.not.contain("postcss");
   });
-  it("Removes defaults property when not using TypeScript", () => {
-    generateSvelteConfig({ plugins: ["postcss"] });
-    expect(file("svelte.config.js")).to.not.contain("defaults");
-    expect(file("svelte.config.js")).to.contain("postcss");
+  it("Removes empty brackets", () => {
+    generateSvelteConfig({ typescript: true });
+    expect(file("svelte.config.js")).to.contain("autoPreprocess()");
   });
   it("Removes require('tailwindcss')", () => {
     generateSvelteConfig({ plugins: ["postcss"] });
