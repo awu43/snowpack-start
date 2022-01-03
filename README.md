@@ -24,7 +24,7 @@ None
 `220210` — Added warning about Snowpack development
 
 ### 🔧 Fixes
-`_` — Fixed `svelte.config.js` generation
+`b8c564` — Fixed `svelte.config.js` generation
 
 ### 🏔️ Snowpack Template Changes
 None

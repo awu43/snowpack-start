@@ -349,7 +349,9 @@ function displayDefaults(): void {
 
 function getCliOptions(): PartialPreprocessOptionSet {
   console.log(
-    styles.snowpackStart(`\n  snowpack-start v${PACKAGE_JSON.version} \n`)
+    styles.snowpackStart(
+      `\n  snowpack-start v${PACKAGE_JSON.version} (released Jan. 2 2022) \n`
+    )
   );
 
   console.log(
