@@ -1,5 +1,12 @@
 # snowpack-start
 
+## ⚠️ WARNING ⚠️
+Snowpack development [is currently on indefinite haitus](https://github.com/withastro/snowpack/issues/3491#issuecomment-920501647).
+
+Consider switching to the actively maintained [Vite](https://vitejs.dev/).
+
+<hr>
+
 > [What is Snowpack?](https://www.snowpack.dev/)
 >
 > Snowpack is a lightning-fast frontend build tool, designed for the modern web. It is an alternative to heavier, more complex bundlers like webpack or Parcel in your development workflow.
@@ -8,21 +15,19 @@ The problem: manually customizing templates from [`create-snowpack-app`](https:/
 
 The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-start` installs packages and generates configuration boilerplate so you can get to developing faster.
 
-## New in v2.1.0
+## New in v2.1.1
 
 ### 🚨 Breaking Changes
 None
 
 ### ⚠️ Non-breaking Changes
-`86c32cd` — Removed `AppProps` in `react-typescript` template<br>
-`03867a0` — Removed `.jsx` extension in `react` template<br>
-`7c080d8` — Removed `.js` extension in `preact` template
+`_` — Added warning about Snowpack development
 
 ### 🔧 Fixes
 None
 
 ### 🏔️ Snowpack Template Changes
-`28cb8cd` — Updated `svelte.config.js` in svelte-typescript template
+None
 
 <br>
 

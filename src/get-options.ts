@@ -352,6 +352,12 @@ function getCliOptions(): PartialPreprocessOptionSet {
     styles.snowpackStart(`\n  snowpack-start v${PACKAGE_JSON.version} \n`)
   );
 
+  console.log(
+    styles.initWarning(
+      "  WARNING \n  Snowpack development is currently on indefinite haitus (see README). \n  Consider switching to the actively maintained Vite. "
+    )
+  );
+
   let projectDir;
   let cliOptions = new commander.Command(PACKAGE_JSON.name)
     .version(PACKAGE_JSON.version)
