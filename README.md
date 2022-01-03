@@ -21,10 +21,10 @@ The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-st
 None
 
 ### ⚠️ Non-breaking Changes
-`_` — Added warning about Snowpack development
+`220210` — Added warning about Snowpack development
 
 ### 🔧 Fixes
-None
+`_` — Fixed `svelte.config.js` generation
 
 ### 🏔️ Snowpack Template Changes
 None

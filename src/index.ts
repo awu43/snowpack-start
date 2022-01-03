@@ -38,9 +38,6 @@ function generateSvelteConfig(options: FullOptionSet): void {
   let svelteConfig = fse.readFileSync(
     DIST_FILES.get("svelteConfig"), "utf8"
   );
-  if (!options.typescript) {
-    svelteConfig = svelteConfig.replace(/defaults.+?},\s+/s, "");
-  }
   if (options.cssFramework !== "tailwindcss") {
     svelteConfig = svelteConfig.replace(/require\('tailwindcss'\),\s+/, "");
   }
@@ -51,6 +48,12 @@ function generateSvelteConfig(options: FullOptionSet): void {
   if (!options.plugins?.includes("postcss")) {
     svelteConfig = svelteConfig.replace(
       new RegExp(`${s(4)}postcss.+?${s(4)}},\n`, "s"), ""
+    );
+  }
+  if (/autoPreprocess\({\s*}\)/.test(svelteConfig)) {
+    svelteConfig = svelteConfig.replace(
+      /autoPreprocess\({\s*}\)/,
+      "autoPreprocess()"
     );
   }
   if (options.typescript || options.plugins?.includes("postcss")) {
