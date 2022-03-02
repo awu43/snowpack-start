@@ -1,9 +1,9 @@
 # snowpack-start
 
-## ⚠️ WARNING ⚠️
-Snowpack development [is currently on indefinite haitus](https://github.com/withastro/snowpack/issues/3491#issuecomment-920501647).
+## ⛔ DEPRECATED ⛔
+`snowpack-start` is no longer developed or maintained ([and neither is Snowpack](https://github.com/withastro/snowpack/issues/3491#issuecomment-920501647)).
 
-Consider switching to the actively maintained [Vite](https://vitejs.dev/).
+Switching to the actively maintained [Vite](https://vitejs.dev/) is recommended.
 
 <hr>
 
@@ -14,22 +14,6 @@ Consider switching to the actively maintained [Vite](https://vitejs.dev/).
 The problem: manually customizing templates from [`create-snowpack-app`](https://github.com/snowpackjs/snowpack/tree/main/create-snowpack-app/cli) was annoying.
 
 The solution: `snowpack-start` (`snowpack-init` was already taken). `snowpack-start` installs packages and generates configuration boilerplate so you can get to developing faster.
-
-## New in v2.1.1
-
-### 🚨 Breaking Changes
-None
-
-### ⚠️ Non-breaking Changes
-`220210` — Added warning about Snowpack development
-
-### 🔧 Fixes
-`b8c564` — Fixed `svelte.config.js` generation
-
-### 🏔️ Snowpack Template Changes
-None
-
-<br>
 
 ## Usage
 Node version ≥ 10 is required.
@@ -186,9 +170,6 @@ The other deps options are instead additive, so later deps will be added to the 
 * `eslint --init` only supports React and Vue, additional setup required for Svelte, Preact, and LitElement.
 * `eslint --init` only installs packages with npm, no option to use Yarn or pnpm.
 * Starting with Snowpack v3.1 and as of v3.8.8, image/JSON imports break builds using the built-in bundler ([#3109](https://github.com/snowpackjs/snowpack/issues/3109)). A [workaround](https://github.com/snowpackjs/snowpack/issues/3109#issuecomment-821514740) is automatically added if `snowpack` is selected as the bundler.
-
-### Reporting
-Please report any other issues [here](https://github.com/awu43/snowpack-start/issues).
 
 <br>
 
