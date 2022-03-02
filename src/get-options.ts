@@ -350,13 +350,13 @@ function displayDefaults(): void {
 function getCliOptions(): PartialPreprocessOptionSet {
   console.log(
     styles.snowpackStart(
-      `\n  snowpack-start v${PACKAGE_JSON.version} (released Jan. 2 2022) \n`
+      `\n  snowpack-start v${PACKAGE_JSON.version} (released Mar. 1 2022) \n`
     )
   );
 
   console.log(
-    styles.initWarning(
-      "  WARNING \n  Snowpack development is currently on indefinite haitus (see README). \n  Consider switching to the actively maintained Vite. "
+    styles.fatalError(
+      "  DEPRECATED \n  snowpack-start is no longer developed or maintained. \n  Switching to the actively maintained Vite is recommended. "
     )
   );
 
